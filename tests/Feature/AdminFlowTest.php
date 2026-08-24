@@ -47,7 +47,7 @@ class AdminFlowTest extends TestCase
             'email' => 'baru@example.com',
             'password' => 'secret-password',
             'password_confirmation' => 'secret-password',
-            'membership_period' => 6,
+            'valid_until' => now()->addMonths(6)->toDateString(),
             'whatsapp' => '081234567890',
         ])->assertRedirect();
 

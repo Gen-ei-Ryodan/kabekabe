@@ -12,7 +12,7 @@ function CreateMemberDrawer({ onClose }) {
         phone: '',
         whatsapp: '',
         company: '',
-        membership_period: '12',
+        valid_until: '',
     });
 
     const submit = (e) => {
@@ -34,13 +34,9 @@ function CreateMemberDrawer({ onClose }) {
                     {form.errors.email && <p className="mt-1 text-xs text-ember">{form.errors.email}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="membership_period">Membership period</label>
-                    <select id="membership_period" className="input" value={form.data.membership_period} onChange={(e) => form.setData('membership_period', e.target.value)}>
-                        <option value="1">1 Month</option>
-                        <option value="3">3 Months</option>
-                        <option value="6">6 Months</option>
-                        <option value="12">12 Months</option>
-                    </select>
+                    <label className="label" htmlFor="valid_until">Valid until</label>
+                    <input id="valid_until" type="date" className="input" value={form.data.valid_until} onChange={(e) => form.setData('valid_until', e.target.value)} />
+                    {form.errors.valid_until && <p className="mt-1 text-xs text-ember">{form.errors.valid_until}</p>}
                 </div>
                 <div>
                     <label className="label" htmlFor="password">Password</label>

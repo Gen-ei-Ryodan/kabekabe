@@ -10,13 +10,15 @@ class MembershipService
 {
     public function ensureMembership(User $member): Membership
     {
-        if ($member->relationLoaded('membership') && $member->membership) {
-            return $member->membership;
-        }
+        $membership = $member->relationLoaded('membership')
+            ? $member->membership
+            : $member->membership()->first();
 
-        $membership = $member->membership()->create([
-            'status' => Membership::STATUS_INACTIVE,
-        ]);
+        if (! $membership) {
+            $membership = $member->membership()->create([
+                'status' => Membership::STATUS_INACTIVE,
+            ]);
+        }
 
         $member->setRelation('membership', $membership);
 
@@ -62,6 +64,24 @@ class MembershipService
     public function activate(User $member, int $months = 12): Membership
     {
         return $this->extend($member, $months, startNow: true);
+    }
+
+    /**
+     * Activate a member's membership until an explicit expiry date.
+     */
+    public function activateUntil(User $member, string|Carbon $expiresAt): Membership
+    {
+        $membership = $this->ensureMembership($member);
+
+        $membership->forceFill([
+            'status' => Membership::STATUS_ACTIVE,
+            'started_at' => Carbon::now(),
+            'expires_at' => Carbon::parse($expiresAt)->endOfDay(),
+        ])->save();
+
+        $member->setRelation('membership', $membership->fresh());
+
+        return $membership->fresh();
     }
 
     public function isActive(User $member): bool

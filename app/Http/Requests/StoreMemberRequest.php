@@ -21,7 +21,7 @@ class StoreMemberRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
             'company' => ['nullable', 'string', 'max:255'],
-            'membership_period' => ['required', 'integer', 'in:1,3,6,12'],
+            'valid_until' => ['required', 'date', 'after_or_equal:today'],
         ];
     }
 }

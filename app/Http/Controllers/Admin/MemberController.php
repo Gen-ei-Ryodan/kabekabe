@@ -3,16 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportRowsRequest;
 use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\UpdateMemberRequest;
 use App\Models\Payment;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\Import\ImportTemplateDownloader;
+use App\Services\Import\MemberImporter;
 use App\Services\MembershipService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MemberController extends Controller
 {
@@ -109,7 +113,7 @@ class MemberController extends Controller
             'company' => $validated['company'] ?? null,
         ]);
 
-        $this->memberships->activate($member, (int) $validated['membership_period']);
+        $this->memberships->activateUntil($member, $validated['valid_until']);
 
         return redirect()
             ->route('admin.members.index')
@@ -137,6 +141,32 @@ class MemberController extends Controller
         return Inertia::render('Admin/Members/Edit', [
             'member' => $this->memberPayload($member),
         ]);
+    }
+
+    public function importTemplate(ImportTemplateDownloader $templates): StreamedResponse
+    {
+        return $templates->download(
+            'members-import-template.xlsx',
+            ['Name', 'Email', 'Password', 'Phone', 'WhatsApp', 'Company', 'Valid Until'],
+            ['Budi Santoso', 'budi@example.com', '', '081234567890', '081234567890', 'PT Maju Jaya', now()->addMonths(6)->toDateString()],
+        );
+    }
+
+    public function import(ImportRowsRequest $request, MemberImporter $importer): RedirectResponse
+    {
+        $result = $importer->import($request->user(), $request->file('file')->getRealPath());
+
+        if ($result['imported'] === 0) {
+            return back()->with('error', 'Import failed. '.$result['errors'][0]);
+        }
+
+        $message = "{$result['imported']} member(s) imported.";
+
+        if ($result['failed'] > 0) {
+            $message .= " {$result['failed']} row(s) skipped. First error: {$result['errors'][0]}";
+        }
+
+        return back()->with('success', $message);
     }
 
     public function update(UpdateMemberRequest $request, User $member): RedirectResponse

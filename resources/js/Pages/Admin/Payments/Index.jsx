@@ -1,9 +1,11 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
 import PaymentDrawer from '@/Components/Admin/PaymentDrawer';
+import ImportDrawer from '@/Components/Admin/ImportDrawer';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 const STATUS_LABELS = {
@@ -15,6 +17,7 @@ const STATUS_LABELS = {
 
 export default function PaymentIndex({ payments, filters, drawer }) {
     const filter = useForm(filters);
+    const [importOpen, setImportOpen] = useState(false);
 
     const applyFilter = (e) => {
         e.preventDefault();
@@ -40,9 +43,12 @@ export default function PaymentIndex({ payments, filters, drawer }) {
                         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Payments</h1>
                         <p className="mt-2 text-sm text-slate">Review offline payments and approve them to extend membership.</p>
                     </div>
-                    <Link href={route('admin.payments.create')} className="btn-gold">
-                        Record Payment
-                    </Link>
+                    <div className="flex gap-2">
+                        <button onClick={() => setImportOpen(true)} className="btn-ghost">Import</button>
+                        <Link href={route('admin.payments.create')} className="btn-gold">
+                            Record Payment
+                        </Link>
+                    </div>
                 </header>
 
                 <div className="flex flex-wrap gap-2">
@@ -86,6 +92,16 @@ export default function PaymentIndex({ payments, filters, drawer }) {
             </div>
 
             <PaymentDrawer drawer={drawer} onClose={closeDrawer} />
+            {importOpen && (
+                <ImportDrawer
+                    title="Import Payments"
+                    subtitle="Bulk-record approved payments from a spreadsheet. Membership is extended automatically."
+                    columns={['Member Code*', 'Plan', 'Period Months', 'Amount', 'Paid At']}
+                    templateHref={route('admin.payments.import.template')}
+                    uploadRoute={route('admin.payments.import')}
+                    onClose={() => setImportOpen(false)}
+                />
+            )}
         </>
     );
 }

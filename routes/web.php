@@ -87,6 +87,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/members', [AdminMemberController::class, 'index'])->name('members.index');
         Route::get('/members/create', [AdminMemberController::class, 'create'])->name('members.create');
         Route::post('/members', [AdminMemberController::class, 'store'])->name('members.store');
+        Route::get('/members/import-template', [AdminMemberController::class, 'importTemplate'])->name('members.import.template');
+        Route::post('/members/import', [AdminMemberController::class, 'import'])->name('members.import');
         Route::get('/members/{member}', [AdminMemberController::class, 'show'])->name('members.show');
         Route::get('/members/{member}/edit', [AdminMemberController::class, 'edit'])->name('members.edit');
         Route::put('/members/{member}', [AdminMemberController::class, 'update'])->name('members.update');
@@ -111,6 +113,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/create', [AdminPaymentController::class, 'create'])->name('payments.create');
         Route::post('/payments', [AdminPaymentController::class, 'store'])->name('payments.store');
+        Route::get('/payments/import-template', [AdminPaymentController::class, 'importTemplate'])->name('payments.import.template');
+        Route::post('/payments/import', [AdminPaymentController::class, 'import'])->name('payments.import');
         Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
         Route::put('/payments/{payment}/approve', [AdminPaymentController::class, 'approve'])->name('payments.approve');
         Route::put('/payments/{payment}/reject', [AdminPaymentController::class, 'reject'])->name('payments.reject');

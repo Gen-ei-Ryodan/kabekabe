@@ -1,12 +1,15 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
 import MemberDrawer from '@/Components/Admin/MemberDrawer';
+import ImportDrawer from '@/Components/Admin/ImportDrawer';
 
 export default function MemberIndex({ members, filters, drawer }) {
     const filter = useForm(filters);
+    const [importOpen, setImportOpen] = useState(false);
 
     const applyFilter = (e) => {
         e.preventDefault();
@@ -44,7 +47,10 @@ export default function MemberIndex({ members, filters, drawer }) {
                         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Members</h1>
                         <p className="mt-2 text-sm text-slate">Manage members, status, and membership history.</p>
                     </div>
-                    <button onClick={openCreate} className="btn-gold">+ Add Member</button>
+                    <div className="flex gap-2">
+                        <button onClick={() => setImportOpen(true)} className="btn-ghost">Import</button>
+                        <button onClick={openCreate} className="btn-gold">+ Add Member</button>
+                    </div>
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
@@ -123,6 +129,16 @@ export default function MemberIndex({ members, filters, drawer }) {
             </div>
 
             <MemberDrawer drawer={drawer} onClose={closeDrawer} onEdit={() => openEdit(drawer?.member?.id)} />
+            {importOpen && (
+                <ImportDrawer
+                    title="Import Members"
+                    subtitle="Bulk-create members from a spreadsheet."
+                    columns={['Name*', 'Email*', 'Password', 'Phone', 'WhatsApp', 'Company', 'Valid Until*']}
+                    templateHref={route('admin.members.import.template')}
+                    uploadRoute={route('admin.members.import')}
+                    onClose={() => setImportOpen(false)}
+                />
+            )}
         </>
     );
 }

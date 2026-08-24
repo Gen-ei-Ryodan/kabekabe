@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportRowsRequest;
 use App\Http\Requests\ReviewPaymentRequest;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\Import\ImportTemplateDownloader;
+use App\Services\Import\PaymentImporter;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PaymentController extends Controller
 {
@@ -105,6 +109,32 @@ class PaymentController extends Controller
         return redirect()
             ->route('admin.payments.index')
             ->with('success', 'Payment recorded and membership updated.');
+    }
+
+    public function importTemplate(ImportTemplateDownloader $templates): StreamedResponse
+    {
+        return $templates->download(
+            'payments-import-template.xlsx',
+            ['Member Code', 'Plan', 'Period Months', 'Amount', 'Paid At'],
+            ['MMB-00001', '', 12, 500000, now()->toDateString()],
+        );
+    }
+
+    public function import(ImportRowsRequest $request, PaymentImporter $importer): RedirectResponse
+    {
+        $result = $importer->import($request->user(), $request->file('file')->getRealPath());
+
+        if ($result['imported'] === 0) {
+            return back()->with('error', 'Import failed. '.$result['errors'][0]);
+        }
+
+        $message = "{$result['imported']} payment(s) imported.";
+
+        if ($result['failed'] > 0) {
+            $message .= " {$result['failed']} row(s) skipped. First error: {$result['errors'][0]}";
+        }
+
+        return back()->with('success', $message);
     }
 
     public function show(Payment $payment): Response
