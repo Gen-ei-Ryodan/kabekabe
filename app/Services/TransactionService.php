@@ -21,7 +21,7 @@ class TransactionService
      *
      * @param  array{member: User, promo: Promo|null, total: int, note: ?string, proof: mixed}  $payload
      */
-    public function record(Partner $partner, User $member, ?Promo $promo, int $total, ?string $note = null, mixed $proofPath = null): Transaction
+    public function record(Partner $partner, User $member, ?Promo $promo, int $total, ?string $note = null, mixed $proofPath = null, ?string $transactionNumber = null): Transaction
     {
         if (! $this->memberships->isActive($member)) {
             throw new \DomainException('Member is inactive and cannot use benefits.');
@@ -39,9 +39,9 @@ class TransactionService
             $discountAmount = $promo->discountAmountFor($total);
         }
 
-        $transaction = DB::transaction(function () use ($partner, $member, $promo, $total, $discountPercent, $discountAmount, $note, $proofPath) {
+        $transaction = DB::transaction(function () use ($partner, $member, $promo, $total, $discountPercent, $discountAmount, $note, $proofPath, $transactionNumber) {
             return $partner->transactions()->create([
-                'transaction_number' => $this->nextTransactionNumber(),
+                'transaction_number' => $transactionNumber ?: $this->nextTransactionNumber(),
                 'member_id' => $member->id,
                 'promo_id' => $promo?->id,
                 'total_amount' => $total,

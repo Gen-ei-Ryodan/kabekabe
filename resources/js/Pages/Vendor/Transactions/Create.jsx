@@ -5,6 +5,7 @@ export default function TransactionCreate({ promos }) {
     const { errors } = usePage().props;
 
     const form = useForm({
+        transaction_number: '',
         member_code: new URLSearchParams(window.location.search).get('member_code') || '',
         promo_id: '',
         total: '',
@@ -39,6 +40,12 @@ export default function TransactionCreate({ promos }) {
                 </header>
 
                 <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
+                    <div>
+                        <label className="label" htmlFor="transaction_number">Transaction / receipt number (optional)</label>
+                        <input id="transaction_number" type="text" className="input font-mono" value={form.data.transaction_number} onChange={(e) => form.setData('transaction_number', e.target.value)} placeholder="POS receipt number — auto-generated if empty" />
+                        {errors.transaction_number && <p className="mt-1 text-xs text-ember">{errors.transaction_number}</p>}
+                    </div>
+
                     <div>
                         <label className="label" htmlFor="member_code">Member ID</label>
                         <input id="member_code" type="text" className="input font-mono" value={form.data.member_code} onChange={(e) => form.setData('member_code', e.target.value)} placeholder="MMB-00001" />

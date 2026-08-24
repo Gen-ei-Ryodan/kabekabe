@@ -16,6 +16,8 @@ class Transaction extends Model
 {
     use HasFactory;
 
+    protected $appends = ['proof_url'];
+
     protected function casts(): array
     {
         return [
@@ -45,6 +47,11 @@ class Transaction extends Model
         }
 
         return '/storage/' . $this->proof_path;
+    }
+
+    public function getProofUrlAttribute(): ?string
+    {
+        return $this->proofUrl();
     }
 
     public function scopeForVendor(Builder $query, int $partnerId): Builder

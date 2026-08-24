@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Partner;
 use App\Models\Promo;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -42,6 +43,47 @@ class VendorFlowTest extends TestCase
                 ->component('Vendor/Dashboard')
                 ->where('partner.id', $partner->id)
                 ->has('stats')
+            );
+    }
+
+    public function test_vendor_dashboard_summary_counts_only_active_members_and_own_transactions(): void
+    {
+        [$partner, $vendor] = $this->vendorWithPartner();
+
+        $this->activeMember();
+        $this->activeMember();
+
+        $inactive = User::factory()->member()->create();
+        $inactive->membership()->create([
+            'status' => 'inactive',
+            'started_at' => now()->subYear(),
+            'expires_at' => now()->subMonth(),
+        ]);
+
+        Transaction::factory()->create([
+            'partner_id' => $partner->id,
+            'total_amount' => 500_000,
+            'discount_amount' => 50_000,
+            'net_amount' => 450_000,
+        ]);
+        Transaction::factory()->create([
+            'partner_id' => $partner->id,
+            'total_amount' => 200_000,
+            'discount_amount' => 0,
+            'net_amount' => 200_000,
+        ]);
+
+        [$otherPartner] = $this->vendorWithPartner();
+        Transaction::factory()->create(['partner_id' => $otherPartner->id]);
+
+        $this->actingAs($vendor)->get(route('vendor.dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('stats.active_members', 2)
+                ->where('stats.total_transactions', 2)
+                ->where('stats.total_sales', 700_000)
+                ->where('stats.total_discount', 50_000)
+                ->where('stats.net_sales', 650_000)
             );
     }
 
@@ -186,6 +228,65 @@ class VendorFlowTest extends TestCase
             'discount_amount' => 20000,
             'net_amount' => 180000,
         ]);
+    }
+
+    public function test_vendor_report_contains_brief_fields_and_own_transactions_only(): void
+    {
+        [$partner, $vendor] = $this->vendorWithPartner();
+        $member = $this->activeMember();
+
+        Transaction::factory()->create([
+            'partner_id' => $partner->id,
+            'member_id' => $member->id,
+            'total_amount' => 500_000,
+            'discount_percent' => 10,
+            'discount_amount' => 50_000,
+            'net_amount' => 450_000,
+            'note' => 'Pembelian Agustus',
+            'transacted_at' => now(),
+        ]);
+
+        [$otherPartner] = $this->vendorWithPartner();
+        Transaction::factory()->create(['partner_id' => $otherPartner->id]);
+
+        $this->actingAs($vendor)->get(route('vendor.reports.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('transactions', 1)
+                ->where('transactions.0.transaction_number', fn ($value) => is_string($value))
+                ->where('transactions.0.total_amount', 500_000)
+                ->where('transactions.0.discount_percent', 10)
+                ->where('transactions.0.discount_amount', 50_000)
+                ->where('transactions.0.net_amount', 450_000)
+                ->where('transactions.0.note', 'Pembelian Agustus')
+                ->where('transactions.0.proof_url', null)
+                ->where('transactions.0.member.member_code', $member->member_code)
+            );
+    }
+
+    public function test_transaction_can_use_custom_receipt_number(): void
+    {
+        [$partner, $vendor] = $this->vendorWithPartner();
+        $member = $this->activeMember();
+
+        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+            'transaction_number' => 'POS-88123',
+            'member_code' => $member->member_code,
+            'total' => 100000,
+        ])->assertRedirect(route('vendor.transactions.index'));
+
+        $this->assertDatabaseHas('transactions', [
+            'partner_id' => $partner->id,
+            'transaction_number' => 'POS-88123',
+        ]);
+
+        $other = $this->activeMember();
+
+        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+            'transaction_number' => 'POS-88123',
+            'member_code' => $other->member_code,
+            'total' => 100000,
+        ])->assertSessionHasErrors('transaction_number');
     }
 
     public function test_transaction_with_foreign_promo_fails(): void

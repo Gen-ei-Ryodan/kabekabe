@@ -92,6 +92,7 @@ class TransactionController extends Controller
                 $request->integer('total'),
                 $request->input('note'),
                 $proofPath,
+                $request->input('transaction_number'),
             );
         } catch (\DomainException $e) {
             if ($proofPath) {

@@ -8,9 +8,24 @@ use App\Models\Promo;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ReportingService
 {
+    public static function monthExpr(): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', transacted_at)"
+            : "DATE_FORMAT(transacted_at, '%Y-%m')";
+    }
+
+    public static function dayExpr(): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m-%d', transacted_at)"
+            : "DATE_FORMAT(transacted_at, '%Y-%m-%d')";
+    }
+
     public function adminDashboard(): array
     {
         $totalMembers = User::query()->where('role', User::ROLE_MEMBER)->count();
@@ -62,7 +77,7 @@ class ReportingService
             ->count();
 
         $transactionsByMonth = $partner->transactions()
-            ->selectRaw("strftime('%Y-%m', transacted_at) as month, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net")
+            ->selectRaw(self::monthExpr() . " as month, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net")
             ->groupBy('month')
             ->orderBy('month', 'desc')
             ->limit(6)

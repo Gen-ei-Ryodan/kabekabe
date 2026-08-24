@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import VendorLayout from '@/Layouts/VendorLayout';
+import StatCard from '@/Components/StatCard';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 export default function ReportIndex({ summary, transactions, by_day, filters }) {
@@ -36,22 +37,10 @@ export default function ReportIndex({ summary, transactions, by_day, filters }) 
                 </header>
 
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="rounded-2xl bg-ink p-5 text-paper shadow-lift">
-                        <p className="font-mono text-[11px] uppercase tracking-widest opacity-70">Total Transactions</p>
-                        <p className="mt-2 font-display text-2xl font-bold">{summary.total_transactions}</p>
-                    </div>
-                    <div className="card-surface p-5">
-                        <p className="eyebrow">Total Purchase</p>
-                        <p className="mt-2 font-display text-2xl font-bold">{formatRupiah(summary.total_amount)}</p>
-                    </div>
-                    <div className="card-surface p-5">
-                        <p className="eyebrow">Total Discount</p>
-                        <p className="mt-2 font-display text-2xl font-bold text-ember">{formatRupiah(summary.discount_amount)}</p>
-                    </div>
-                    <div className="card-surface border-gold/30 bg-gold/10 p-5">
-                        <p className="eyebrow">Net Sales</p>
-                        <p className="mt-2 font-display text-2xl font-bold text-gold-deep">{formatRupiah(summary.net_amount)}</p>
-                    </div>
+                    <StatCard label="Total Transactions" value={summary.total_transactions} tone="ink" />
+                    <StatCard label="Total Purchase" value={formatRupiah(summary.total_amount)} tone="slate" />
+                    <StatCard label="Total Discount" value={formatRupiah(summary.discount_amount)} tone="ember" />
+                    <StatCard label="Net Sales" value={formatRupiah(summary.net_amount)} tone="gold" />
                 </section>
 
                 <div className="grid gap-8 lg:grid-cols-2">
@@ -83,17 +72,31 @@ export default function ReportIndex({ summary, transactions, by_day, filters }) 
                                     <th className="table-head px-2 py-2 text-right">Total</th>
                                     <th className="table-head px-2 py-2 text-right">Discount</th>
                                     <th className="table-head px-2 py-2 text-right">Net</th>
+                                    <th className="table-head px-2 py-2">Note</th>
+                                    <th className="table-head px-2 py-2">Receipt</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-ink/5">
                                 {transactions.map((t) => (
                                     <tr key={t.id}>
-                                        <td className="px-2 py-2 text-slate">{formatDate(t.transacted_at)}</td>
+                                        <td className="px-2 py-2 whitespace-nowrap text-slate">{formatDate(t.transacted_at)}</td>
                                         <td className="px-2 py-2 font-mono text-xs">{t.transaction_number}</td>
-                                        <td className="px-2 py-2">{t.member?.name}</td>
-                                        <td className="px-2 py-2 text-right">{formatRupiah(t.total_amount)}</td>
-                                        <td className="px-2 py-2 text-right text-sage">-{formatRupiah(t.discount_amount)}</td>
-                                        <td className="px-2 py-2 text-right font-bold">{formatRupiah(t.net_amount)}</td>
+                                        <td className="px-2 py-2">
+                                            <p>{t.member?.name}</p>
+                                            <p className="font-mono text-[11px] text-slate">{t.member?.member_code}</p>
+                                        </td>
+                                        <td className="px-2 py-2 text-right whitespace-nowrap">{formatRupiah(t.total_amount)}</td>
+                                        <td className="px-2 py-2 text-right text-sage">
+                                            -{formatRupiah(t.discount_amount)}
+                                            {t.discount_percent != null && <span className="ml-1 text-[11px]">({Number(t.discount_percent)}%)</span>}
+                                        </td>
+                                        <td className="px-2 py-2 text-right font-bold whitespace-nowrap">{formatRupiah(t.net_amount)}</td>
+                                        <td className="max-w-[160px] truncate px-2 py-2 text-slate" title={t.note}>{t.note || '-'}</td>
+                                        <td className="px-2 py-2">
+                                            {t.proof_url ? (
+                                                <a href={t.proof_url} target="_blank" rel="noreferrer" className="text-gold-deep underline underline-offset-2">View</a>
+                                            ) : '-'}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -6,12 +6,13 @@ export default function StatCard({ label, value, sub, tone = 'ink', icon = null 
         gold: 'from-gold to-gold-light text-ink',
         sage: 'from-sage to-sage-deep text-white',
         ember: 'from-ember to-ember-deep text-white',
+        slate: 'from-slate to-ink-mute text-white',
         paper: 'border border-ink/10 bg-white/80 text-ink',
     };
 
     return (
         <Reveal className="h-full">
-            <div className={`relative overflow-hidden rounded-2xl p-5 shadow-lift ${tones[tone]}`}>
+            <div className={`relative flex h-full flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br p-5 shadow-lift ${tones[tone]}`}>
                 {icon && <div className="absolute -right-3 -top-3 opacity-10">{icon}</div>}
                 <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] opacity-70">{label}</div>
                 <div className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">{value}</div>

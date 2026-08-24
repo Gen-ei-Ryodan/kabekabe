@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Services\ReportingService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,7 +42,7 @@ class ReportController extends Controller
             ->where('partner_id', $partner->id)
             ->whereDate('transacted_at', '>=', $from)
             ->whereDate('transacted_at', '<=', $to)
-            ->selectRaw("strftime('%Y-%m-%d', transacted_at) as day, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net")
+            ->selectRaw(ReportingService::dayExpr() . " as day, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net")
             ->groupBy('day')
             ->orderBy('day')
             ->get();

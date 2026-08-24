@@ -5,6 +5,8 @@ import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah, formatMonth } from '@/Utils/format';
 
 export default function VendorDashboard({ partner, stats, recent_transactions }) {
+    const numberFormat = (value) => formatRupiah(value ?? 0, false);
+
     return (
         <>
             <Head title="Dashboard" />
@@ -16,10 +18,10 @@ export default function VendorDashboard({ partner, stats, recent_transactions })
                     <p className="mt-2 text-sm text-slate">Summary of benefit activity and transactions at your outlet.</p>
                 </header>
 
-                <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    <StatCard label="Active Members" value={stats.active_members} tone="ink" />
-                    <StatCard label="Total Transactions" value={stats.total_transactions} tone="paper" />
-                    <StatCard label="Total Sales" value={formatRupiah(stats.total_sales)} tone="paper" />
+                <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    <StatCard label="Active Members" value={numberFormat(stats.active_members)} tone="ink" />
+                    <StatCard label="Total Transactions" value={numberFormat(stats.total_transactions)} tone="slate" />
+                    <StatCard label="Total Sales" value={formatRupiah(stats.total_sales)} tone="sage" />
                     <StatCard label="Total Discount" value={formatRupiah(stats.total_discount)} tone="ember" />
                     <StatCard label="Net Sales" value={formatRupiah(stats.net_sales)} tone="gold" />
                 </section>
@@ -103,7 +105,7 @@ export default function VendorDashboard({ partner, stats, recent_transactions })
                     </Reveal>
                 </div>
 
-                <p className="text-xs text-slate-soft">All times shown in {formatDate(new Date().toISOString())}.</p>
+                <p className="text-xs text-slate-soft">Today, {formatDate(new Date().toISOString())}.</p>
             </div>
         </>
     );

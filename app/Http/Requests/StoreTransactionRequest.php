@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTransactionRequest extends FormRequest
 {
@@ -14,6 +15,7 @@ class StoreTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'transaction_number' => ['nullable', 'string', 'max:64', Rule::unique('transactions', 'transaction_number')],
             'member_code' => ['required', 'string', 'max:32', 'exists:users,member_code'],
             'promo_id' => ['nullable', 'integer', 'exists:promos,id'],
             'total' => ['required', 'integer', 'min:1'],
