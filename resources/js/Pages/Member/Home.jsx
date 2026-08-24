@@ -99,9 +99,19 @@ function PromoBanner({ promo }) {
 }
 
 function AgendaBanner({ agenda }) {
-    const parts = String(agenda.event_date || '').trim().split(/\s+/);
-    const day = parts[0] || '';
-    const rest = parts.slice(1).join(' ') || '';
+    const raw = String(agenda.event_date || '').trim();
+    const parsedDate = raw ? new Date(raw) : null;
+    let day = '';
+    let rest = '';
+
+    if (parsedDate && !Number.isNaN(parsedDate.getTime())) {
+        day = String(parsedDate.getDate()).padStart(2, '0');
+        rest = new Intl.DateTimeFormat('id-ID', { month: 'short', year: 'numeric' }).format(parsedDate);
+    } else {
+        const parts = raw.split(/\s+/);
+        day = parts[0] || '';
+        rest = parts.slice(1).join(' ') || '';
+    }
 
     return (
         <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift">

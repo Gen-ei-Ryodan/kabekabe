@@ -7,43 +7,22 @@ const NAV = [
     { name: 'Home', route: 'member.home' },
     { name: 'History', route: 'member.history.index' },
     { name: 'Partner', route: 'member.partners.index' },
+    { name: 'Notification', route: 'member.notifications.index', badge: true },
+    { name: 'Profile', route: 'member.account.edit' },
 ];
 
-function BellIcon({ className = 'h-5 w-5' }) {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className={className}>
-            <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
-        </svg>
-    );
-}
-
 export default function MemberLayout({ children }) {
-    const { auth } = usePage().props;
     const [mobileOpen, setMobileOpen] = useState(false);
-
-    const user = auth?.user;
-    const unread = user?.notifications_unread ?? 0;
+    const unread = usePage().props.auth?.user?.notifications_unread ?? 0;
 
     const logout = () => router.post(route('logout'));
 
     const UnreadBadge = ({ value }) =>
         value > 0 ? (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ember px-1 font-mono text-[10px] font-bold text-white">
+            <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-ember px-1 font-mono text-[10px] font-bold leading-none text-white">
                 {value > 9 ? '9+' : value}
             </span>
         ) : null;
-
-    const Avatar = ({ size = 'h-10 w-10', className = '' }) => (
-        <span
-            className={`flex items-center justify-center overflow-hidden rounded-full border border-gold/40 bg-white/70 ${size} ${className}`}
-        >
-            {user?.avatar_url ? (
-                <img src={user.avatar_url} alt={user?.name || 'Member'} className="h-full w-full object-cover" />
-            ) : (
-                <span className="font-display text-sm font-bold text-ink">{user?.name?.charAt(0)}</span>
-            )}
-        </span>
-    );
 
     return (
         <div className="min-h-screen">
@@ -63,28 +42,12 @@ export default function MemberLayout({ children }) {
                                 className="rounded-full px-4 py-2 text-sm font-medium text-slate transition-colors hover:bg-ink/5 hover:text-ink"
                             >
                                 {item.name}
+                                {item.badge && <UnreadBadge value={unread} />}
                             </Link>
                         ))}
                     </nav>
 
                     <div className="flex items-center gap-3">
-                        <Link
-                            href={route('member.notifications.index')}
-                            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-white/70 transition hover:bg-white"
-                            aria-label="Notifications"
-                        >
-                            <BellIcon />
-                            <UnreadBadge value={unread} />
-                        </Link>
-
-                        <Link
-                            href={route('member.account.edit')}
-                            className="relative flex h-10 w-10 items-center justify-center"
-                            aria-label="Account"
-                        >
-                            <Avatar />
-                        </Link>
-
                         <button
                             onClick={logout}
                             className="hidden rounded-full px-3 py-2 text-sm font-medium text-slate hover:bg-ember/10 hover:text-ember md:block"
@@ -111,33 +74,13 @@ export default function MemberLayout({ children }) {
                                 <Link
                                     key={item.route}
                                     href={route(item.route)}
-                                    className="rounded-xl px-4 py-3 text-sm font-medium text-ink hover:bg-ink/5"
+                                    className="flex items-center rounded-xl px-4 py-3 text-sm font-medium text-ink hover:bg-ink/5"
                                     onClick={() => setMobileOpen(false)}
                                 >
                                     {item.name}
+                                    {item.badge && <UnreadBadge value={unread} />}
                                 </Link>
                             ))}
-
-                            <Link
-                                href={route('member.notifications.index')}
-                                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-ink hover:bg-ink/5"
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                <span className="relative flex h-8 w-8 items-center justify-center rounded-full border border-ink/10 bg-white/70">
-                                    <BellIcon className="h-4 w-4" />
-                                    <UnreadBadge value={unread} />
-                                </span>
-                                Notifications
-                            </Link>
-
-                            <Link
-                                href={route('member.account.edit')}
-                                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-ink hover:bg-ink/5"
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                <Avatar size="h-8 w-8" />
-                                Account
-                            </Link>
 
                             <button
                                 onClick={logout}

@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
+import { formatDate } from '@/Utils/format';
 
 function resolveTargetId(banner, promos, agendas) {
     if (!banner) return '';
@@ -54,7 +55,7 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
                 ? `${item.title} — ${item.partner_name}`
                 : item.title
             : item.event_date
-              ? `${item.title} · ${item.event_date}`
+              ? `${item.title} · ${formatDate(item.event_date)}`
               : item.title;
 
     return (
