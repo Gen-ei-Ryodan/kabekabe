@@ -3,9 +3,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="SENTRA — Platform Digital Membership & Community Management.">
+        <meta name="description" content="KBKB — Platform Digital Membership & Community Management.">
 
-        <title inertia>{{ config('app.name', 'SENTRA') }}</title>
+        <title inertia>{{ config('app.name', 'KBKB') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>

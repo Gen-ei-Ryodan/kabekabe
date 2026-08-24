@@ -109,10 +109,10 @@ export default function MemberCard({ member }) {
                 <div className="relative flex items-start justify-between p-5 sm:p-6">
                     <div className="card-line flex items-center gap-2">
                         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gold">
-                            <span className="font-display text-sm font-bold text-ink">S</span>
+                            <span className="font-display text-sm font-bold text-ink">K</span>
                         </span>
                         <span className="font-display text-sm font-bold uppercase tracking-[0.2em] text-paper">
-                            Sentra
+                            KBKB
                         </span>
                     </div>
                     <span className="card-line font-mono text-[10px] uppercase tracking-[0.3em] text-paper/60">

@@ -9,7 +9,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-let appName = 'SENTRA';
+let appName = 'KBKB';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -19,7 +19,7 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.jsx'),
         ),
     setup({ el, App, props }) {
-        appName = props.initialPage.props?.appName || 'SENTRA';
+        appName = props.initialPage.props?.appName || 'KBKB';
 
         const root = createRoot(el);
 

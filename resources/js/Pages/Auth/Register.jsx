@@ -26,7 +26,7 @@ export default function Register() {
             <Head title="Register" />
 
             <header className="mb-6">
-                <h1 className="font-display text-2xl font-bold tracking-tight">Join SENTRA</h1>
+                <h1 className="font-display text-2xl font-bold tracking-tight">Join KBKB</h1>
                 <p className="mt-1 text-sm text-slate">Get a digital member card and access benefits from community partners.</p>
             </header>
 
