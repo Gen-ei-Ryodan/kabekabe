@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+        @apply bg-paper text-ink;
+        background-image: radial-gradient(rgba(11, 21, 38, 0.035) 1px, transparent 1px);
+        background-size: 22px 22px;
+    }
+
+    h1, h2, h3, h4 {
+        @apply font-display tracking-tight;
+    }
+}
+
+@layer components {
+    .eyebrow {
+        @apply font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-slate;
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:opacity-50 disabled:pointer-events-none;
+    }
+
+    .btn-gold {
+        @apply btn bg-gold text-ink hover:bg-gold-light shadow-lift;
+    }
+
+    .btn-ink {
+        @apply btn bg-ink text-paper hover:bg-ink-soft shadow-lift;
+    }
+
+    .btn-ghost {
+        @apply btn border border-ink/15 bg-transparent text-ink hover:border-ink/30 hover:bg-ink/5;
+    }
+
+    .btn-danger {
+        @apply btn bg-ember text-white hover:bg-ember-deep shadow-lift;
+    }
+
+    .card-surface {
+        @apply rounded-2xl border border-ink/10 bg-white/80 backdrop-blur-sm shadow-lift;
+    }
+
+    .input {
+        @apply w-full rounded-xl border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-slate-soft focus:border-gold focus:ring-2 focus:ring-gold/30;
+    }
+
+    .label {
+        @apply mb-1.5 block font-display text-[13px] font-semibold text-ink;
+    }
+
+    .chip {
+        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide;
+    }
+
+    .table-head {
+        @apply font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-slate;
+    }
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+
+    .text-pretty {
+        text-wrap: pretty;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

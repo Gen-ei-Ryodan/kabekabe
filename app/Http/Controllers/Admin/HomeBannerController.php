@@ -1,0 +1,203 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\CommunityInfo;
+use App\Models\HomeBanner;
+use App\Models\Promo;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class HomeBannerController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $banners = HomeBanner::query()
+            ->with(['promo.partner:id,name', 'agenda'])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (HomeBanner $banner) => [
+                'id' => $banner->id,
+                'type' => $banner->type,
+                'label' => $banner->type === HomeBanner::TYPE_PROMO ? 'Promo' : 'Agenda',
+                'target_title' => $banner->type === HomeBanner::TYPE_PROMO
+                    ? $banner->promo?->title
+                    : $banner->agenda?->title,
+                'promo_id' => $banner->promo_id,
+                'agenda_id' => $banner->agenda_id,
+                'sort_order' => $banner->sort_order,
+                'is_active' => $banner->is_active,
+                'promo' => $banner->promo
+                    ? ['id' => $banner->promo->id, 'title' => $banner->promo->title, 'partner' => ['name' => $banner->promo->partner?->name]]
+                    : null,
+                'agenda' => $banner->agenda
+                    ? ['id' => $banner->agenda->id, 'title' => $banner->agenda->title, 'event_date' => $banner->agenda->event_date?->toISOString()]
+                    : null,
+            ])
+            ->all();
+
+        $drawer = $this->drawerPayload($request);
+
+        return Inertia::render('Admin/Banners/Index', [
+            'banners' => $banners,
+            'promos' => $this->promoSelect(),
+            'agendas' => $this->agendaSelect(),
+            'drawer' => $drawer,
+        ]);
+    }
+
+    private function drawerPayload(Request $request): ?array
+    {
+        $mode = $request->string('drawer')->toString();
+
+        if (! in_array($mode, ['create', 'edit'], true)) {
+            return null;
+        }
+
+        $drawer = ['mode' => $mode];
+
+        if ($mode === 'edit') {
+            $banner = HomeBanner::query()
+                ->with(['promo:id,title,partner_id', 'agenda:id,title'])
+                ->find($request->integer('id'));
+
+            if ($banner) {
+                $drawer['banner'] = $banner;
+            }
+        }
+
+        return $drawer;
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('Admin/Banners/Index', [
+            'drawer' => ['mode' => 'create'],
+            'promos' => $this->promoSelect(),
+            'agendas' => $this->agendaSelect(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $this->validateBanner($request);
+
+        HomeBanner::create($validated);
+
+        return redirect()
+            ->route('admin.banners.index')
+            ->with('success', 'Home banner created successfully.');
+    }
+
+    public function edit(HomeBanner $banner): Response
+    {
+        return Inertia::render('Admin/Banners/Index', [
+            'drawer' => [
+                'mode' => 'edit',
+                'banner' => $banner->load(['promo:id,title,partner_id', 'agenda:id,title']),
+            ],
+            'promos' => $this->promoSelect(),
+            'agendas' => $this->agendaSelect(),
+        ]);
+    }
+
+    public function update(Request $request, HomeBanner $banner): RedirectResponse
+    {
+        $validated = $this->validateBanner($request, $banner);
+
+        $banner->update($validated);
+
+        return redirect()
+            ->route('admin.banners.index')
+            ->with('success', 'Home banner updated successfully.');
+    }
+
+    public function toggle(Request $request, HomeBanner $banner): RedirectResponse
+    {
+        $activate = $request->boolean('is_active');
+
+        if ($activate && ! $banner->is_active) {
+            $active = HomeBanner::query()
+                ->where('is_active', true)
+                ->where('id', '!=', $banner->id)
+                ->count();
+
+            if ($active >= 3) {
+                throw ValidationException::withMessages([
+                    'is_active' => 'Maximum of 3 active banners.',
+                ]);
+            }
+        }
+
+        $banner->update(['is_active' => $activate]);
+
+        return back()->with('success', $activate ? 'Home banner activated.' : 'Home banner deactivated.');
+    }
+
+    public function destroy(HomeBanner $banner): RedirectResponse
+    {
+        $banner->delete();
+
+        return redirect()
+            ->route('admin.banners.index')
+            ->with('success', 'Home banner deleted.');
+    }
+
+    private function validateBanner(Request $request, ?HomeBanner $banner = null): array
+    {
+        $validated = $request->validate([
+            'type' => ['required', 'in:promo,agenda'],
+            'promo_id' => ['nullable', 'integer', 'required_if:type,promo', Rule::exists('promos', 'id')],
+            'agenda_id' => ['nullable', 'integer', 'required_if:type,agenda', Rule::exists('community_infos', 'id')->where('is_published', true)],
+            'sort_order' => ['required', 'integer', 'min:1'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        // Keep only the foreign key matching the banner type.
+        $validated['promo_id'] = $validated['type'] === HomeBanner::TYPE_PROMO ? ($validated['promo_id'] ?? null) : null;
+        $validated['agenda_id'] = $validated['type'] === HomeBanner::TYPE_AGENDA ? ($validated['agenda_id'] ?? null) : null;
+
+        if ($request->boolean('is_active')) {
+            $active = HomeBanner::query()->where('is_active', true);
+
+            if ($banner !== null) {
+                $active->where('id', '!=', $banner->id);
+            }
+
+            if ($active->count() >= 3) {
+                throw ValidationException::withMessages([
+                    'is_active' => 'Maximum of 3 active banners.',
+                ]);
+            }
+        }
+
+        return $validated;
+    }
+
+    private function promoSelect(): array
+    {
+        return Promo::query()
+            ->visibleToMembers()
+            ->get(['id', 'title', 'partner_id'])
+            ->map(fn (Promo $promo) => [
+                'id' => $promo->id,
+                'title' => $promo->title,
+                'partner' => $promo->partner?->name,
+            ])
+            ->all();
+    }
+
+    private function agendaSelect(): array
+    {
+        return CommunityInfo::query()
+            ->published()
+            ->orderByDesc('event_date')
+            ->get(['id', 'title', 'event_date', 'type'])
+            ->all();
+    }
+}
