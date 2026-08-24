@@ -6,41 +6,19 @@ import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
 
 function Portrait({ member }) {
-    const initial = (member?.name || 'M').charAt(0).toUpperCase();
-
     return (
-        <div className="relative w-36 shrink-0 sm:w-44">
-            <div
-                aria-hidden="true"
-                className="absolute -left-3 -top-3 h-full w-full rounded-2xl border border-gold/30 bg-gold/10"
-            />
-            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-ink shadow-card">
-                {member?.avatar_url ? (
-                    <img src={member.avatar_url} alt={member.name} className="h-full w-full object-cover" />
-                ) : (
-                    <div className="relative flex h-full w-full flex-col items-center justify-center gap-4 bg-gradient-to-br from-ink via-ink-soft to-ink">
-                        <div
-                            className="pointer-events-none absolute inset-0 opacity-[0.15]"
-                            style={{
-                                backgroundImage:
-                                    'radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)',
-                                backgroundSize: '16px 16px',
-                            }}
-                        />
-                        <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gold/20 blur-3xl" />
-                        <span className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-gold/60 bg-ink-mute/40 font-display text-5xl font-bold text-gold-light">
-                            {initial}
-                        </span>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-paper/50">Member</p>
-                    </div>
-                )}
-
-                <div className="pointer-events-none absolute inset-3 rounded-xl border border-paper/20" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent p-4 pt-12">
-                    <p className="truncate font-display text-sm font-bold text-paper">{member?.name}</p>
-                    <p className="mt-0.5 font-mono text-[10px] tracking-widest text-gold-light">{member?.member_code}</p>
+        <div className="w-36 shrink-0 sm:w-44">
+            {member?.avatar_url ? (
+                <img
+                    src={member.avatar_url}
+                    alt={member.name}
+                    className="aspect-[3/4] w-full rounded-2xl object-cover shadow-card"
+                />
+            ) : (
+                <div className="flex aspect-[3/4] w-full items-center justify-center rounded-2xl bg-ink-mute/30 font-display text-5xl font-bold text-gold-deep">
+                    {(member?.name || 'M').charAt(0).toUpperCase()}
                 </div>
-            </div>
+            )}
         </div>
     );
 }
