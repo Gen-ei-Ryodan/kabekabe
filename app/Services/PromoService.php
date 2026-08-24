@@ -27,7 +27,7 @@ class PromoService
             'New Promo Pending Review',
             "Promo \"{$promo->title}\" from {$promo->partner->name} is awaiting approval.",
             'promo',
-            route('admin.promos.index', ['status' => 'pending']),
+            '/admin/promos?status=pending',
         );
 
         return $promo->fresh();
@@ -46,7 +46,7 @@ class PromoService
             'New Promo Available',
             "Promo \"{$promo->title}\" from {$promo->partner->name} is now available to active members.",
             'promo',
-            route('member.promos.show', $promo),
+            "/member/promos/{$promo->id}",
         );
 
         return $promo->fresh();
@@ -66,7 +66,7 @@ class PromoService
             'Promo Rejected',
             "Promo \"{$promo->title}\" was rejected. Reason: {$reason}",
             'promo',
-            route('vendor.promos.edit', $promo),
+            "/vendor/promos/{$promo->id}/edit",
         );
 
         return $promo->fresh();

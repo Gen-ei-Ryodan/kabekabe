@@ -61,7 +61,7 @@ class TransactionService
                 . ($discountAmount > 0 ? 'Rp' . number_format($discountAmount, 0, ',', '.') : 'Rp0')
                 . '.',
             'transaction',
-            route('member.history.index'),
+            '/member/history',
         );
 
         return $transaction->fresh(['partner', 'member']);

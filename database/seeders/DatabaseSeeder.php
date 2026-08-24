@@ -332,11 +332,11 @@ class DatabaseSeeder extends Seeder
     private function seedNotifications(User ...$members): void
     {
         $templates = [
-            ['title' => 'Selamat Datang di Sentra', 'body' => 'Kartu digital kamu sudah aktif. Tunjukkan kartu saat bertransaksi di partner untuk menikmati benefit.', 'type' => 'system', 'days' => 20],
-            ['title' => 'Membership Diperpanjang', 'body' => 'Membership kamu berhasil diperpanjang. Terima kasih sudah menjadi bagian dari komunitas.', 'type' => 'membership', 'days' => 15],
-            ['title' => 'Promo Baru Tersedia', 'body' => 'KFC memberikan diskon 10% untuk pembelian minimal Rp1.000.000. Buruan manfaatkan!', 'type' => 'promo', 'days' => 10],
-            ['title' => 'Info Kegiatan Komunitas', 'body' => 'Jangan lewatkan Sentra Community Gathering 2026 yang akan datang.', 'type' => 'community', 'days' => 5],
-            ['title' => 'Promo Akan Berakhir', 'body' => 'Promo diskon 10% KFC akan berakhir dalam 3 hari.', 'type' => 'promo', 'days' => 1],
+            ['title' => 'Selamat Datang di Sentra', 'body' => 'Kartu digital kamu sudah aktif. Tunjukkan kartu saat bertransaksi di partner untuk menikmati benefit.', 'type' => 'system', 'days' => 20, 'action_url' => '/member/home'],
+            ['title' => 'Membership Diperpanjang', 'body' => 'Membership kamu berhasil diperpanjang. Terima kasih sudah menjadi bagian dari komunitas.', 'type' => 'membership', 'days' => 15, 'action_url' => '/member/history'],
+            ['title' => 'Promo Baru Tersedia', 'body' => 'KFC memberikan diskon 10% untuk pembelian minimal Rp1.000.000. Buruan manfaatkan!', 'type' => 'promo', 'days' => 10, 'action_url' => '/member/partners?tab=promos'],
+            ['title' => 'Info Kegiatan Komunitas', 'body' => 'Jangan lewatkan Sentra Community Gathering 2026 yang akan datang.', 'type' => 'community', 'days' => 5, 'action_url' => '/member/home'],
+            ['title' => 'Promo Akan Berakhir', 'body' => 'Promo diskon 10% KFC akan berakhir dalam 3 hari.', 'type' => 'promo', 'days' => 1, 'action_url' => '/member/partners?tab=promos'],
         ];
 
         foreach ($members as $member) {
@@ -346,6 +346,7 @@ class DatabaseSeeder extends Seeder
                     'title' => $tpl['title'],
                     'body' => $tpl['body'],
                     'type' => $tpl['type'],
+                    'action_url' => $tpl['action_url'] ?? null,
                     'read_at' => rand(0, 1) === 1 ? now()->subDays($tpl['days'] - 1) : null,
                     'created_at' => now()->subDays($tpl['days']),
                     'updated_at' => now()->subDays($tpl['days']),

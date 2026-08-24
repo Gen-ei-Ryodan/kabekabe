@@ -62,7 +62,7 @@ class PaymentService
                 'Payment Approved',
                 "Your membership has been extended until {$newExpiry->format('d M Y')}. Enjoy your member benefits.",
                 'membership',
-                route('member.history.index'),
+                '/member/history',
             );
 
             return $payment->fresh();
@@ -83,7 +83,7 @@ class PaymentService
             'Payment Rejected',
             "Payment {$payment->invoice_number} was rejected. " . ($reason ?: 'Please contact admin for more information.'),
             'membership',
-            route('member.history.index'),
+            '/member/history',
         );
 
         return $payment->fresh();
