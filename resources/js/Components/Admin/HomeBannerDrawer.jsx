@@ -24,7 +24,13 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
         target_id: resolveTargetId(banner, promos, agendas),
         sort_order: banner?.sort_order ?? nextSortOrder,
         is_active: banner ? Boolean(banner.is_active) : true,
+        image: null,
+        remove_image: false,
     });
+
+    const existingImage = banner?.image_path && !form.data.remove_image ? `/storage/${banner.image_path}` : null;
+    const newImagePreview = form.data.image ? URL.createObjectURL(form.data.image) : null;
+    const imagePreview = newImagePreview || existingImage;
 
     form.transform((data) => ({
         type: data.type,
@@ -32,14 +38,16 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
         is_active: Boolean(data.is_active),
         promo_id: data.type === 'promo' ? (data.target_id || null) : null,
         agenda_id: data.type === 'agenda' ? (data.target_id || null) : null,
+        image: data.image,
+        remove_image: data.remove_image,
     }));
 
     const submit = (e) => {
         e.preventDefault();
         if (editing) {
-            form.put(route('admin.banners.update', banner.id), { preserveScroll: true });
+            form.put(route('admin.banners.update', banner.id), { preserveScroll: true, forceFormData: true });
         } else {
-            form.post(route('admin.banners.store'), { preserveScroll: true });
+            form.post(route('admin.banners.store'), { preserveScroll: true, forceFormData: true });
         }
     };
 
@@ -97,6 +105,34 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
                 )}
                 {form.errors.promo_id && <p className="mt-1 text-xs text-ember">{form.errors.promo_id}</p>}
                 {form.errors.agenda_id && <p className="mt-1 text-xs text-ember">{form.errors.agenda_id}</p>}
+            </div>
+
+            <div>
+                <label className="label" htmlFor="banner-image">Image (optional)</label>
+                <input
+                    id="banner-image"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper"
+                    onChange={(e) => form.setData((data) => ({ ...data, image: e.target.files[0] || null, remove_image: false }))}
+                />
+                <p className="mt-1.5 text-xs text-slate">JPG/PNG/WebP, max 2 MB. Shown as the banner cover on member home.</p>
+
+                {imagePreview && (
+                    <div className="mt-3 flex items-start gap-3">
+                        <img src={imagePreview} alt="Banner preview" className="h-24 w-full max-w-[240px] rounded-xl border border-ink/10 object-cover" />
+                        <button
+                            type="button"
+                            onClick={() => form.setData((data) => ({ ...data, image: null, remove_image: true }))}
+                            className="btn-ghost text-xs"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                )}
+                {(form.errors.image || form.errors.remove_image) && (
+                    <p className="mt-1 text-xs text-ember">{form.errors.image || form.errors.remove_image}</p>
+                )}
             </div>
 
             <div>

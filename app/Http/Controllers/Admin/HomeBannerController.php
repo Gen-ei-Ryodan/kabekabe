@@ -24,6 +24,7 @@ class HomeBannerController extends Controller
             ->map(fn (HomeBanner $banner) => [
                 'id' => $banner->id,
                 'type' => $banner->type,
+                'image_url' => $banner->imageUrl(),
                 'label' => $banner->type === HomeBanner::TYPE_PROMO ? 'Promo' : 'Agenda',
                 'target_title' => $banner->type === HomeBanner::TYPE_PROMO
                     ? $banner->promo?->title
@@ -156,11 +157,26 @@ class HomeBannerController extends Controller
             'agenda_id' => ['nullable', 'integer', 'required_if:type,agenda', Rule::exists('community_infos', 'id')->where('is_published', true)],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['required', 'boolean'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_image' => ['nullable', 'boolean'],
         ]);
 
         // Keep only the foreign key matching the banner type.
         $validated['promo_id'] = $validated['type'] === HomeBanner::TYPE_PROMO ? ($validated['promo_id'] ?? null) : null;
         $validated['agenda_id'] = $validated['type'] === HomeBanner::TYPE_AGENDA ? ($validated['agenda_id'] ?? null) : null;
+
+        unset($validated['image'], $validated['remove_image']);
+
+        if ($request->hasFile('image')) {
+            if ($banner?->image_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image_path);
+            }
+
+            $validated['image_path'] = $request->file('image')->store('banners', 'public');
+        } elseif ($request->boolean('remove_image') && $banner?->image_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image_path);
+            $validated['image_path'] = null;
+        }
 
         if ($request->boolean('is_active')) {
             $active = HomeBanner::query()->where('is_active', true);

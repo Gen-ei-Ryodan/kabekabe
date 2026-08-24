@@ -49,9 +49,21 @@ export default function BannersIndex({ banners = [], promos = [], agendas = [], 
                             Curate up to three featured slots on the member home.
                         </p>
                     </div>
-                    <button onClick={openCreate} className="btn-gold" disabled={atCapacity}>
-                        + Add Banner
-                    </button>
+                    <div className="flex flex-col items-start gap-1.5 sm:items-end">
+                        <button
+                            onClick={openCreate}
+                            className="btn-gold"
+                            disabled={atCapacity}
+                            title={atCapacity ? 'Maximum of 3 banners. Deactivate or delete one first.' : undefined}
+                        >
+                            + Add Banner
+                        </button>
+                        {atCapacity && (
+                            <p className="text-xs text-ember">
+                                Slot full (3/3) — deactivate or delete a banner first.
+                            </p>
+                        )}
+                    </div>
                 </header>
 
                 <div className="card-surface flex items-center justify-between gap-4 px-5 py-4">
@@ -80,9 +92,17 @@ export default function BannersIndex({ banners = [], promos = [], agendas = [], 
                                 className="card-surface flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div className="flex min-w-0 items-center gap-4">
-                                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink font-mono text-xs font-bold text-gold-light">
-                                        #{String(banner.sort_order).padStart(2, '0')}
-                                    </span>
+                                    {banner.image_url ? (
+                                        <img
+                                            src={banner.image_url}
+                                            alt=""
+                                            className="h-11 w-11 shrink-0 rounded-xl border border-ink/10 object-cover"
+                                        />
+                                    ) : (
+                                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink font-mono text-xs font-bold text-gold-light">
+                                            #{String(banner.sort_order).padStart(2, '0')}
+                                        </span>
+                                    )}
 
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">

@@ -45,7 +45,18 @@ function Portrait({ member }) {
     );
 }
 
-function PromoBanner({ promo }) {
+function BannerImage({ url }) {
+    if (!url) return null;
+
+    return (
+        <div className="relative h-36 w-full overflow-hidden sm:h-44">
+            <img src={url} alt="" className="h-full w-full object-cover" />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink/25 to-transparent" />
+        </div>
+    );
+}
+
+function PromoBanner({ promo, imageUrl }) {
     const discountLabel =
         promo.discount_type === 'percent'
             ? `${promo.discount_value}%`
@@ -56,6 +67,7 @@ function PromoBanner({ promo }) {
             href={route('member.promos.show', promo.id)}
             className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
         >
+            <BannerImage url={imageUrl} />
             <div className="relative flex items-center justify-between gap-3 bg-ink px-5 py-4 sm:px-6">
                 <div
                     aria-hidden="true"
@@ -98,7 +110,7 @@ function PromoBanner({ promo }) {
     );
 }
 
-function AgendaBanner({ agenda }) {
+function AgendaBanner({ agenda, imageUrl }) {
     const raw = String(agenda.event_date || '').trim();
     const parsedDate = raw ? new Date(raw) : null;
     let day = '';
@@ -115,7 +127,8 @@ function AgendaBanner({ agenda }) {
 
     return (
         <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift">
-            <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-gold via-gold-light/40 to-transparent" />
+            <BannerImage url={imageUrl} />
+            <div aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-gold via-gold-light/40 to-transparent" />
 
             <div className="flex flex-1 items-start gap-4 p-5 sm:p-6">
                 {day && (
@@ -184,9 +197,9 @@ function BannerZone({ banners }) {
                         className={count === 3 && i === 2 ? 'sm:col-span-2' : ''}
                     >
                         {banner.type === 'promo' && banner.promo ? (
-                            <PromoBanner promo={banner.promo} />
+                            <PromoBanner promo={banner.promo} imageUrl={banner.image_url} />
                         ) : banner.agenda ? (
-                            <AgendaBanner agenda={banner.agenda} />
+                            <AgendaBanner agenda={banner.agenda} imageUrl={banner.image_url} />
                         ) : null}
                     </Reveal>
                 ))}

@@ -39,6 +39,7 @@ class HomeController extends Controller
                 ->map(fn (HomeBanner $banner) => [
                     'id' => $banner->id,
                     'type' => $banner->type,
+                    'image_url' => $banner->imageUrl(),
                     'promo' => $banner->type === HomeBanner::TYPE_PROMO && $banner->promo && $banner->promo->isActive()
                         ? [
                             'id' => $banner->promo->id,
