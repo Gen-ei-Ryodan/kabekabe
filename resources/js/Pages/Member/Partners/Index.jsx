@@ -18,10 +18,10 @@ function PromoCard({ promo }) {
             className="group block overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift transition-all hover:-translate-y-1 hover:shadow-card"
         >
             <div className="relative flex items-center justify-between gap-3 bg-ink px-5 py-5 text-paper">
-                <span className="font-display text-3xl font-bold text-gold-light">
+                <span className="shrink-0 font-display text-3xl font-bold text-gold-light">
                     {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)}
                 </span>
-                <span className="rounded-full bg-gold/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-gold-light">
+                <span className="min-w-0 truncate rounded-full bg-gold/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-gold-light">
                     {promo.partner?.name}
                 </span>
             </div>

@@ -14,7 +14,7 @@ export default function PromoShow({ promo, member_active }) {
                 </Link>
 
                 <div className="card-surface overflow-hidden">
-                    <div className="relative flex flex-col gap-6 bg-ink p-8 text-paper sm:flex-row sm:items-center sm:justify-between sm:p-10">
+                    <div className="relative flex flex-col gap-6 bg-ink p-6 text-paper sm:flex-row sm:items-center sm:justify-between sm:p-10">
                         <div>
                             <p className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">{promo.partner.name}</p>
                             <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-gold-light sm:text-4xl">
@@ -30,7 +30,7 @@ export default function PromoShow({ promo, member_active }) {
                         </div>
                     </div>
 
-                    <div className="p-8 sm:p-10">
+                    <div className="p-5 sm:p-10">
                         <h2 className="font-display text-lg font-bold">About this promo</h2>
                         <p className="mt-3 leading-relaxed text-slate">{promo.description}</p>
 

@@ -132,8 +132,8 @@ export default function AccountEdit({ account, settings }) {
                         </section>
                     </Reveal>
 
-                    <div className="flex justify-end gap-3">
-                        <button type="submit" className="btn-gold" disabled={processing}>
+                    <div className="flex justify-stretch gap-3 sm:justify-end">
+                        <button type="submit" className="btn-gold w-full sm:w-auto" disabled={processing}>
                             {processing ? 'Saving…' : 'Save Changes'}
                         </button>
                     </div>

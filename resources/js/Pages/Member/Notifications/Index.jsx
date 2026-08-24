@@ -22,7 +22,7 @@ export default function NotificationIndex({ notifications }) {
             <Head title="Notifications" />
 
             <div className="flex flex-col gap-8">
-                <header className="flex items-end justify-between gap-4">
+                <header className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                     <div>
                         <p className="eyebrow">Notifications</p>
                         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Your messages</h1>
@@ -53,7 +53,7 @@ export default function NotificationIndex({ notifications }) {
                                             {TYPE_LABEL[notification.type] || 'Info'}
                                         </span>
                                     </div>
-                                    <span className="font-mono text-[10px] text-slate-soft">{formatDate(notification.created_at, true)}</span>
+                                    <span className="shrink-0 font-mono text-[10px] text-slate-soft">{formatDate(notification.created_at, true)}</span>
                                 </div>
                                 <h3 className={`mt-3 font-display font-bold ${notification.read_at ? 'text-slate' : 'text-ink'}`}>
                                     {notification.title}

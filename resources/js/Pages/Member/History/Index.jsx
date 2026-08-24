@@ -145,22 +145,22 @@ export default function HistoryIndex({ payments, transactions, total_benefit, me
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-3 gap-4 text-right sm:min-w-[280px]">
-                                                <div>
+                                            <div className="grid grid-cols-3 gap-x-3 gap-y-2 text-left min-w-0 sm:min-w-[280px] sm:gap-4 sm:text-right">
+                                                <div className="min-w-0">
                                                     <p className="eyebrow">Total Spend</p>
-                                                    <p className="mt-0.5 text-sm font-semibold">
+                                                    <p className="mt-0.5 text-xs font-semibold sm:text-sm">
                                                         {formatRupiah(transaction.total_amount)}
                                                     </p>
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <p className="eyebrow">Discount</p>
-                                                    <p className="mt-0.5 text-sm font-semibold text-sage">
+                                                    <p className="mt-0.5 text-xs font-semibold text-sage sm:text-sm">
                                                         -{formatRupiah(transaction.discount_amount)}
                                                     </p>
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <p className="eyebrow">Net</p>
-                                                    <p className="mt-0.5 text-sm font-bold text-ink">
+                                                    <p className="mt-0.5 text-xs font-bold text-ink sm:text-sm">
                                                         {formatRupiah(transaction.net_amount)}
                                                     </p>
                                                 </div>
