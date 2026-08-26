@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import QrCode from '@/Components/QrCode';
 import Avatar from '@/Components/Avatar';
-import { formatDate } from '@/Utils/format';
+import { formatDateEn } from '@/Utils/format';
 
 export default function MemberCard({ member }) {
     const wrapRef = useRef(null);
@@ -82,11 +82,11 @@ export default function MemberCard({ member }) {
         <div ref={wrapRef} className="relative [perspective:1200px]">
             <div
                 ref={cardRef}
-                className="relative flex min-h-[15rem] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-ink via-ink-soft to-ink shadow-card will-change-transform sm:aspect-[1.586]"
+                className="relative flex min-h-[15rem] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-paper via-paper-deep to-paper shadow-card will-change-transform sm:aspect-[1.586]"
                 style={{ transformStyle: 'preserve-3d' }}
             >
                 {/* ambient glow */}
-                <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
+                <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-gold/15 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-gold/10 blur-3xl" />
 
                 {/* sheen sweep */}
@@ -98,10 +98,10 @@ export default function MemberCard({ member }) {
 
                 {/* texture */}
                 <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.15]"
+                    className="pointer-events-none absolute inset-0 opacity-[0.5]"
                     style={{
                         backgroundImage:
-                            'radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)',
+                            'radial-gradient(rgba(11,21,38,0.06) 1px, transparent 1px)',
                         backgroundSize: '16px 16px',
                     }}
                 />
@@ -110,13 +110,13 @@ export default function MemberCard({ member }) {
                 <div className="relative flex items-start justify-between px-5 pt-5 sm:px-6 sm:pt-6">
                     <div className="card-line flex items-center gap-2">
                         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gold">
-                            <span className="font-display text-sm font-bold text-ink">K</span>
+                            <span className="font-display text-sm font-bold text-paper">K</span>
                         </span>
-                        <span className="font-display text-sm font-bold uppercase tracking-[0.2em] text-paper">
+                        <span className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink">
                             KBKB
                         </span>
                     </div>
-                    <span className="card-line font-mono text-[10px] uppercase tracking-[0.3em] text-paper/60">
+                    <span className="card-line font-mono text-[10px] uppercase tracking-[0.3em] text-ink/60">
                         Member Card
                     </span>
                 </div>
@@ -128,20 +128,20 @@ export default function MemberCard({ member }) {
                             <Avatar
                                 src={member.avatar_url}
                                 name={member.name}
-                                tone="dark"
+                                tone="light"
                                 className="h-12 w-12 rounded-full border-2 border-gold text-lg"
                             />
                             <div className="min-w-0">
-                                <p className="truncate font-display text-lg font-bold text-paper">{member.name}</p>
-                                <p className="font-mono text-[11px] tracking-wider text-gold-light">{member.member_code}</p>
+                                <p className="truncate font-display text-lg font-bold text-ink">{member.name}</p>
+                                <p className="font-mono text-[11px] tracking-wider text-gold-deep">{member.member_code}</p>
                             </div>
                         </div>
-                        <div className="card-line mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-paper/50">
+                        <div className="card-line mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-ink/50">
                             Joined {member.joined_at}
                         </div>
                     </div>
 
-                    <div className="card-line shrink-0 rounded-xl bg-paper p-2 shadow-lift">
+                    <div className="card-line shrink-0 rounded-xl bg-white p-2 shadow-lift">
                         <QrCode value={member.card_token} size={92} />
                     </div>
                 </div>
@@ -166,18 +166,18 @@ export default function MemberCard({ member }) {
                         </span>
                     </div>
                     <div className="card-line text-right">
-                        <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-paper/50">Valid until</div>
-                        <div className="font-display text-sm font-bold text-paper">
-                            {member.expires_at ? formatDate(member.expires_at) : '—'}
+                        <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink/50">Valid until</div>
+                        <div className="font-display text-sm font-bold text-ink">
+                            {member.expires_at ? formatDateEn(member.expires_at) : '—'}
                         </div>
                     </div>
                 </div>
 
                 {!isActive && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-ink/70 backdrop-blur-[2px]">
-                        <div className="rounded-2xl border border-ember/40 bg-ember/20 px-5 py-3 text-center">
-                            <p className="font-display text-sm font-bold text-paper">Membership Inactive</p>
-                            <p className="mt-0.5 text-xs text-paper/70">Renew to use your benefits</p>
+                    <div className="absolute inset-0 flex items-center justify-center bg-paper/70 backdrop-blur-[2px]">
+                        <div className="rounded-2xl border border-ember/40 bg-ember/10 px-5 py-3 text-center">
+                            <p className="font-display text-sm font-bold text-ember-deep">Membership Inactive</p>
+                            <p className="mt-0.5 text-xs text-ink/70">Renew to use your benefits</p>
                         </div>
                     </div>
                 )}

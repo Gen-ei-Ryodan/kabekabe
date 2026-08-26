@@ -34,6 +34,17 @@ export function formatMonth(value) {
     return new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(date);
 }
 
+export function formatDateEn(value) {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '-';
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+    }).format(date);
+}
+
 export function daysUntil(value) {
     if (!value) return null;
 
