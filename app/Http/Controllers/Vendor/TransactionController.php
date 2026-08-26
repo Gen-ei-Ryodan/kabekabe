@@ -49,21 +49,60 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $partner = auth()->user()->partner;
 
         abort_if($partner === null, 403);
 
+        $promos = Promo::query()
+            ->where('partner_id', $partner->id)
+            ->where('status', Promo::STATUS_APPROVED)
+            ->where('is_active', true)
+            ->where('start_date', '<=', now()->toDateString())
+            ->where('end_date', '>=', now()->toDateString())
+            ->get();
+
+        $scan = $request->string('scan')->toString() ?: $request->string('member_code')->toString();
+
         return Inertia::render('Vendor/Transactions/Create', [
-            'promos' => Promo::query()
-                ->where('partner_id', $partner->id)
-                ->where('status', Promo::STATUS_APPROVED)
-                ->where('is_active', true)
-                ->where('start_date', '<=', now()->toDateString())
-                ->where('end_date', '>=', now()->toDateString())
-                ->get(),
+            'promos' => $promos,
+            'member' => $this->resolveScannedMember($scan),
         ]);
+    }
+
+    private function resolveScannedMember(string $scan): ?array
+    {
+        if ($scan === '') {
+            return null;
+        }
+
+        $member = User::query()
+            ->where('role', User::ROLE_MEMBER)
+            ->where(function ($q) use ($scan) {
+                $q->where('card_token', $scan)->orWhere('member_code', $scan);
+            })
+            ->with('membership')
+            ->first();
+
+        if ($member === null) {
+            return ['found' => false];
+        }
+
+        $member->ensureMemberCode();
+
+        $active = $member->hasActiveMembership();
+
+        return [
+            'found' => true,
+            'active' => $active,
+            'name' => $member->name,
+            'member_code' => $member->member_code,
+            'avatar_url' => $member->avatarUrl(),
+            'company' => $member->company,
+            'status_label' => $active ? 'ACTIVE' : 'INACTIVE',
+            'expires_at' => $member->membership?->expires_at?->format('d M Y'),
+        ];
     }
 
     public function store(StoreTransactionRequest $request): RedirectResponse
