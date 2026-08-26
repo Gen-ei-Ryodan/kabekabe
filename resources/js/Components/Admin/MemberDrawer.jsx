@@ -1,6 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
 import StatusChip from '@/Components/StatusChip';
+import Avatar from '@/Components/Avatar';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 function CreateMemberDrawer({ onClose }) {
@@ -144,11 +145,7 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    {member.avatar_url ? (
-                        <img src={member.avatar_url} alt={member.name} className="h-12 w-12 rounded-2xl object-cover" />
-                    ) : (
-                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ink font-display text-xl font-bold text-gold-light">{member.name.charAt(0)}</span>
-                    )}
+                    <Avatar src={member.avatar_url} name={member.name} tone="dark" className="h-12 w-12 rounded-2xl text-xl" />
                     <div>
                         <p className="font-mono text-xs text-slate">{member.member_code}</p>
                         <p className="text-sm font-semibold">{member.email}</p>

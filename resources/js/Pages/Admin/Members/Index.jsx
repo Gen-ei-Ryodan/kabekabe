@@ -6,6 +6,7 @@ import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
 import MemberDrawer from '@/Components/Admin/MemberDrawer';
 import ImportDrawer from '@/Components/Admin/ImportDrawer';
+import Avatar from '@/Components/Avatar';
 
 export default function MemberIndex({ members, filters, drawer }) {
     const filter = useForm(filters);
@@ -99,11 +100,7 @@ export default function MemberIndex({ members, filters, drawer }) {
                                     <tr key={member.id} className="transition-colors hover:bg-paper/50">
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-3">
-                                                {member.avatar_url ? (
-                                                    <img src={member.avatar_url} alt={member.name} className="h-9 w-9 rounded-full object-cover" />
-                                                ) : (
-                                                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink font-display text-sm font-bold text-gold-light">{member.name.charAt(0)}</span>
-                                                )}
+                                                <Avatar src={member.avatar_url} name={member.name} tone="dark" className="h-9 w-9 rounded-full text-sm" />
                                                 <span className="font-medium">{member.name}</span>
                                             </div>
                                         </td>

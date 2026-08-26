@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
+import Avatar from '@/Components/Avatar';
 
 export default function AccountEdit({ account, settings }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -37,13 +38,12 @@ export default function AccountEdit({ account, settings }) {
                             <h2 className="font-display text-lg font-bold">Profile</h2>
 
                             <div className="mt-6 flex items-center gap-5">
-                                {account.avatar_url ? (
-                                    <img src={account.avatar_url} alt={account.name} className="h-20 w-20 rounded-full border-2 border-gold object-cover" />
-                                ) : (
-                                    <span className="flex h-20 w-20 items-center justify-center rounded-full bg-ink font-display text-2xl font-bold text-gold-light">
-                                        {account.name.charAt(0)}
-                                    </span>
-                                )}
+                                <Avatar
+                                    src={account.avatar_url}
+                                    name={account.name}
+                                    tone="dark"
+                                    className="h-20 w-20 rounded-full border-2 border-gold text-2xl"
+                                />
                                 <div>
                                     <label className="btn-ghost cursor-pointer text-xs">
                                         {data.avatar ? 'Photo selected ✓' : 'Change profile photo'}

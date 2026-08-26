@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import QrCode from '@/Components/QrCode';
+import Avatar from '@/Components/Avatar';
 import { formatDate } from '@/Utils/format';
 
 export default function MemberCard({ member }) {
@@ -124,17 +125,12 @@ export default function MemberCard({ member }) {
                 <div className="relative flex items-center justify-between gap-4 px-5 sm:px-6">
                     <div className="min-w-0">
                         <div className="card-line mb-2 flex items-center gap-3">
-                            {member.avatar_url ? (
-                                <img
-                                    src={member.avatar_url}
-                                    alt={member.name}
-                                    className="h-12 w-12 rounded-full border-2 border-gold object-cover"
-                                />
-                            ) : (
-                                <span className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gold bg-ink-mute/40 font-display text-lg font-bold text-gold-light">
-                                    {member.name?.charAt(0) || 'M'}
-                                </span>
-                            )}
+                            <Avatar
+                                src={member.avatar_url}
+                                name={member.name}
+                                tone="dark"
+                                className="h-12 w-12 rounded-full border-2 border-gold text-lg"
+                            />
                             <div className="min-w-0">
                                 <p className="truncate font-display text-lg font-bold text-paper">{member.name}</p>
                                 <p className="font-mono text-[11px] tracking-wider text-gold-light">{member.member_code}</p>

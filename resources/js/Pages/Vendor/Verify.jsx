@@ -2,6 +2,7 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import VendorLayout from '@/Layouts/VendorLayout';
 import StatusChip from '@/Components/StatusChip';
+import Avatar from '@/Components/Avatar';
 import { formatDate } from '@/Utils/format';
 
 export default function Verify({ result }) {
@@ -53,13 +54,12 @@ export default function Verify({ result }) {
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="card-surface overflow-hidden">
                                 <div className="flex items-center gap-4 bg-ink p-6 text-paper">
-                                    {result.member.avatar_url ? (
-                                        <img src={result.member.avatar_url} alt={result.member.name} className="h-16 w-16 rounded-full border-2 border-gold object-cover" />
-                                    ) : (
-                                        <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-gold bg-ink-soft font-display text-xl font-bold text-gold-light">
-                                            {result.member.name?.charAt(0)}
-                                        </span>
-                                    )}
+                                    <Avatar
+                                        src={result.member.avatar_url}
+                                        name={result.member.name}
+                                        tone="dark"
+                                        className="h-16 w-16 rounded-full border-2 border-gold text-xl"
+                                    />
                                     <div>
                                         <h2 className="font-display text-xl font-bold">{result.member.name}</h2>
                                         <p className="font-mono text-xs tracking-widest text-gold-light">{result.member.member_code}</p>

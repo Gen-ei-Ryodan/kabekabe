@@ -3,22 +3,17 @@ import MemberLayout from '@/Layouts/MemberLayout';
 import MemberCard from '@/Components/MemberCard';
 import StatusChip from '@/Components/StatusChip';
 import Reveal from '@/Components/Reveal';
+import Avatar from '@/Components/Avatar';
 import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
 
 function Portrait({ member }) {
     return (
         <div className="w-36 shrink-0 sm:w-44">
-            {member?.avatar_url ? (
-                <img
-                    src={member.avatar_url}
-                    alt={member.name}
-                    className="aspect-[3/4] w-full rounded-2xl object-cover shadow-card"
-                />
-            ) : (
-                <div className="flex aspect-[3/4] w-full items-center justify-center rounded-2xl bg-ink-mute/30 font-display text-5xl font-bold text-gold-deep">
-                    {(member?.name || 'M').charAt(0).toUpperCase()}
-                </div>
-            )}
+            <Avatar
+                src={member?.avatar_url}
+                name={member?.name}
+                className="aspect-[3/4] w-full rounded-2xl text-5xl shadow-card"
+            />
         </div>
     );
 }

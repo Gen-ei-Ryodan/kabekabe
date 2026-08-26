@@ -3,6 +3,7 @@ import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import VendorLayout from '@/Layouts/VendorLayout';
 import StatusChip from '@/Components/StatusChip';
+import Avatar from '@/Components/Avatar';
 
 export default function TransactionCreate({ promos, member }) {
     const { errors } = usePage().props;
@@ -146,13 +147,12 @@ export default function TransactionCreate({ promos, member }) {
                     <div className="mt-8 space-y-6">
                         <div className="card-surface overflow-hidden">
                             <div className="flex flex-wrap items-center gap-4 bg-ink p-5 text-paper sm:p-6">
-                                {member.avatar_url ? (
-                                    <img src={member.avatar_url} alt={member.name} className="h-14 w-14 rounded-full border-2 border-gold object-cover" />
-                                ) : (
-                                    <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-gold bg-ink-soft font-display text-lg font-bold text-gold-light">
-                                        {member.name?.charAt(0)}
-                                    </span>
-                                )}
+                                <Avatar
+                                    src={member.avatar_url}
+                                    name={member.name}
+                                    tone="dark"
+                                    className="h-14 w-14 rounded-full border-2 border-gold text-lg"
+                                />
                                 <div className="min-w-0 flex-1">
                                     <h2 className="truncate font-display text-lg font-bold">{member.name}</h2>
                                     <p className="font-mono text-xs tracking-widest text-gold-light">{member.member_code}</p>

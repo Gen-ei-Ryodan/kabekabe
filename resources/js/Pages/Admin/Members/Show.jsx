@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
+import Avatar from '@/Components/Avatar';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 export default function MemberShow({ member, membership, payments, transactions }) {
@@ -11,11 +12,7 @@ export default function MemberShow({ member, membership, payments, transactions 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-4">
-                        {member.avatar_url ? (
-                            <img src={member.avatar_url} alt={member.name} className="h-16 w-16 rounded-2xl object-cover shadow-card" />
-                        ) : (
-                            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink font-display text-2xl font-bold text-gold-light">{member.name.charAt(0)}</span>
-                        )}
+                        <Avatar src={member.avatar_url} name={member.name} tone="dark" className="h-16 w-16 rounded-2xl text-2xl shadow-card" />
                         <div>
                             <h1 className="font-display text-3xl font-bold tracking-tight">{member.name}</h1>
                             <p className="mt-1 font-mono text-sm text-slate">{member.member_code} · {member.email}</p>
