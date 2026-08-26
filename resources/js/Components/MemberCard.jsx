@@ -81,7 +81,7 @@ export default function MemberCard({ member }) {
         <div ref={wrapRef} className="relative [perspective:1200px]">
             <div
                 ref={cardRef}
-                className="relative aspect-[1.586] w-full max-w-md overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-ink via-ink-soft to-ink shadow-card will-change-transform"
+                className="relative flex min-h-[15rem] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-ink via-ink-soft to-ink shadow-card will-change-transform sm:aspect-[1.586]"
                 style={{ transformStyle: 'preserve-3d' }}
             >
                 {/* ambient glow */}
@@ -106,7 +106,7 @@ export default function MemberCard({ member }) {
                 />
 
                 {/* top row */}
-                <div className="relative flex items-start justify-between p-5 sm:p-6">
+                <div className="relative flex items-start justify-between px-5 pt-5 sm:px-6 sm:pt-6">
                     <div className="card-line flex items-center gap-2">
                         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gold">
                             <span className="font-display text-sm font-bold text-ink">K</span>
@@ -151,7 +151,7 @@ export default function MemberCard({ member }) {
                 </div>
 
                 {/* footer */}
-                <div className="relative mt-auto flex items-end justify-between p-5 sm:p-6">
+                <div className="relative mt-auto flex items-end justify-between px-5 pb-6 pt-5 sm:px-6 sm:pb-8 sm:pt-6">
                     <div className="card-line">
                         <span
                             className={`chip border ${
