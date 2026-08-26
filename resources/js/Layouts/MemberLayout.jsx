@@ -2,6 +2,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppLogo from '@/Components/AppLogo';
 import FlashMessages from '@/Components/FlashMessages';
+import ScrollHint from '@/Components/ScrollHint';
 
 const NAV = [
     { name: 'Home', route: 'member.home' },
@@ -94,6 +95,8 @@ export default function MemberLayout({ children }) {
             </header>
 
             <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">{children}</main>
+
+            <ScrollHint />
 
             <footer className="border-t border-ink/10 py-8">
                 <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-center sm:px-6">
