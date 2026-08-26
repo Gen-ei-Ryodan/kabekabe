@@ -197,13 +197,14 @@ export default function Home({ member, banners = [] }) {
                 <header className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-3">
                         <p className="eyebrow">
-                            {greeting}, {firstName}
+                            Member Card
                         </p>
                         <StatusChip status={member?.membership_status} label={member?.membership_status_label} pulse />
                     </div>
                     <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-                        Your member card is ready.
+                        {greeting}, {firstName}
                     </h1>
+                    <p className="sr-only">Your member card is ready.</p>
                     {active && member?.expires_at && (
                         <p className="text-sm text-slate">
                             {member.is_expiring_soon ? (
