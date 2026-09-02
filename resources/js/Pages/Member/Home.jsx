@@ -96,6 +96,31 @@ function PromoPopup({ open, onClose, promo }) {
     );
 }
 
+// Toast-style promo hint — non-blocking, only shown if popup wasn't dismissed
+function PromoToast({ promo, onDismiss }) {
+    if (!promo) return null;
+    return (
+        <div className="pointer-events-none fixed bottom-4 right-4 z-30 max-w-sm">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-gold/40 bg-white/95 p-3 shadow-lift backdrop-blur">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-gold-light">
+                    🎉
+                </div>
+                <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ink">{promo.title}</p>
+                    <p className="truncate text-xs text-slate">Lihat di menu Promo</p>
+                </div>
+                <button
+                    onClick={onDismiss}
+                    className="shrink-0 rounded-lg p-1.5 text-slate hover:bg-ink/5 hover:text-ink"
+                    aria-label="Tutup"
+                >
+                    ✕
+                </button>
+            </div>
+        </div>
+    );
+}
+
 function BannerImage({ url }) {
     if (!url) return null;
 
@@ -259,11 +284,12 @@ export default function Home({ member, banners = [], vendor_ranking = [] }) {
     const bannerList = (Array.isArray(banners) ? banners : []).slice(0, 3);
 
     const [promoPopup, setPromoPopup] = useState(null);
+    const [dismissed, setDismissed] = useState(false);
 
     useEffect(() => {
         try {
-            const dismissed = localStorage.getItem('promo_popup_dismissed');
-            if (dismissed) {
+            if (localStorage.getItem('promo_popup_dismissed')) {
+                setDismissed(true);
                 return;
             }
         } catch {
@@ -276,19 +302,22 @@ export default function Home({ member, banners = [], vendor_ranking = [] }) {
         if (activePromo) {
             const timer = setTimeout(() => {
                 setPromoPopup(activePromo.promo);
-            }, 800);
+            }, 1500);
             return () => clearTimeout(timer);
         }
     }, []);
 
-    const closePopup = () => {
-        setPromoPopup(null);
+    const handleDismissPopup = () => {
         try {
             localStorage.setItem('promo_popup_dismissed', '1');
         } catch {
             // ignore
         }
+        setDismissed(true);
+        setPromoPopup(null);
     };
+
+    const closePopup = () => setPromoPopup(null);
 
     return (
         <>
@@ -335,11 +364,9 @@ export default function Home({ member, banners = [], vendor_ranking = [] }) {
                 {bannerList.length > 0 && <BannerZone banners={bannerList} />}
             </div>
 
-            <PromoPopup
-                open={!!promoPopup}
-                onClose={closePopup}
-                promo={promoPopup}
-            />
+            {!dismissed && (
+                <PromoToast promo={promoPopup} onDismiss={handleDismissPopup} />
+            )}
         </>
     );
 }
