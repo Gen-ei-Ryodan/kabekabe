@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'partner_id', 'title', 'description', 'discount_type', 'discount_value',
     'min_purchase', 'start_date', 'end_date', 'terms', 'status',
-    'rejection_reason', 'is_active', 'submitted_at', 'reviewed_at', 'reviewed_by',
+    'rejection_reason', 'is_active', 'sort_number', 'submitted_at', 'reviewed_at', 'reviewed_by',
 ])]
 class Promo extends Model
 {

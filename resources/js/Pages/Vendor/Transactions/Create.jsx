@@ -159,17 +159,36 @@ export default function TransactionCreate({ promos, member }) {
                                 </div>
                                 <StatusChip status={verified ? 'active' : 'inactive'} label={member.status_label} pulse={verified} />
                             </div>
-                            <div className="flex items-center justify-between gap-3 px-5 py-3 sm:px-6">
+                            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6">
                                 <p className="text-xs text-slate">
                                     Valid until <span className="font-mono font-semibold text-ink">{member.expires_at || '-'}</span>
                                 </p>
+                                {member.scan && (
+                                    <p className="text-xs text-slate">
+                                        Scanned at <span className="font-mono font-semibold text-ink">{member.scan.scanned_at}</span>
+                                        {' · '}
+                                        <span className={member.within_window ? 'font-mono font-semibold text-sage-deep' : 'font-mono font-semibold text-ember'}>
+                                            {member.within_window ? `${member.scan.hours_left}h left` : 'Masa Input berakhir'}
+                                        </span>
+                                    </p>
+                                )}
                                 <button onClick={resetScan} className="text-xs font-semibold text-gold-deep underline-offset-2 hover:underline">
                                     Scan a different card
                                 </button>
                             </div>
                         </div>
 
-                        {verified ? (
+                        {verified && member.within_window === false && (
+                            <div className="rounded-2xl border border-ember/30 bg-ember/10 p-6 text-center">
+                                <span className="text-3xl">⛔</span>
+                                <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Masa Input berakhir</h3>
+                                <p className="mt-2 max-w-sm text-sm text-slate">
+                                    Anda sudah melewati waktu 48 jam setelah scan. Hubungi Admin untuk edit.
+                                </p>
+                            </div>
+                        )}
+
+                        {verified && member.within_window !== false ? (
                             <form onSubmit={submit} className="card-surface space-y-6 p-6 sm:p-8">
                                 <div className="rounded-xl border border-sage/30 bg-sage/10 px-4 py-3 text-sm font-semibold text-sage-deep">
                                     &#10003; Membership verified — you can record this transaction.

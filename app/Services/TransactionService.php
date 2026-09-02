@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\MemberScan;
 use App\Models\Partner;
 use App\Models\Promo;
 use App\Models\Transaction;
@@ -25,6 +26,17 @@ class TransactionService
     {
         if (! $this->memberships->isActive($member)) {
             throw new \DomainException('Member is inactive and cannot use benefits.');
+        }
+
+        $activeScan = MemberScan::query()
+            ->where('member_id', $member->id)
+            ->where('scanned_by_vendor_id', $partner->user_id)
+            ->where('expires_at', '>', now())
+            ->latest('scanned_at')
+            ->first();
+
+        if (! $activeScan) {
+            throw new \DomainException('Masa Input berakhir, Hubungi Admin untuk edit.');
         }
 
         if ($promo !== null && $promo->partner_id !== $partner->id) {

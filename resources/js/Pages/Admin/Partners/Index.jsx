@@ -27,14 +27,13 @@ export default function PartnerIndex({ partners, filters, drawer }) {
 
     return (
         <>
-            <Head title="Partners" />
+            <Head title="Promo & Partner" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <p className="eyebrow">Partner Management</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Partners</h1>
-                        <p className="mt-2 text-sm text-slate">Manage vendors/partners connected to the community.</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo & Partner</h1>
                     </div>
                     <button onClick={openCreate} className="btn-gold">+ Add Partner</button>
                 </header>
@@ -54,25 +53,30 @@ export default function PartnerIndex({ partners, filters, drawer }) {
                         action={<button onClick={openCreate} className="btn-gold">Add partner</button>}
                     />
                 ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {partners.data.map((partner) => (
-                            <div key={partner.id} className="card-surface flex flex-col gap-4 p-5">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {partners.data.map((partner, i) => (
+                            <div key={partner.id} className="card-surface flex flex-col gap-3 p-4">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3">
-                                        {partner.logo_url ? (
-                                            <img src={partner.logo_url} alt={partner.name} className="h-12 w-12 rounded-xl object-cover" />
-                                        ) : (
-                                            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-ink font-display text-lg font-bold text-gold-light">{partner.name.charAt(0)}</span>
+                                        {typeof partner.sort_number === 'number' && (
+                                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink text-xs font-bold text-gold-light">
+                                                {partner.sort_number}
+                                            </span>
                                         )}
-                                        <div>
-                                            <h3 className="font-display font-bold">{partner.name}</h3>
+                                        {partner.logo_url ? (
+                                            <img src={partner.logo_url} alt={partner.name} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+                                        ) : (
+                                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-gold-light">{partner.name.charAt(0)}</span>
+                                        )}
+                                        <div className="min-w-0">
+                                            <h3 className="truncate font-display font-bold text-ink">{partner.name}</h3>
                                             <p className="text-xs text-slate">{partner.category}</p>
                                         </div>
                                     </div>
                                     <StatusChip status={partner.is_active ? 'active' : 'inactive'} label={partner.is_active ? 'Active' : 'Inactive'} pulse={partner.is_active} />
                                 </div>
-                                <p className="line-clamp-2 text-sm text-slate">{partner.description}</p>
-                                {partner.user && <p className="font-mono text-[11px] text-slate">Vendor: {partner.user.email}</p>}
+                                <p className="line-clamp-2 text-xs text-slate">{partner.description}</p>
+                                {partner.user && <p className="font-mono text-[10px] text-slate">Vendor: {partner.user.email}</p>}
                                 <div className="flex gap-2">
                                     <button onClick={() => openEdit(partner.id)} className="btn-ghost flex-1 text-xs">Edit</button>
                                     <button

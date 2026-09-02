@@ -24,13 +24,12 @@ export default function PromoIndex({ promos, filters, drawer }) {
 
     return (
         <>
-            <Head title="Promo Review" />
+            <Head title="Promo & Partner" />
 
             <div className="flex flex-col gap-8">
                 <header>
                     <p className="eyebrow">Promo Management</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Review Promo</h1>
-                    <p className="mt-2 text-sm text-slate">Verify promos from partners before they are shown to members.</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo & Partner</h1>
                 </header>
 
                 <div className="flex flex-wrap gap-2">
@@ -56,6 +55,11 @@ export default function PromoIndex({ promos, filters, drawer }) {
                                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
+                                            {typeof promo.sort_number === 'number' && (
+                                                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-xs font-bold text-gold-light">
+                                                    {promo.sort_number}
+                                                </span>
+                                            )}
                                             <StatusChip
                                                 status={promo.status}
                                                 label={promo.status === 'pending' ? 'Pending' : promo.status === 'approved' ? 'Approved' : 'Rejected'}

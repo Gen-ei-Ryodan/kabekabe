@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
+use App\Models\MemberScan;
 use App\Models\Promo;
 use App\Models\Transaction;
 use App\Models\User;
@@ -92,6 +93,28 @@ class TransactionController extends Controller
         $member->ensureMemberCode();
 
         $active = $member->hasActiveMembership();
+        $vendor = auth()->user();
+        $scanData = null;
+        $withinWindow = false;
+        $hoursLeft = 0;
+
+        if ($vendor && $vendor->role === User::ROLE_VENDOR) {
+            $latest = MemberScan::query()
+                ->where('member_id', $member->id)
+                ->where('scanned_by_vendor_id', $vendor->id)
+                ->latest('scanned_at')
+                ->first();
+
+            if ($latest) {
+                $withinWindow = $latest->expires_at->isFuture();
+                $hoursLeft = $withinWindow ? (int) round(now()->diffInMinutes($latest->expires_at, false) / 60) : 0;
+                $scanData = [
+                    'scanned_at' => $latest->scanned_at?->format('d M Y H:i'),
+                    'expires_at' => $latest->expires_at?->format('d M Y H:i'),
+                    'hours_left' => $hoursLeft,
+                ];
+            }
+        }
 
         return [
             'found' => true,
@@ -102,6 +125,8 @@ class TransactionController extends Controller
             'company' => $member->company,
             'status_label' => $active ? 'ACTIVE' : 'INACTIVE',
             'expires_at' => $member->membership?->expires_at?->format('d M Y'),
+            'scan' => $scanData,
+            'within_window' => $withinWindow,
         ];
     }
 

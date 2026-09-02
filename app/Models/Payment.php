@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'invoice_number', 'member_id', 'plan_id', 'period_months', 'amount', 'status',
+    'invoice_number', 'member_id', 'plan_id', 'event_id', 'period_months', 'amount', 'status',
     'paid_at', 'proof_path', 'notes', 'previous_expires_at', 'new_expires_at',
     'approved_by', 'approved_at',
 ])]
@@ -39,6 +39,11 @@ class Payment extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(MembershipPlan::class, 'plan_id');
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(CommunityInfo::class, 'event_id');
     }
 
     public function approver(): BelongsTo

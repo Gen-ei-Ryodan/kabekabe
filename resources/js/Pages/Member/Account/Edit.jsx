@@ -3,7 +3,7 @@ import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import Avatar from '@/Components/Avatar';
 
-export default function AccountEdit({ account, settings }) {
+export default function AccountEdit({ account }) {
     const { data, setData, put, processing, errors } = useForm({
         name: account.name,
         whatsapp: account.whatsapp || '',
@@ -12,9 +12,6 @@ export default function AccountEdit({ account, settings }) {
         current_password: '',
         password: '',
         password_confirmation: '',
-        notify_promo: Boolean(settings.notify_promo),
-        notify_membership: Boolean(settings.notify_membership),
-        notify_community: Boolean(settings.notify_community),
     });
 
     const submit = (e) => {
@@ -101,33 +98,6 @@ export default function AccountEdit({ account, settings }) {
                                     <label className="label" htmlFor="password_confirmation">Confirm new password</label>
                                     <input id="password_confirmation" type="password" className="input" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} />
                                 </div>
-                            </div>
-                        </section>
-                    </Reveal>
-
-                    <Reveal>
-                        <section className="card-surface p-6 sm:p-8">
-                            <h2 className="font-display text-lg font-bold">Notification Settings</h2>
-
-                            <div className="mt-6 space-y-3">
-                                {[
-                                    { key: 'notify_promo', label: 'New promos', desc: 'Info about new promos and benefits from partners' },
-                                    { key: 'notify_membership', label: 'Membership', desc: 'Membership status and renewals' },
-                                    { key: 'notify_community', label: 'Community', desc: 'Community events and announcements' },
-                                ].map((item) => (
-                                    <label key={item.key} className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink/10 bg-paper p-4">
-                                        <input
-                                            type="checkbox"
-                                            className="mt-0.5 h-5 w-5 rounded border-ink/20 accent-gold"
-                                            checked={data[item.key]}
-                                            onChange={(e) => setData(item.key, e.target.checked)}
-                                        />
-                                        <span>
-                                            <span className="block text-sm font-semibold">{item.label}</span>
-                                            <span className="block text-xs text-slate">{item.desc}</span>
-                                        </span>
-                                    </label>
-                                ))}
                             </div>
                         </section>
                     </Reveal>

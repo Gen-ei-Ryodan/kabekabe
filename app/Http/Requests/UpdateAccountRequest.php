@@ -20,9 +20,6 @@ class UpdateAccountRequest extends FormRequest
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'current_password' => ['nullable', 'string', 'current_password'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'notify_promo' => ['boolean'],
-            'notify_membership' => ['boolean'],
-            'notify_community' => ['boolean'],
         ];
     }
 

@@ -10,11 +10,16 @@ import { formatDate, formatRupiah } from '@/Utils/format';
 const TABS = [
     { key: 'payments', label: 'Payments' },
     { key: 'usage', label: 'Usage' },
+    { key: 'attendance', label: 'Attendance' },
 ];
 
-export default function HistoryIndex({ payments, transactions, total_benefit, membership }) {
+export default function HistoryIndex({ payments, transactions, total_benefit, total_payment_made, attendances, membership }) {
     const [tab, setTab] = useState(
-        () => new URLSearchParams(window.location.search).get('tab') === 'usage' ? 'usage' : 'payments',
+        () => {
+            const urlTab = new URLSearchParams(window.location.search).get('tab');
+            if (urlTab === 'usage' || urlTab === 'attendance') return urlTab;
+            return 'payments';
+        },
     );
 
     const switchTab = (next) => {
@@ -28,6 +33,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, me
 
     const paymentList = Array.isArray(payments) ? payments : payments?.data ?? [];
     const transactionList = Array.isArray(transactions) ? transactions : transactions?.data ?? [];
+    const attendanceList = Array.isArray(attendances) ? attendances : attendances?.data ?? [];
 
     return (
         <>
@@ -58,12 +64,20 @@ export default function HistoryIndex({ payments, transactions, total_benefit, me
                 {tab === 'payments' ? (
                     <>
                         <Reveal>
-                            <div className="card-surface flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 sm:px-6">
-                                <span className="text-sm text-slate">Current status:</span>
-                                <StatusChip status={membership?.status} label={membership?.status_label} pulse />
-                                {membership?.expires_at && (
-                                    <span className="text-sm text-slate">Valid until {formatDate(membership.expires_at)}</span>
-                                )}
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="card-surface flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 sm:px-6">
+                                    <span className="text-sm text-slate">Current status:</span>
+                                    <StatusChip status={membership?.status} label={membership?.status_label} pulse />
+                                    {membership?.expires_at && (
+                                        <span className="text-sm text-slate">Valid until {formatDate(membership.expires_at)}</span>
+                                    )}
+                                </div>
+                                <div className="rounded-2xl border border-gold/30 bg-gold/10 px-5 py-3">
+                                    <p className="eyebrow">Total Payment Made</p>
+                                    <p className="font-display text-2xl font-bold text-gold-deep">
+                                        {formatRupiah(total_payment_made || 0)}
+                                    </p>
+                                </div>
                             </div>
                         </Reveal>
 
@@ -86,6 +100,13 @@ export default function HistoryIndex({ payments, transactions, total_benefit, me
                                                 <p className="mt-1 font-display text-lg font-bold">
                                                     {formatRupiah(payment.amount)}
                                                 </p>
+                                                {payment.event && (
+                                                    <p className="mt-1 text-xs text-slate">
+                                                        <span className="font-mono text-[10px] uppercase tracking-wide text-gold-deep">Urunan Kegiatan</span>
+                                                        {' · '}
+                                                        {payment.event.title}
+                                                    </p>
+                                                )}
                                             </div>
                                             <StatusChip status={payment.status} label={payment.status_label} />
                                         </div>
@@ -96,7 +117,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, me
 
                         <Pagination links={payments?.links} />
                     </>
-                ) : (
+                ) : tab === 'usage' ? (
                     <>
                         <Reveal>
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -172,6 +193,55 @@ export default function HistoryIndex({ payments, transactions, total_benefit, me
                         )}
 
                         <Pagination links={transactions?.links} />
+                    </>
+                ) : (
+                    <>
+                        <Reveal>
+                            <div className="flex flex-col gap-2">
+                                <p className="eyebrow">Event Attendance</p>
+                                <h2 className="font-display text-2xl font-bold tracking-tight">Kehadiran Acara</h2>
+                                <p className="text-sm text-slate">
+                                    History absensi event/kegiatan yang Anda hadiri.
+                                </p>
+                            </div>
+                        </Reveal>
+
+                        {attendanceList.length === 0 ? (
+                            <EmptyState
+                                title="Belum ada attendance"
+                                description="Scan QR member Anda di event untuk mulai tercatat."
+                            />
+                        ) : (
+                            <div className="space-y-3">
+                                {attendanceList.map((a, i) => (
+                                    <Reveal key={a.id} delay={i * 0.04}>
+                                        <div className="card-surface flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="min-w-0">
+                                                <p className="font-display text-lg font-bold text-ink">
+                                                    {a.event_title || '—'}
+                                                </p>
+                                                <p className="mt-1 font-mono text-xs text-slate">
+                                                    {a.event_date}
+                                                    {a.event_location ? ` · ${a.event_location}` : ''}
+                                                </p>
+                                            </div>
+                                            <div className="text-left sm:text-right">
+                                                <span className="chip border border-sage/40 bg-sage/20 text-sage">
+                                                    <span className="relative flex h-1.5 w-1.5">
+                                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+                                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
+                                                    </span>
+                                                    Hadir
+                                                </span>
+                                                <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-slate-soft">
+                                                    {a.scanned_at_human || a.scanned_at}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </Reveal>
+                                ))}
+                            </div>
+                        )}
                     </>
                 )}
             </div>

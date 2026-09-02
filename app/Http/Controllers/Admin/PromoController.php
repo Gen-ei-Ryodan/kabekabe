@@ -29,6 +29,7 @@ class PromoController extends Controller
         }
 
         $promos = $query->orderByRaw("CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 WHEN 'rejected' THEN 2 ELSE 3 END")
+            ->orderByRaw('COALESCE(sort_number, 999999) ASC')
             ->orderByDesc('created_at')
             ->paginate(12)
             ->withQueryString();

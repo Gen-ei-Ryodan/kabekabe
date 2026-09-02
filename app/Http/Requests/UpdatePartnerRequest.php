@@ -24,6 +24,7 @@ class UpdatePartnerRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
+            'sort_number' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

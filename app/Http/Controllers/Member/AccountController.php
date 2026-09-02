@@ -15,12 +15,6 @@ class AccountController extends Controller
     {
         $user = auth()->user();
 
-        $settings = array_merge([
-            'notify_promo' => true,
-            'notify_membership' => true,
-            'notify_community' => true,
-        ], $user->notification_settings ?? []);
-
         return Inertia::render('Member/Account/Edit', [
             'account' => [
                 'name' => $user->name,
@@ -31,7 +25,6 @@ class AccountController extends Controller
                 'avatar_url' => $user->avatarUrl(),
                 'member_code' => $user->member_code,
             ],
-            'settings' => $settings,
         ]);
     }
 
@@ -57,11 +50,6 @@ class AccountController extends Controller
             'whatsapp' => $validated['whatsapp'] ?? null,
             'company' => $validated['company'] ?? null,
             'avatar' => $validated['avatar'] ?? $user->avatar,
-            'notification_settings' => [
-                'notify_promo' => (bool) ($validated['notify_promo'] ?? false),
-                'notify_membership' => (bool) ($validated['notify_membership'] ?? false),
-                'notify_community' => (bool) ($validated['notify_community'] ?? false),
-            ],
         ]);
 
         return back()->with('success', 'Profile updated successfully.');

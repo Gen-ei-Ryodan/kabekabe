@@ -13,6 +13,7 @@ const NAV = [
     { name: 'Community', route: 'admin.community.index', icon: '✎' },
     { name: 'Notifications', route: 'admin.notifications.index', icon: '◌' },
     { name: 'Transactions', route: 'admin.transactions.index', icon: '⤹' },
+    { name: 'Integrations', route: 'admin.integrations.index', icon: '⇄' },
     { name: 'Reports', route: 'admin.reports.index', icon: '⌁' },
 ];
 

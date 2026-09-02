@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\HomeBanner;
+use App\Models\Transaction;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,6 +18,20 @@ class HomeController extends Controller
         $user->load('membership');
         $user->ensureCardToken();
         $user->ensureMemberCode();
+
+        $vendorRanking = Transaction::query()
+            ->select('partner_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('partner_id')
+            ->orderBy('total', 'desc')
+            ->limit(5)
+            ->with('partner:id,name,logo_url')
+            ->get()
+            ->map(fn (Transaction $t) => [
+                'partner_id' => $t->partner_id,
+                'name' => $t->partner?->name,
+                'logo_url' => $t->partner?->logo_url,
+                'total' => $t->total,
+            ]);
 
         return Inertia::render('Member/Home', [
             'member' => [
@@ -31,6 +48,7 @@ class HomeController extends Controller
                 'expires_at_full' => $user->membership?->expires_at?->toISOString(),
                 'is_expiring_soon' => $user->membership?->isExpiringSoon(),
             ],
+            'vendor_ranking' => $vendorRanking,
             'banners' => HomeBanner::query()
                 ->active()
                 ->with(['promo.partner:id,name', 'agenda'])

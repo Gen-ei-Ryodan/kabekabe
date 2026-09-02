@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CommunityController as AdminCommunityController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\HomeBannerController as AdminHomeBannerController;
+use App\Http\Controllers\Admin\IntegrationController as AdminIntegrationController;
 use App\Http\Controllers\Admin\MemberController as AdminMemberController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
@@ -139,6 +140,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
         Route::get('/transactions/{transaction}', [AdminTransactionController::class, 'show'])->name('transactions.show');
+
+        Route::get('/integrations', AdminIntegrationController::class)->name('integrations.index');
+        Route::post('/integrations/faspay/test', [AdminIntegrationController::class, 'faspayTest'])->name('integrations.faspay.test');
+        Route::post('/integrations/wa-blast/send', [AdminIntegrationController::class, 'waBlastSend'])->name('integrations.wa-blast.send');
+        Route::get('/payments/{payment}/faspay/dummy', [AdminIntegrationController::class, 'faspayDummy'])->name('payments.faspay.dummy');
 
         Route::get('/reports', AdminReportController::class)->name('reports.index');
     });

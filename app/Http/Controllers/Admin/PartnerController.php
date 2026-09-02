@@ -28,7 +28,10 @@ class PartnerController extends Controller
             });
         }
 
-        $partners = $query->orderBy('name')->paginate(12)->withQueryString();
+        $partners = $query->orderByRaw('COALESCE(sort_number, 999999) ASC')
+            ->orderBy('name')
+            ->paginate(12)
+            ->withQueryString();
 
         $drawer = $this->drawerPayload($request);
 

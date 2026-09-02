@@ -52,13 +52,24 @@ class User extends Authenticatable
 
     private static function nextMemberCode(): string
     {
-        $last = static::query()->where('role', self::ROLE_MEMBER)
-            ->orderByDesc('id')
+        $year = now()->format('y');
+        $prefix = '7030' . $year;
+        $pattern = $prefix . '%';
+
+        $lastInYear = static::query()
+            ->where('role', self::ROLE_MEMBER)
+            ->where('member_code', 'like', $pattern)
+            ->orderByDesc('member_code')
             ->value('member_code');
 
-        $next = $last ? ((int) str_replace('MMB-', '', $last)) + 1 : 1;
+        $next = 1;
 
-        return 'MMB-' . str_pad((string) $next, 5, '0', STR_PAD_LEFT);
+        if ($lastInYear) {
+            $suffix = substr($lastInYear, strlen($prefix));
+            $next = ((int) $suffix) + 1;
+        }
+
+        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 
     public function membership(): HasOne
@@ -79,6 +90,16 @@ class User extends Authenticatable
     public function partner(): HasOne
     {
         return $this->hasOne(Partner::class, 'user_id');
+    }
+
+    public function scans(): HasMany
+    {
+        return $this->hasMany(MemberScan::class, 'member_id');
+    }
+
+    public function vendorScans(): HasMany
+    {
+        return $this->hasMany(MemberScan::class, 'scanned_by_vendor_id');
     }
 
     public function appNotifications(): HasMany

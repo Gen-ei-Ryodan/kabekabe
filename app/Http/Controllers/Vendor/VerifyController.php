@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
+use App\Models\MemberScan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,6 +11,8 @@ use Inertia\Response;
 
 class VerifyController extends Controller
 {
+    public const SCAN_WINDOW_HOURS = 48;
+
     public function index(): Response
     {
         return Inertia::render('Vendor/Verify', [
@@ -39,6 +42,35 @@ class VerifyController extends Controller
 
         $active = $member->hasActiveMembership();
 
+        $vendor = $request->user();
+        $scan = null;
+        $lastScan = null;
+        $withinWindow = false;
+        $hoursLeft = 0;
+
+        if ($vendor && $vendor->role === User::ROLE_VENDOR) {
+            $lastScan = MemberScan::query()
+                ->where('member_id', $member->id)
+                ->where('scanned_by_vendor_id', $vendor->id)
+                ->latest('scanned_at')
+                ->first();
+
+            if ($lastScan && $lastScan->expires_at->isFuture()) {
+                $withinWindow = true;
+                $hoursLeft = (int) round(now()->diffInMinutes($lastScan->expires_at, false) / 60);
+            } else {
+                $scan = MemberScan::create([
+                    'member_id' => $member->id,
+                    'scanned_by_vendor_id' => $vendor->id,
+                    'scanned_at' => now(),
+                    'expires_at' => now()->addHours(self::SCAN_WINDOW_HOURS),
+                    'ip_address' => $request->ip(),
+                ]);
+                $withinWindow = true;
+                $hoursLeft = self::SCAN_WINDOW_HOURS;
+            }
+        }
+
         return Inertia::render('Vendor/Verify', [
             'result' => [
                 'found' => true,
@@ -52,6 +84,17 @@ class VerifyController extends Controller
                 ],
                 'status_label' => $active ? 'ACTIVE' : 'INACTIVE',
                 'expires_at' => $member->membership?->expires_at?->format('d M Y'),
+                'scan' => $scan ? [
+                    'scanned_at' => $scan->scanned_at?->format('d M Y H:i'),
+                    'expires_at' => $scan->expires_at?->format('d M Y H:i'),
+                    'hours_left' => $hoursLeft,
+                ] : ($lastScan ? [
+                    'scanned_at' => $lastScan->scanned_at?->format('d M Y H:i'),
+                    'expires_at' => $lastScan->expires_at?->format('d M Y H:i'),
+                    'hours_left' => $hoursLeft,
+                ] : null),
+                'within_window' => $withinWindow,
+                'scan_window_hours' => self::SCAN_WINDOW_HOURS,
             ],
         ]);
     }

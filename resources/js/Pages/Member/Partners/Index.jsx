@@ -15,25 +15,31 @@ function PromoCard({ promo }) {
     return (
         <Link
             href={route('member.promos.show', promo.id)}
-            className="group block overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift transition-all hover:-translate-y-1 hover:shadow-card"
+            className="group flex h-full items-start gap-3 overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift transition-all hover:-translate-y-1 hover:shadow-card"
         >
-            <div className="relative flex items-center justify-between gap-3 bg-ink px-5 py-5 text-paper">
-                <span className="shrink-0 font-display text-3xl font-bold text-gold-light">
-                    {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)}
-                </span>
-                <span className="min-w-0 truncate rounded-full bg-gold/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-gold-light">
-                    {promo.partner?.name}
-                </span>
-            </div>
-            <div className="p-5">
-                <h3 className="font-display font-bold leading-snug">{promo.title}</h3>
-                {promo.description && <p className="mt-2 line-clamp-2 text-sm text-slate">{promo.description}</p>}
-                {promo.min_purchase > 0 && (
-                    <p className="mt-2 font-mono text-[11px] text-gold-deep">Min. purchase {formatRupiah(promo.min_purchase)}</p>
-                )}
-                <p className="mt-4 font-mono text-[11px] uppercase tracking-wide text-slate-soft">
-                    {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
-                </p>
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 bg-ink px-4 py-3 text-paper">
+                    {typeof promo.sort_number === 'number' && (
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-gold text-[10px] font-bold text-ink">
+                            {promo.sort_number}
+                        </span>
+                    )}
+                    <span className="font-display text-lg font-bold text-gold-light">
+                        {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)}
+                    </span>
+                    <span className="ml-auto truncate rounded-full bg-gold/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-gold-light">
+                        {promo.partner?.name}
+                    </span>
+                </div>
+                <div className="p-4">
+                    <h3 className="line-clamp-2 font-display font-bold leading-snug text-ink">{promo.title}</h3>
+                    {promo.min_purchase > 0 && (
+                        <p className="mt-2 font-mono text-[10px] text-gold-deep">Min. {formatRupiah(promo.min_purchase)}</p>
+                    )}
+                    <p className="mt-3 font-mono text-[10px] uppercase tracking-wide text-slate-soft">
+                        {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
+                    </p>
+                </div>
             </div>
         </Link>
     );
@@ -43,26 +49,31 @@ function PartnerCard({ partner }) {
     return (
         <Link
             href={route('member.partners.show', partner.id)}
-            className="group block rounded-2xl border border-ink/10 bg-white/80 p-6 shadow-lift transition-all hover:-translate-y-1 hover:shadow-card"
+            className="group flex h-full items-start gap-3 rounded-2xl border border-ink/10 bg-white/80 p-4 shadow-lift transition-all hover:-translate-y-1 hover:shadow-card"
         >
-            <div className="flex items-center gap-4">
-                {partner.logo_url ? (
-                    <img src={partner.logo_url} alt={partner.name} className="h-12 w-12 rounded-xl object-cover" />
-                ) : (
-                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-ink font-display text-lg font-bold text-gold-light">
-                        {partner.name.charAt(0)}
-                    </span>
-                )}
-                <div className="min-w-0">
-                    <h3 className="font-display text-lg font-bold">{partner.name}</h3>
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-gold-deep">{partner.category}</p>
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                    {typeof partner.sort_number === 'number' && (
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-ink text-[10px] font-bold text-gold-light">
+                            {partner.sort_number}
+                        </span>
+                    )}
+                    <h3 className="truncate font-display font-bold leading-snug text-ink">{partner.name}</h3>
+                </div>
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-gold-deep">{partner.category}</p>
+                <p className="mt-2 line-clamp-2 text-xs text-slate">{partner.description}</p>
+                <div className="mt-3 flex items-center justify-between border-t border-ink/5 pt-3">
+                    <span className="text-[11px] text-slate-soft">{partner.promos_count} promos</span>
+                    <span className="text-xs font-semibold text-ink transition-transform group-hover:translate-x-1">→</span>
                 </div>
             </div>
-            <p className="mt-4 line-clamp-2 text-sm text-slate">{partner.description}</p>
-            <div className="mt-4 flex items-center justify-between border-t border-ink/5 pt-4">
-                <span className="text-xs text-slate-soft">{partner.promos_count} active promos</span>
-                <span className="text-sm font-semibold text-ink transition-transform group-hover:translate-x-1">→</span>
-            </div>
+            {partner.logo_url ? (
+                <img src={partner.logo_url} alt={partner.name} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+            ) : (
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-xl font-bold text-gold-light">
+                    {partner.name.charAt(0)}
+                </span>
+            )}
         </Link>
     );
 }
@@ -120,16 +131,13 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
 
     return (
         <>
-            <Head title="Partner" />
+            <Head title="Promo & Partner" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <p className="eyebrow">Partners</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Partner & Promos</h1>
-                        <p className="mt-2 max-w-xl text-sm text-slate">
-                            Exclusive offers and partner stores across the community.
-                        </p>
+                        <p className="eyebrow">Promo & Partner</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo & Partner</h1>
                     </div>
                     <div className="inline-flex w-fit rounded-full border border-ink/10 bg-white/70 p-1">
                         {TABS.map((t) => (

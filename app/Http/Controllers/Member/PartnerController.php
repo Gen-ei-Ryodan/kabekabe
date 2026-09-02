@@ -21,7 +21,10 @@ class PartnerController extends Controller
             $query->where('category', $category);
         }
 
-        $partners = $query->orderBy('name')->paginate(12)->withQueryString();
+        $partners = $query->orderByRaw('COALESCE(sort_number, 999999) ASC')
+            ->orderBy('name')
+            ->paginate(12)
+            ->withQueryString();
 
         return Inertia::render('Member/Partners/Index', [
             'partners' => $partners,
@@ -29,6 +32,7 @@ class PartnerController extends Controller
             'filters' => ['category' => $category],
             'promos' => Promo::query()
                 ->visibleToMembers()
+                ->orderByRaw('COALESCE(sort_number, 999999) ASC')
                 ->latest('end_date')
                 ->paginate(9)
                 ->withQueryString(),

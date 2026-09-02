@@ -1,9 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import MemberCard from '@/Components/MemberCard';
 import StatusChip from '@/Components/StatusChip';
 import Reveal from '@/Components/Reveal';
 import Avatar from '@/Components/Avatar';
+import PrimaryButton from '@/Components/PrimaryButton';
 import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
 
 function Portrait({ member }) {
@@ -18,11 +20,87 @@ function Portrait({ member }) {
     );
 }
 
+function VendorRanking({ vendors }) {
+    const medals = ['🥇', '🥈', '🥉', '4', '5'];
+
+    return (
+        <section aria-label="Vendor Ranking" className="flex flex-col gap-5">
+            <Reveal>
+                <div className="flex items-center gap-3">
+                    <p className="eyebrow">Congratulation</p>
+                    <span aria-hidden="true" className="h-px flex-1 bg-ink/10" />
+                </div>
+            </Reveal>
+
+            <div className="space-y-2.5">
+                {vendors.map((v, i) => (
+                    <Reveal key={v.partner_id} delay={i * 0.05}>
+                        <div className="card-surface flex items-center gap-4 p-4">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink font-display text-lg font-bold text-gold-light">
+                                {medals[i] || i + 1}
+                            </span>
+                            {v.logo_url ? (
+                                <img
+                                    src={v.logo_url}
+                                    alt={v.name}
+                                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                                />
+                            ) : (
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-gold-light">
+                                    {v.name?.charAt(0) || '?'}
+                                </span>
+                            )}
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate font-display font-bold text-ink">{v.name || '—'}</p>
+                                <p className="font-mono text-[11px] text-slate">{v.total} transactions</p>
+                            </div>
+                        </div>
+                    </Reveal>
+                ))}
+            </div>
+        </section>
+    );
+}
+
+function PromoPopup({ open, onClose, promo }) {
+    if (!promo) return null;
+
+    return (
+        <Modal show={open} maxWidth="md" closeable={true} onClose={onClose}>
+            <div className="overflow-hidden rounded-xl">
+                <div className="relative h-48 bg-ink">
+                    {promo.image_url ? (
+                        <img src={promo.image_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                        <div className="flex h-full items-center justify-center">
+                            <span className="font-display text-6xl font-bold text-gold">🎉</span>
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
+                </div>
+                <div className="p-6">
+                    <p className="eyebrow">Special Promo</p>
+                    <h3 className="mt-1 font-display text-xl font-bold text-ink">{promo.title}</h3>
+                    <p className="mt-2 text-sm text-slate">
+                        {promo.partner?.name && `from ${promo.partner.name}`}
+                    </p>
+                    <PrimaryButton
+                        className="mt-4 w-full justify-center"
+                        onClick={onClose}
+                    >
+                        Got it
+                    </PrimaryButton>
+                </div>
+            </div>
+        </Modal>
+    );
+}
+
 function BannerImage({ url }) {
     if (!url) return null;
 
     return (
-        <div className="relative h-36 w-full overflow-hidden sm:h-44">
+        <div className="relative h-32 w-full overflow-hidden sm:h-36">
             <img src={url} alt="" className="h-full w-full object-cover" />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink/25 to-transparent" />
         </div>
@@ -41,25 +119,16 @@ function PromoBanner({ promo, imageUrl }) {
             className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
         >
             <BannerImage url={imageUrl} />
-            <div className="relative flex items-center justify-between gap-3 bg-ink px-5 py-4 sm:px-6">
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 opacity-[0.12]"
-                    style={{
-                        backgroundImage:
-                            'radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)',
-                        backgroundSize: '14px 14px',
-                    }}
-                />
-                <span className="relative font-display text-2xl font-bold text-gold-light sm:text-3xl">
+            <div className="relative flex items-center justify-between gap-3 bg-ink px-4 py-3 sm:px-5">
+                <span className="relative font-display text-xl font-bold text-gold-light sm:text-2xl">
                     {discountLabel}
                 </span>
-                <span className="relative truncate rounded-full bg-gold/15 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-gold-light">
+                <span className="relative truncate rounded-full bg-gold/15 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-gold-light">
                     {promo.partner?.name}
                 </span>
             </div>
 
-            <div className="flex flex-1 flex-col p-5 sm:p-6">
+            <div className="flex flex-1 flex-col p-4 sm:p-5">
                 <p className="eyebrow">Promo</p>
                 <h3 className="mt-1.5 font-display font-bold leading-snug text-ink group-hover:text-ink-soft">
                     {promo.title}
@@ -68,12 +137,12 @@ function PromoBanner({ promo, imageUrl }) {
                     <p className="mt-2 text-xs text-slate">Min. purchase {formatRupiah(promo.min_purchase)}</p>
                 )}
 
-                <div className="mt-auto pt-5">
+                <div className="mt-auto pt-4">
                     <div className="flex items-center justify-between gap-3 border-t border-ink/5 pt-3">
-                        <span className="font-mono text-[11px] uppercase tracking-wide text-slate-soft">
+                        <span className="font-mono text-[10px] uppercase tracking-wide text-slate-soft">
                             {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
                         </span>
-                        <span className="shrink-0 font-mono text-[11px] font-semibold uppercase tracking-widest text-gold-deep transition-transform duration-300 group-hover:translate-x-0.5">
+                        <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-widest text-gold-deep transition-transform duration-300 group-hover:translate-x-0.5">
                             View →
                         </span>
                     </div>
@@ -151,7 +220,11 @@ function AgendaBanner({ agenda, imageUrl }) {
 
 function BannerZone({ banners }) {
     const count = banners.length;
-    const gridClass = count === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2';
+    const gridClass = count === 1
+        ? 'grid-cols-1'
+        : count === 2
+            ? 'grid-cols-2'
+            : 'grid-cols-3';
 
     return (
         <section aria-label="Featured" className="flex flex-col gap-6">
@@ -162,13 +235,9 @@ function BannerZone({ banners }) {
                 </div>
             </Reveal>
 
-            <div className={`grid gap-4 sm:gap-5 ${gridClass}`}>
+            <div className={`grid gap-3 sm:gap-4 ${gridClass}`}>
                 {banners.map((banner, i) => (
-                    <Reveal
-                        key={banner.id}
-                        delay={0.05 + i * 0.08}
-                        className={count === 3 && i === 2 ? 'sm:col-span-2' : ''}
-                    >
+                    <Reveal key={banner.id} delay={0.05 + i * 0.08}>
                         {banner.type === 'promo' && banner.promo ? (
                             <PromoBanner promo={banner.promo} imageUrl={banner.image_url} />
                         ) : banner.agenda ? (
@@ -181,13 +250,45 @@ function BannerZone({ banners }) {
     );
 }
 
-export default function Home({ member, banners = [] }) {
+export default function Home({ member, banners = [], vendor_ranking = [] }) {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
     const firstName = (member?.name || '').split(' ')[0];
     const active = member?.membership_status === 'active';
     const bannerList = (Array.isArray(banners) ? banners : []).slice(0, 3);
+
+    const [promoPopup, setPromoPopup] = useState(null);
+
+    useEffect(() => {
+        try {
+            const dismissed = localStorage.getItem('promo_popup_dismissed');
+            if (dismissed) {
+                return;
+            }
+        } catch {
+            // ignore
+        }
+
+        const activePromo = bannerList.find(
+            (b) => b.type === 'promo' && b.promo
+        );
+        if (activePromo) {
+            const timer = setTimeout(() => {
+                setPromoPopup(activePromo.promo);
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    const closePopup = () => {
+        setPromoPopup(null);
+        try {
+            localStorage.setItem('promo_popup_dismissed', '1');
+        } catch {
+            // ignore
+        }
+    };
 
     return (
         <>
@@ -227,8 +328,18 @@ export default function Home({ member, banners = [] }) {
                     </div>
                 </section>
 
+                {vendor_ranking.length > 0 && (
+                    <VendorRanking vendors={vendor_ranking} />
+                )}
+
                 {bannerList.length > 0 && <BannerZone banners={bannerList} />}
             </div>
+
+            <PromoPopup
+                open={!!promoPopup}
+                onClose={closePopup}
+                promo={promoPopup}
+            />
         </>
     );
 }

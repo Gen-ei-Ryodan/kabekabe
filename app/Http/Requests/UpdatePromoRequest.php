@@ -25,6 +25,7 @@ class UpdatePromoRequest extends FormRequest
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'terms' => ['nullable', 'string', 'max:2000'],
+            'sort_number' => ['nullable', 'integer', 'min:1'],
         ];
     }
 

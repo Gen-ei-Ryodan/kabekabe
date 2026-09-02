@@ -1,13 +1,15 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import QrCode from '@/Components/QrCode';
 import Avatar from '@/Components/Avatar';
+import Modal from '@/Components/Modal';
 import { formatDateEn } from '@/Utils/format';
 
 export default function MemberCard({ member }) {
     const wrapRef = useRef(null);
     const cardRef = useRef(null);
     const sheenRef = useRef(null);
+    const [photoOpen, setPhotoOpen] = useState(false);
 
     useEffect(() => {
         const wrap = wrapRef.current;
@@ -112,37 +114,37 @@ export default function MemberCard({ member }) {
                         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gold">
                             <span className="font-display text-sm font-bold text-paper">K</span>
                         </span>
-                        <span className="font-display text-sm font-bold uppercase tracking-[0.2em] text-ink">
+                        <span className="font-display text-sm font-bold uppercase tracking-[0.2em] text-paper">
                             KBKB
                         </span>
                     </div>
-                    <span className="card-line font-mono text-[10px] uppercase tracking-[0.3em] text-ink/60">
-                        Member Card
-                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setPhotoOpen(true)}
+                        className="card-line relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-full border-2 border-gold/60 transition-opacity hover:opacity-80"
+                        aria-label="Lihat foto"
+                    >
+                        <Avatar
+                            src={member.avatar_url}
+                            name={member.name}
+                            tone="dark"
+                            className="h-12 w-12 text-lg"
+                        />
+                    </button>
                 </div>
 
                 {/* body */}
                 <div className="relative flex items-center justify-between gap-4 px-5 sm:px-6">
                     <div className="min-w-0">
                         <div className="card-line mb-2 flex items-center gap-3">
-                            <Avatar
-                                src={member.avatar_url}
-                                name={member.name}
-                                tone="light"
-                                className="h-12 w-12 rounded-full border-2 border-gold text-lg"
-                            />
                             <div className="min-w-0">
-                                <p className="truncate font-display text-lg font-bold text-ink">{member.name}</p>
-                                <p className="font-mono text-[11px] tracking-wider text-gold-deep">{member.member_code}</p>
+                                <p className="truncate font-display text-lg font-bold text-paper">{member.name}</p>
+                                <p className="font-mono text-[11px] tracking-wider text-gold-light">{member.member_code}</p>
                             </div>
                         </div>
-                        <div className="card-line mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-ink/50">
+                        <div className="card-line mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-paper/50">
                             Joined {member.joined_at}
                         </div>
-                    </div>
-
-                    <div className="card-line shrink-0 rounded-xl bg-white p-2 shadow-lift">
-                        <QrCode value={member.card_token} size={92} />
                     </div>
                 </div>
 
@@ -165,22 +167,49 @@ export default function MemberCard({ member }) {
                             {member.membership_status_label}
                         </span>
                     </div>
-                    <div className="card-line text-right">
-                        <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink/50">Valid until</div>
-                        <div className="font-display text-sm font-bold text-ink">
-                            {member.expires_at ? formatDateEn(member.expires_at) : '—'}
+                    <div className="card-line flex flex-col items-end gap-2">
+                        <QrCode value={member.card_token} size={80} />
+                        <div className="text-right">
+                            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-paper/50">Valid until</div>
+                            <div className="font-display text-sm font-bold text-paper">
+                                {member.expires_at ? formatDateEn(member.expires_at) : '—'}
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {!isActive && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-paper/70 backdrop-blur-[2px]">
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-ink/70 backdrop-blur-[2px]">
                         <div className="rounded-2xl border border-ember/40 bg-ember/10 px-5 py-3 text-center">
-                            <p className="font-display text-sm font-bold text-ember-deep">Membership Inactive</p>
-                            <p className="mt-0.5 text-xs text-ink/70">Renew to use your benefits</p>
+                            <p className="font-display text-sm font-bold text-ember">Membership Inactive</p>
+                            <p className="mt-0.5 text-xs text-paper/70">Renew to use your benefits</p>
                         </div>
                     </div>
                 )}
+
+                {/* Photo lightbox */}
+                <Modal
+                    show={photoOpen}
+                    maxWidth="lg"
+                    closeable={true}
+                    onClose={() => setPhotoOpen(false)}
+                >
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-ink">
+                        {member.avatar_url ? (
+                            <img
+                                src={member.avatar_url}
+                                alt={member.name}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center">
+                                <span className="font-display text-8xl font-bold text-gold">
+                                    {member.name?.charAt(0) || 'M'}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </Modal>
             </div>
         </div>
     );
