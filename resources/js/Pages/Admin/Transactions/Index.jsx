@@ -5,7 +5,7 @@ import EmptyState from '@/Components/EmptyState';
 import TransactionDrawer from '@/Components/Admin/TransactionDrawer';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
-export default function TransactionIndex({ transactions, filters, drawer }) {
+export default function TransactionIndex({ transactions, filters, partners, members, drawer }) {
     const filter = useForm(filters);
 
     const applyFilter = (e) => {
@@ -37,7 +37,7 @@ export default function TransactionIndex({ transactions, filters, drawer }) {
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-                    <div className="grid flex-1 gap-3 sm:grid-cols-3">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                         <div>
                             <label className="label">From date</label>
                             <input type="date" className="input" value={filter.data.from || ''} onChange={(e) => filter.setData('from', e.target.value)} />
@@ -45,6 +45,24 @@ export default function TransactionIndex({ transactions, filters, drawer }) {
                         <div>
                             <label className="label">To date</label>
                             <input type="date" className="input" value={filter.data.to || ''} onChange={(e) => filter.setData('to', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Partner</label>
+                            <select className="input" value={filter.data.partner_id || ''} onChange={(e) => filter.setData('partner_id', e.target.value)}>
+                                <option value="">All</option>
+                                {partners.map((p) => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="label">Member</label>
+                            <select className="input" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)}>
+                                <option value="">All</option>
+                                {members.map((m) => (
+                                    <option key={m.id} value={m.id}>{m.name} ({m.member_code})</option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="label">Search</label>

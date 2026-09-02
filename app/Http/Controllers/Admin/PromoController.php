@@ -23,9 +23,17 @@ class PromoController extends Controller
         $query = Promo::query()->with('partner:id,name,category,logo');
 
         $status = $request->string('status')->toString();
+        $search = $request->string('search')->toString();
 
         if (in_array($status, ['pending', 'approved', 'rejected'], true)) {
             $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhereHas('partner', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            });
         }
 
         $promos = $query->orderByRaw("CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 WHEN 'rejected' THEN 2 ELSE 3 END")
@@ -42,7 +50,7 @@ class PromoController extends Controller
 
         return Inertia::render('Admin/Promos/Index', [
             'promos' => $promos,
-            'filters' => ['status' => $status],
+            'filters' => ['status' => $status, 'search' => $search],
             'drawer' => $drawer,
         ]);
     }

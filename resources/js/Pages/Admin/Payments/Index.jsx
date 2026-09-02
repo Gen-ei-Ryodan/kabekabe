@@ -24,6 +24,10 @@ export default function PaymentIndex({ payments, filters, drawer }) {
         router.get(route('admin.payments.index'), { ...filter.data }, { preserveState: true, replace: true });
     };
 
+    const clearFilter = () => {
+        router.get(route('admin.payments.index'), { status: filters.status || 'pending' }, { preserveState: true, replace: true });
+    };
+
     const openShow = (id) => {
         router.get(route('admin.payments.index'), { drawer: 'show', id }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
@@ -51,19 +55,27 @@ export default function PaymentIndex({ payments, filters, drawer }) {
                     </div>
                 </header>
 
-                <div className="flex flex-wrap gap-2">
-                    {['pending', 'approved', 'rejected'].map((status) => (
-                        <button
-                            key={status}
-                            onClick={() => router.get(route('admin.payments.index'), { status }, { preserveState: true, replace: true })}
-                            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                                (filters.status || 'pending') === status ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
-                            }`}
-                        >
-                            {STATUS_LABELS[status]}
-                        </button>
-                    ))}
-                </div>
+                <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label className="label">Search</label>
+                            <input type="text" className="input" placeholder="Invoice / member / code" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Status</label>
+                            <select className="input" value={filter.data.status || 'pending'} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                    </div>
+                </form>
 
                 {payments.data.length === 0 ? (
                     <EmptyState title="No payments" description="There are no payments with this status." />

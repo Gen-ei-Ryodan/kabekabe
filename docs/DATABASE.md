@@ -110,20 +110,32 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | read_at | timestamp nullable |
 | index | (user_id, read_at) |
 
-## community_infos
+## community_infos (Agenda Kegiatan)
 | kolom | tipe |
 |-------|------|
-| type | enum(event,announcement,news,agenda) index |
+| type | enum(event,agenda) index |
 | title | string |
 | content | text |
 | image | string nullable (storage path) |
 | event_date | timestamp nullable |
 | location | string nullable |
+| fee | unsignedBigInteger nullable (contribution/urunan amount in rupiah) |
 | is_published | boolean default false index |
 | published_at | timestamp nullable |
 | created_by | FK users nullable |
 | index | (type, is_published) |
 | appends | `image_url` = `/storage/{image}` |
+
+## event_non_members
+| kolom | tipe |
+|-------|------|
+| event_id | FK community_infos cascadeOnDelete |
+| name | string |
+| phone | string nullable |
+| email | string nullable |
+| attended | boolean default false |
+| attended_at | timestamp nullable |
+| index | (event_id, attended) |
 
 ## home_banners (slots home member, kurasi admin)
 | kolom | tipe |

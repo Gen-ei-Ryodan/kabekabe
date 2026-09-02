@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import EmptyState from '@/Components/EmptyState';
@@ -11,7 +11,18 @@ const TYPE_META = {
 
 const MAX_BANNERS = 3;
 
-export default function BannersIndex({ banners = [], promos = [], agendas = [], drawer = null }) {
+export default function BannersIndex({ banners = [], filters = {}, promos = [], agendas = [], drawer = null }) {
+    const filter = useForm(filters);
+
+    const applyFilter = (e) => {
+        e.preventDefault();
+        router.get(route('admin.banners.index'), { ...filter.data }, { preserveState: true, replace: true });
+    };
+
+    const clearFilter = () => {
+        router.get(route('admin.banners.index'), {}, { preserveState: true, replace: true });
+    };
+
     const openCreate = () => {
         router.get(route('admin.banners.index'), { drawer: 'create' }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
@@ -65,6 +76,31 @@ export default function BannersIndex({ banners = [], promos = [], agendas = [], 
                         )}
                     </div>
                 </header>
+
+                <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label className="label">Type</label>
+                            <select className="input" value={filter.data.type || ''} onChange={(e) => filter.setData('type', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="promo">Promo</option>
+                                <option value="agenda">Agenda</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="label">Status</label>
+                            <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                    </div>
+                </form>
 
                 <div className="card-surface flex items-center justify-between gap-4 px-5 py-4">
                     <p className="text-sm text-slate">

@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Pagination from '@/Components/Pagination';
@@ -8,12 +8,21 @@ import { formatDate } from '@/Utils/format';
 
 const TYPE_LABELS = {
     event: 'Event',
-    announcement: 'Announcement',
-    news: 'News',
     agenda: 'Agenda',
 };
 
 export default function CommunityIndex({ infos, filters, drawer }) {
+    const filter = useForm(filters);
+
+    const applyFilter = (e) => {
+        e.preventDefault();
+        router.get(route('admin.community.index'), { ...filter.data }, { preserveState: true, replace: true });
+    };
+
+    const clearFilter = () => {
+        router.get(route('admin.community.index'), { type: filters.type || undefined }, { preserveState: true, replace: true });
+    };
+
     const openCreate = () => {
         router.get(route('admin.community.index'), { drawer: 'create' }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
@@ -23,7 +32,7 @@ export default function CommunityIndex({ infos, filters, drawer }) {
     };
 
     const closeDrawer = () => {
-        router.get(route('admin.community.index'), { type: filters.type || undefined }, { only: ['drawer'], preserveState: true, preserveScroll: true });
+        router.get(route('admin.community.index'), { ...filters }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
     return (
         <>
@@ -32,29 +41,44 @@ export default function CommunityIndex({ infos, filters, drawer }) {
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="eyebrow">Community Content</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Community Content</h1>
-                        <p className="mt-2 text-sm text-slate">Manage community events, announcements, and agenda.</p>
+                        <p className="eyebrow">Agenda Kegiatan</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Agenda Kegiatan</h1>
+                        <p className="mt-2 text-sm text-slate">Manage events, attendance, and contribution billing.</p>
                     </div>
-                    <button onClick={openCreate} className="btn-gold">+ Create Content</button>
+                    <button onClick={openCreate} className="btn-gold">+ Create Agenda</button>
                 </header>
 
-                <div className="flex flex-wrap gap-2">
-                    {['all', 'event', 'announcement', 'news', 'agenda'].map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => router.get(route('admin.community.index'), { type: type === 'all' ? undefined : type }, { preserveState: true, replace: true })}
-                            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                                (filters.type || 'all') === type ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
-                            }`}
-                        >
-                            {type === 'all' ? 'All' : TYPE_LABELS[type] || type}
-                        </button>
-                    ))}
-                </div>
+                <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-3">
+                        <div>
+                            <label className="label">Search</label>
+                            <input type="text" className="input" placeholder="Title" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Type</label>
+                            <select className="input" value={filter.data.type || ''} onChange={(e) => filter.setData('type', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="event">Event</option>
+                                <option value="agenda">Agenda</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="label">Status</label>
+                            <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="published">Published</option>
+                                <option value="unpublished">Draft</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                    </div>
+                </form>
 
                 {infos.data.length === 0 ? (
-                    <EmptyState title="No content yet" description="Create the first community content." action={<button onClick={openCreate} className="btn-gold">Create content</button>} />
+                    <EmptyState title="No agenda yet" description="Create the first event agenda." action={<button onClick={openCreate} className="btn-gold">Create agenda</button>} />
                 ) : (
                     <div className="space-y-3">
                         {infos.data.map((info) => (
@@ -77,10 +101,11 @@ export default function CommunityIndex({ infos, filters, drawer }) {
                                     </div>
                                 </div>
                                 <div className="flex shrink-0 gap-2">
+                                    <Link href={route('admin.community.show', info.id)} className="btn-ghost text-xs">View</Link>
                                     <button onClick={() => openEdit(info.id)} className="btn-ghost text-xs">Edit</button>
                                     <button
                                         onClick={() => {
-                                            if (confirm('Delete this content?')) router.delete(route('admin.community.destroy', info.id));
+                                            if (confirm('Delete this agenda?')) router.delete(route('admin.community.destroy', info.id));
                                         }}
                                         className="btn-danger text-xs"
                                     >

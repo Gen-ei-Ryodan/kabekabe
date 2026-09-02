@@ -10,7 +10,11 @@ export default function PartnerIndex({ partners, filters, drawer }) {
 
     const applyFilter = (e) => {
         e.preventDefault();
-        router.get(route('admin.partners.index'), { search: filter.data.search || undefined }, { preserveState: true, replace: true });
+        router.get(route('admin.partners.index'), { ...filter.data }, { preserveState: true, replace: true });
+    };
+
+    const clearFilter = () => {
+        router.get(route('admin.partners.index'), {}, { preserveState: true, replace: true });
     };
 
     const openCreate = () => {
@@ -22,7 +26,7 @@ export default function PartnerIndex({ partners, filters, drawer }) {
     };
 
     const closeDrawer = () => {
-        router.get(route('admin.partners.index'), { search: filters.search || undefined }, { only: ['drawer'], preserveState: true, preserveScroll: true });
+        router.get(route('admin.partners.index'), { ...filters }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
 
     return (
@@ -39,11 +43,24 @@ export default function PartnerIndex({ partners, filters, drawer }) {
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-                    <div className="flex-1">
-                        <label className="label">Search</label>
-                        <input type="text" className="input" placeholder="Name / category" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label className="label">Search</label>
+                            <input type="text" className="input" placeholder="Name / category" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Status</label>
+                            <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
                     </div>
-                    <button type="submit" className="btn-ink text-xs">Apply</button>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                    </div>
                 </form>
 
                 {partners.data.length === 0 ? (
@@ -53,49 +70,66 @@ export default function PartnerIndex({ partners, filters, drawer }) {
                         action={<button onClick={openCreate} className="btn-gold">Add partner</button>}
                     />
                 ) : (
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {partners.data.map((partner, i) => (
-                            <div key={partner.id} className="card-surface flex flex-col gap-3 p-4">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="flex items-center gap-3">
-                                        {typeof partner.sort_number === 'number' && (
-                                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink text-xs font-bold text-gold-light">
-                                                {partner.sort_number}
-                                            </span>
-                                        )}
-                                        {partner.logo_url ? (
-                                            <img src={partner.logo_url} alt={partner.name} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
-                                        ) : (
-                                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-gold-light">{partner.name.charAt(0)}</span>
-                                        )}
-                                        <div className="min-w-0">
-                                            <h3 className="truncate font-display font-bold text-ink">{partner.name}</h3>
-                                            <p className="text-xs text-slate">{partner.category}</p>
-                                        </div>
-                                    </div>
-                                    <StatusChip status={partner.is_active ? 'active' : 'inactive'} label={partner.is_active ? 'Active' : 'Inactive'} pulse={partner.is_active} />
-                                </div>
-                                <p className="line-clamp-2 text-xs text-slate">{partner.description}</p>
-                                {partner.user && <p className="font-mono text-[10px] text-slate">Vendor: {partner.user.email}</p>}
-                                <div className="flex gap-2">
-                                    <button onClick={() => openEdit(partner.id)} className="btn-ghost flex-1 text-xs">Edit</button>
-                                    <button
-                                        onClick={() => router.put(route('admin.partners.toggle', partner.id), { is_active: !partner.is_active }, { preserveScroll: true })}
-                                        className="btn-ghost flex-1 text-xs"
-                                    >
-                                        {partner.is_active ? 'Deactivate' : 'Activate'}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (confirm(`Delete partner ${partner.name}?`)) router.delete(route('admin.partners.destroy', partner.id));
-                                        }}
-                                        className="btn-danger flex-1 text-xs"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="card-surface overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="border-b border-ink/10 bg-paper/60">
+                                <tr>
+                                    <th className="table-head px-4 py-3">Partner</th>
+                                    <th className="table-head px-4 py-3">Category</th>
+                                    <th className="table-head px-4 py-3">Vendor</th>
+                                    <th className="table-head px-4 py-3">Status</th>
+                                    <th className="table-head px-4 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-ink/5">
+                                {partners.data.map((partner) => (
+                                    <tr key={partner.id} className="transition-colors hover:bg-paper/50">
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-3">
+                                                {typeof partner.sort_number === 'number' && (
+                                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink text-xs font-bold text-gold-light">
+                                                        {partner.sort_number}
+                                                    </span>
+                                                )}
+                                                {partner.logo_url ? (
+                                                    <img src={partner.logo_url} alt={partner.name} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
+                                                ) : (
+                                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-gold-light">{partner.name.charAt(0)}</span>
+                                                )}
+                                                <div className="min-w-0">
+                                                    <h3 className="truncate font-display font-bold text-ink">{partner.name}</h3>
+                                                    <p className="line-clamp-1 max-w-xs text-xs text-slate">{partner.description}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-slate">{partner.category}</td>
+                                        <td className="px-4 py-3 text-slate">{partner.user?.email || '-'}</td>
+                                        <td className="px-4 py-3">
+                                            <StatusChip status={partner.is_active ? 'active' : 'inactive'} label={partner.is_active ? 'Active' : 'Inactive'} pulse={partner.is_active} />
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button onClick={() => openEdit(partner.id)} className="btn-ghost text-xs">Edit</button>
+                                                <button
+                                                    onClick={() => router.put(route('admin.partners.toggle', partner.id), { is_active: !partner.is_active }, { preserveScroll: true })}
+                                                    className="btn-ghost text-xs"
+                                                >
+                                                    {partner.is_active ? 'Deactivate' : 'Activate'}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm(`Delete partner ${partner.name}?`)) router.delete(route('admin.partners.destroy', partner.id));
+                                                    }}
+                                                    className="btn-danger text-xs"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
 

@@ -6,12 +6,56 @@ Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 - `ReportingService::adminDashboard()` menambahkan `active_promos` (promo approved & `is_active = true`).
 - Halaman `Admin/Dashboard.jsx`: stat card "Total Promo" kini menampilkan sub-label `${active_promos} Active` (sebelumnya `${pending_promos} pending review`).
 
+## 2026-09-03 — Agenda Kegiatan (refactor Community menu)
+- Menu admin **Community** diubah menjadi **Agenda Kegiatan**.
+- Tipe `community_infos` dibatasi hanya **event** dan **agenda**; tipe `announcement` dan `news` dihapus dari UI dan konstanta model.
+- Tambah kolom `fee` di `community_infos` untuk nominal urunan kegiatan.
+- Tambah tabel `event_non_members` untuk mencatat peserta non-member.
+- Halaman admin agenda mendukung:
+  - CRUD agenda/kegiatan dengan `fee`.
+  - Detail agenda (`admin.community.show`) dengan tab Attendance, Member Billing, Non-Member Participants.
+  - Pencatatan kehadiran member via **scan QR / member code** dan **dropdown manual**.
+  - Pencatatan kehadiran non-member via form manual.
+  - Pembuatan tagihan "Urunan Kegiatan" untuk member participant (Payment dengan `event_id`).
+- Update `DatabaseSeeder` agar hanya membuat data event/agenda.
+- Testing: `php artisan test` → 79 test PASS (505 assertions); build PASS.
+
 ## 2026-09-02 — UI member Promo & Partner: judul tunggal, card lebih kecil, foto partner di promo card
 - Halaman `member.partners.index`: menghilangkan judul berulang (eyebrow + h1 sama "Promo & Partner"), kini hanya ada 1 judul utama.
 - Card Promo & Partner diperkecil (padding, font, gambar logo lebih ringkas).
 - Promo card kini menampilkan foto/logo partner di sisi kanan, seragam dengan partner card.
 - Urutan promo & partner tetap di-sort berdasarkan `sort_number` ASC (null di akhir).
-- Fix test `VendorFlowTest`: tambahkan `MemberScan` agar 2 test pencatatan transaksi sesuai aturan 48-jam scan window (77 test PASS).
+- Fix test `VendorFlowTest`: tambahkan `MemberScan` agar 2 test pencatatan transaksi sesuai aturan 48-jam scan window.
+
+## 2026-09-02 — Admin Partners index: list/table layout + filters + Reports refinement
+- Tampilan **Admin Partners index** diubah dari **card grid** menjadi **list/table** seperti halaman Members. Kolom: Partner (logo + nama + deskripsi), Category, Vendor, Status, Actions.
+- Filter di semua halaman index admin sudah lengkap:
+  - **Members**: search + status.
+  - **Partners**: search + status.
+  - **Promos**: search + status.
+  - **Payments**: search + status.
+  - **Banners**: type + status.
+  - **Community**: search + type + status.
+  - **Transactions**: from/to + partner + member + search.
+  - **Reports**: filter per tab.
+- Admin Reports page (`admin.reports.index`) tetap 3 menu/tab: **Transaction Report**, **Member Statistics**, **Birthday Report**.
+- Testing: `php artisan test` → 79 test PASS (505 assertions); build PASS.
+
+## 2026-09-02 — Fix: Admin Reports (3 menus, monthly view, correct Birthday report)
+- Admin Reports page (`admin.reports.index`) dibuat menjadi 3 menu/tab: **Transaction Report**, **Member Statistics**, **Birthday Report**.
+- **Transaction Report**: Per Vendor dan Per Member kini ditampilkan per bulan (dari terendah ke tertinggi berdasarkan rentang tanggal filter), masing-masing di-sort dari transaksi/discount tertinggi ke terendah.
+- **Member Statistics**: direstruktur menjadi **1 tabel** dengan bulan sebagai kolom header dan baris: Member Terdaftar, Aktif→Non Aktif, Non Aktif→Aktif, Agama (Katolik/Kristen/Buddha/Hindu/Islam/Lainnya), Pria, Wanita, Umur (<21, 21–30, 30–40, 40–50, >50), Jumlah Kehadiran Acara.
+- **Birthday Report (Laporan HUT)**: diperbaiki agar benar-benar menampilkan daftar ulang tahun member, di-sort berdasarkan bulan dan tanggal (bukan kehadiran acara seperti sebelumnya).
+- `User` model `#[Fillable]` ditambahkan `gender`, `religion`, `birth_date`, `city` untuk mendukung demografi member.
+- `Admin/ReportController.php` direfactor: `by_partner`, `by_member`, `member_stats`, dan `birthdays` mengikuti struktur data baru; `summary` dan `transactions` tetap dipertahankan untuk backward compatibility test.
+- Testing: `php artisan test` → 79 test PASS (505 assertions); build PASS.
+
+## 2026-09-02 — Bugfix: jendela 48 jam scan vendor
+- Halaman `vendor.transactions.create` kini membuat catatan `MemberScan` saat member pertama kali di-resolve (scan QR atau input Member ID), sehingga transaksi bisa disimpan dalam jendela 48 jam setelah scan.
+- Pesan "Masa Input berakhir" hanya muncul setelah benar-benar melewati 48 jam; pesan error/UX diubah ke bahasa Inggris sesuai ketentuan UI.
+- `MemberScan::SCAN_WINDOW_HOURS` dan `MemberScan::startFor()` digunakan bersama oleh `VerifyController` dan `TransactionController` untuk menghindari duplikasi logika scan window.
+- Update `BUSINESS_RULES.md` tentang aturan 48 jam scan vendor.
+- Testing: 16 test `VendorFlowTest` PASS.
 
 ## 2026-08-22 — Home banners: slot kurasi admin (promo/agenda)
 - Home member disederhanakan: kartu digital + foto member + **maksimal 3 banner kurasi admin** (list promo otomatis dihapus dari Home).

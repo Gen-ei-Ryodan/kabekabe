@@ -20,12 +20,19 @@ class PartnerController extends Controller
         $query = Partner::query()->with('user:id,name,email');
 
         $search = $request->string('search')->toString();
+        $status = $request->string('status')->toString();
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('category', 'like', "%{$search}%");
             });
+        }
+
+        if ($status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('is_active', false);
         }
 
         $partners = $query->orderByRaw('COALESCE(sort_number, 999999) ASC')
@@ -41,7 +48,7 @@ class PartnerController extends Controller
 
         return Inertia::render('Admin/Partners/Index', [
             'partners' => $partners,
-            'filters' => ['search' => $search],
+            'filters' => ['search' => $search, 'status' => $status],
             'drawer' => $drawer,
         ]);
     }

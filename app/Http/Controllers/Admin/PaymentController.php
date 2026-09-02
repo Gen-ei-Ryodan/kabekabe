@@ -30,9 +30,17 @@ class PaymentController extends Controller
         $query = Payment::query()->with(['member:id,name,member_code,company', 'plan:id,name,duration_months']);
 
         $status = $request->string('status')->toString() ?: 'pending';
+        $search = $request->string('search')->toString();
 
         if (in_array($status, ['pending', 'approved', 'rejected', 'expired'], true)) {
             $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                    ->orWhereHas('member', fn ($m) => $m->where('name', 'like', "%{$search}%")->orWhere('member_code', 'like', "%{$search}%"));
+            });
         }
 
         $payments = $query->orderByRaw("CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 WHEN 'rejected' THEN 2 WHEN 'expired' THEN 3 ELSE 4 END")
@@ -48,7 +56,7 @@ class PaymentController extends Controller
 
         return Inertia::render('Admin/Payments/Index', [
             'payments' => $payments,
-            'filters' => ['status' => $status],
+            'filters' => ['status' => $status, 'search' => $search],
             'drawer' => $drawer,
         ]);
     }

@@ -12,7 +12,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Appends(['expires_in_human'])]
 class MemberScan extends Model
 {
+    public const SCAN_WINDOW_HOURS = 48;
+
     protected $table = 'member_scans';
+
+    public static function startFor(int $memberId, int $vendorId, ?string $ip = null): self
+    {
+        return self::create([
+            'member_id' => $memberId,
+            'scanned_by_vendor_id' => $vendorId,
+            'scanned_at' => now(),
+            'expires_at' => now()->addHours(self::SCAN_WINDOW_HOURS),
+            'ip_address' => $ip,
+        ]);
+    }
 
     protected function casts(): array
     {

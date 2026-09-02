@@ -13,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'password', 'role', 'phone', 'whatsapp', 'company', 'avatar', 'member_code', 'card_token', 'notification_settings'])]
+#[Fillable(['name', 'email', 'password', 'role', 'phone', 'whatsapp', 'company', 'avatar', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'city'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

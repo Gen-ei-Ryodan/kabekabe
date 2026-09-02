@@ -255,30 +255,9 @@ class DatabaseSeeder extends Seeder
             'content' => 'Acara tahunan komunitas untuk mempererat kebersamaan antar member. Hadirkan sesi networking, workshop, dan hiburan.',
             'event_date' => now()->addDays(14)->setHour(13),
             'location' => 'Ballroom Hotel Mulia, Jakarta',
+            'fee' => 150000,
             'is_published' => true,
             'published_at' => now()->subWeek(),
-            'created_by' => $admin->id,
-        ]);
-
-        CommunityInfo::create([
-            'type' => CommunityInfo::TYPE_ANNOUNCEMENT,
-            'title' => 'Perpanjangan Membership Sekarang Lebih Mudah',
-            'content' => 'Member dapat memperpanjang membership langsung melalui aplikasi dan mengunggah bukti pembayaran untuk verifikasi admin.',
-            'event_date' => now(),
-            'location' => null,
-            'is_published' => true,
-            'published_at' => now()->subDays(2),
-            'created_by' => $admin->id,
-        ]);
-
-        CommunityInfo::create([
-            'type' => CommunityInfo::TYPE_NEWS,
-            'title' => 'Kolaborasi Baru: Sentra x GymFit',
-            'content' => 'GymFit resmi menjadi partner resmi Sentra Community dengan benefit diskon khusus untuk seluruh member.',
-            'event_date' => now(),
-            'location' => null,
-            'is_published' => true,
-            'published_at' => now()->subDays(5),
             'created_by' => $admin->id,
         ]);
 
@@ -288,6 +267,7 @@ class DatabaseSeeder extends Seeder
             'content' => 'Rangkaian agenda gathering bulan ini: pembagian goodie bag, sesi sharing session, dan city tour.',
             'event_date' => now()->addDays(7)->setHour(9),
             'location' => 'Area Monas, Jakarta',
+            'fee' => 50000,
             'is_published' => true,
             'published_at' => now()->subDay(),
             'created_by' => $admin->id,

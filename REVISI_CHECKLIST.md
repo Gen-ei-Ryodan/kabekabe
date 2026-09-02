@@ -87,31 +87,48 @@ File: `resources/js/Pages/Admin/Dashboard.jsx`, `Admin/DashboardController.php`,
 - [x] Recent Transactions
 - [x] Runtime-verified: stats + 3 monthly periods
 
-## F.2 Filter (per index) - pending
-- [ ] Filter di semua index (Members, Partners, Promos, Payments, Banners, Community, Transactions)
+## F.2 Filter (per index)
+- [x] Filter di semua index admin:
+  - [x] Members: search + status
+  - [x] Partners: search + status
+  - [x] Promos: search + status
+  - [x] Payments: search + status
+  - [x] Banners: type + status
+  - [x] Community: search + type + status
+  - [x] Transactions: from/to + partner + member + search
+  - [x] Reports: filter per tab (vendor/member, gender/religion, month)
 
 ## F.3 Partner & Member list index
-- [x] Selesai (existing: Admin/Members/Index, Admin/Partners/Index)
+- [x] Members: tampilan list/table seperti sebelumnya.
+- [x] Partners: tampilan diubah dari card grid menjadi list/table seperti Members.
 
-## F.4 Pengaturan Agenda / Kegiatan - partial
-- [ ] Admin CRUD kegiatan (existing Community, may need event type filter)
-- [x] Tagihan "Urunan Kegiatan" via Payment.event_id (Poin C)
-- [ ] Peserta: Member, Non Member flow
+## F.4 Pengaturan Agenda / Kegiatan
+- [x] Menu Community diubah menjadi Agenda Kegiatan
+- [x] Tipe community_infos hanya event & agenda (announcement & news dihapus dari UI)
+- [x] Admin CRUD kegiatan dengan field fee (urunan)
+- [x] Detail kegiatan (`admin.community.show`) dengan tab Attendance, Member Billing, Non-Member Participants
+- [x] Attendance member via scan QR / member code
+- [x] Attendance member via dropdown manual
+- [x] Attendance non-member via input manual
+- [x] Tagihan "Urunan Kegiatan" via Payment.event_id untuk member participant
+- [x] Tabel `event_non_members` untuk peserta non-member
+- [x] Update DatabaseSeeder, docs, dan API_REFERENCE
 
 ## G. REPORTS
 File: `resources/js/Pages/Admin/Reports/Index.jsx`, `Admin/ReportController.php`
 
-- [x] Sort DESC + tampil per bulan (`orderByDesc('transacted_at')`)
-- [x] Laporan Transaksi per Vendor (Transaksi, Net Discount)
-- [x] Laporan Transaksi per Member
-- [x] Laporan Statistik Member (1 tabel):
+- [x] Dibuat 3 menu/tab: Transaction Report, Member Statistics, Birthday Report
+- [x] Sort DESC + tampil per bulan untuk Transaction Report
+- [x] Laporan Transaksi per Vendor (Transaksi, Net Discount) — per bulan, sort tertinggi→terendah
+- [x] Laporan Transaksi per Member — per bulan, sort tertinggi→terendah
+- [x] Laporan Statistik Member (1 tabel, bulan di bagian atas):
   - [x] Member Terdaftar
   - [x] Aktif → Non Aktif, Non Aktif → Aktif
   - [x] Agama: Katolik, Kristen, Buddha, Hindu, Islam, Lainnya
   - [x] Pria, Wanita
   - [x] Umur: <21, 21–30, 30–40, 40–50, >50
   - [x] Attendance event
-- [x] Laporan HUT: event attendance per bulan
+- [x] Laporan HUT: ulang tahun member, sort berdasarkan bulan dan tanggal
 - [x] Migration: `2026_09_02_040003_add_member_demographics_to_users_table`
 - [x] Migration: `2026_09_02_040004_create_member_scans_table` (juga utk Poin H)
 

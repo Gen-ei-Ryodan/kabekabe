@@ -8,19 +8,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['type', 'title', 'content', 'image', 'event_date', 'location', 'is_published', 'published_at', 'created_by'])]
+#[Fillable(['type', 'title', 'content', 'image', 'event_date', 'location', 'fee', 'is_published', 'published_at', 'created_by'])]
 #[Appends('image_url')]
 class CommunityInfo extends Model
 {
     use HasFactory;
 
     public const TYPE_EVENT = 'event';
-    public const TYPE_ANNOUNCEMENT = 'announcement';
-    public const TYPE_NEWS = 'news';
     public const TYPE_AGENDA = 'agenda';
 
-    public const TYPES = [self::TYPE_EVENT, self::TYPE_ANNOUNCEMENT, self::TYPE_NEWS, self::TYPE_AGENDA];
+    public const TYPES = [self::TYPE_EVENT, self::TYPE_AGENDA];
 
     protected function casts(): array
     {
@@ -28,12 +27,38 @@ class CommunityInfo extends Model
             'event_date' => 'datetime',
             'is_published' => 'boolean',
             'published_at' => 'datetime',
+            'fee' => 'integer',
         ];
     }
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(EventAttendance::class, 'event_id');
+    }
+
+    public function nonMembers(): HasMany
+    {
+        return $this->hasMany(EventNonMember::class, 'event_id');
+    }
+
+    public function memberAttendeesCount(): int
+    {
+        return $this->attendances()->count();
+    }
+
+    public function nonMemberAttendeesCount(): int
+    {
+        return $this->nonMembers()->where('attended', true)->count();
+    }
+
+    public function totalAttendeesCount(): int
+    {
+        return $this->memberAttendeesCount() + $this->nonMemberAttendeesCount();
     }
 
     public function imageUrl(): ?string
