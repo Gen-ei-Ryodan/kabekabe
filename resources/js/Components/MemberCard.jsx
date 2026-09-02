@@ -84,7 +84,7 @@ export default function MemberCard({ member }) {
         <div ref={wrapRef} className="relative [perspective:1200px]">
             <div
                 ref={cardRef}
-                className="relative aspect-[1600/962] min-h-[18rem] w-full max-w-full overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:max-w-md"
+                className="relative min-h-[18rem] w-full max-w-full overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:max-w-md"
                 style={{ transformStyle: 'preserve-3d' }}
             >
                 {/* Card base image */}
