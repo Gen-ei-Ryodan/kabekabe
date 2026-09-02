@@ -108,83 +108,82 @@ export default function MemberCard({ member }) {
                         style={{ transform: 'translateX(-130%)', visibility: 'hidden' }}
                     />
 
-                    {/* top row */}
-                <div className="relative flex items-start justify-between px-4 pt-4 sm:px-6 sm:pt-6">
-                    <div className="card-line flex items-center gap-2">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gold shadow-sm sm:h-7 sm:w-7">
-                            <span className="font-display text-xs font-bold text-paper sm:text-sm">K</span>
-                        </span>
-                        <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper drop-shadow sm:text-sm">
-                            KBKB
-                        </span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setPhotoOpen(true)}
-                        className="card-line group relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-full border-2 border-gold shadow-md transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-14 sm:w-14"
-                        aria-label="Lihat foto"
-                    >
-                        <Avatar
-                            src={member.avatar_url}
-                            name={member.name}
-                            tone="dark"
-                            className="h-12 w-12 text-lg sm:h-14 sm:w-14 sm:text-xl"
-                        />
-                        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-ink/0 transition-colors group-hover:bg-ink/20">
-                            <svg className="h-5 w-5 text-paper opacity-0 drop-shadow transition-opacity group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                            </svg>
-                        </span>
-                    </button>
-                </div>
-
-                {/* body */}
-                <div className="relative flex flex-1 flex-col justify-center px-4 sm:px-6">
-                    <div className="card-line mb-2 min-w-0 sm:mb-3">
-                        <p className="truncate font-display text-lg font-bold text-paper drop-shadow sm:text-2xl">
-                            {member.name}
-                        </p>
-                        <p className="font-mono text-[10px] tracking-wider text-gold-light drop-shadow sm:text-[11px]">
-                            {member.member_code}
-                        </p>
-                    </div>
-                    <div className="card-line font-mono text-[9px] uppercase tracking-[0.25em] text-paper/80 drop-shadow sm:text-[10px]">
-                        Joined {member.joined_at}
-                    </div>
-                </div>
-
-                {/* footer */}
-                <div className="relative mt-auto flex items-end justify-between gap-3 px-4 pb-5 pt-3 sm:gap-4 sm:px-6 sm:pb-8 sm:pt-6">
-                    <div className="card-line flex flex-col gap-1.5 sm:gap-2">
-                        <QrCode value={member.card_token} size={72} className="rounded-lg bg-white p-1 shadow-md" />
-                        <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">
-                            Scan here
-                        </div>
-                    </div>
-                    <div className="card-line flex flex-col items-end gap-1.5 sm:gap-2">
-                        <span
-                            className={`chip border px-2 py-0.5 text-[10px] font-semibold shadow sm:text-xs ${
-                                isActive
-                                    ? 'border-sage bg-sage text-white'
-                                    : 'border-ember bg-ember text-white'
-                            }`}
+                    {/* centered photo */}
+                    <div className="card-line flex flex-1 flex-col items-center justify-center px-4 pt-4 sm:px-6 sm:pt-6">
+                        <button
+                            type="button"
+                            onClick={() => setPhotoOpen(true)}
+                            className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-2xl border-2 border-gold shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-32 sm:w-32"
+                            aria-label="Lihat foto"
                         >
-                            {isActive && (
-                                <span className="relative flex h-1.5 w-1.5">
-                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
-                                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
-                                </span>
-                            )}
-                            {member.membership_status_label}
-                        </span>
-                        <div className="text-right">
-                            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Valid until</div>
-                            <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
-                                {member.expires_at ? formatDateEn(member.expires_at) : '—'}
+                            <Avatar
+                                src={member.avatar_url}
+                                name={member.name}
+                                tone="dark"
+                                className="h-24 w-24 text-3xl sm:h-32 sm:w-32 sm:text-4xl"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center bg-ink/0 transition-colors group-hover:bg-ink/20">
+                                <svg className="h-6 w-6 text-paper opacity-0 drop-shadow transition-opacity group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+
+                    {/* member info */}
+                    <div className="relative px-4 pb-5 sm:px-6 sm:pb-8">
+                        <div className="card-line mb-2 text-center sm:mb-3">
+                            <p className="truncate font-display text-xl font-bold text-paper drop-shadow sm:text-2xl">
+                                {member.name}
+                            </p>
+                        </div>
+
+                        <div className="card-line mb-2 flex items-center justify-between gap-3 sm:mb-3">
+                            <p className="font-mono text-[10px] tracking-wider text-gold-light drop-shadow sm:text-[11px]">
+                                {member.member_code}
+                            </p>
+                            <span
+                                className={`chip border px-2 py-0.5 text-[10px] font-semibold shadow sm:text-xs ${
+                                    isActive
+                                        ? 'border-sage bg-sage text-white'
+                                        : 'border-ember bg-ember text-white'
+                                }`}
+                            >
+                                {isActive && (
+                                    <span className="relative flex h-1.5 w-1.5">
+                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
+                                    </span>
+                                )}
+                                {member.membership_status_label}
+                            </span>
+                        </div>
+
+                        <div className="card-line flex items-end justify-between gap-3">
+                            <div>
+                                <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Joined</div>
+                                <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
+                                    {member.joined_at}
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Valid until</div>
+                                <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
+                                    {member.expires_at ? formatDateEn(member.expires_at) : '—'}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    {/* footer: QR */}
+                    <div className="relative mt-auto flex items-end justify-between gap-3 px-4 pb-5 pt-3 sm:gap-4 sm:px-6 sm:pb-8 sm:pt-6">
+                        <div className="card-line flex flex-col gap-1.5 sm:gap-2">
+                            <QrCode value={member.card_token} size={72} className="rounded-lg bg-white p-1 shadow-md" />
+                            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">
+                                Scan here
+                            </div>
+                        </div>
+                    </div>
             </div>
 
                 {/* Non-active overlay */}
