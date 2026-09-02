@@ -36,6 +36,7 @@ class ReportingService
         $inactiveMembers = max(0, $totalMembers - $activeMembers);
         $totalPartners = Partner::query()->count();
         $totalPromos = Promo::query()->count();
+        $activePromos = Promo::query()->where('status', Promo::STATUS_APPROVED)->where('is_active', true)->count();
         $pendingPromos = Promo::query()->where('status', Promo::STATUS_PENDING)->count();
         $pendingPayments = Payment::query()->where('status', Payment::STATUS_PENDING)->count();
         $totalVendors = User::query()->where('role', User::ROLE_VENDOR)->count();
@@ -94,6 +95,7 @@ class ReportingService
             'tomorrow_non_active' => $tomorrowNonActive,
             'total_partners' => $totalPartners,
             'total_promos' => $totalPromos,
+            'active_promos' => $activePromos,
             'pending_promos' => $pendingPromos,
             'pending_payments' => $pendingPayments,
             'total_vendors' => $totalVendors,

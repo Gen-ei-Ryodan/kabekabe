@@ -2,6 +2,10 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Admin dashboard: Total Promo stat menampilkan jumlah aktif
+- `ReportingService::adminDashboard()` menambahkan `active_promos` (promo approved & `is_active = true`).
+- Halaman `Admin/Dashboard.jsx`: stat card "Total Promo" kini menampilkan sub-label `${active_promos} Active` (sebelumnya `${pending_promos} pending review`).
+
 ## 2026-09-02 — UI member Promo & Partner: judul tunggal, card lebih kecil, foto partner di promo card
 - Halaman `member.partners.index`: menghilangkan judul berulang (eyebrow + h1 sama "Promo & Partner"), kini hanya ada 1 judul utama.
 - Card Promo & Partner diperkecil (padding, font, gambar logo lebih ringkas).

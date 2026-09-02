@@ -46,7 +46,7 @@ export default function AdminDashboard({ stats, recent_transactions }) {
                     <StatCard label="Total Member" value={stats.total_members} tone="ink" sub={`${stats.active_members} active · ${stats.inactive_members} inactive`} />
                     <StatCard label="Expired Next Month" value={stats.expired_next_month} tone="ember" sub={`${stats.expired_next_2_months} in 2 months`} />
                     <StatCard label="Partner" value={stats.total_partners} tone="paper" sub={`${stats.total_vendors} vendors`} />
-                    <StatCard label="Total Promo" value={stats.total_promos} tone="paper" sub={`${stats.pending_promos} pending review`} />
+                    <StatCard label="Total Promo" value={stats.total_promos} tone="paper" sub={`${stats.active_promos} Active`} />
                 </section>
 
                 <section className="grid gap-4 sm:grid-cols-3 lg:grid-cols-3">
