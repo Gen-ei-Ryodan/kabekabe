@@ -2,7 +2,6 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import AppLogo from '@/Components/AppLogo';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Login() {
@@ -26,10 +25,6 @@ export default function Login() {
             <Head title="Login" />
 
             <div className="flex min-h-screen flex-col items-center bg-paper px-4 py-8 sm:justify-center sm:py-12">
-                <Link href="/" className="group mb-6">
-                    <AppLogo className="h-9 w-auto transition-transform group-hover:scale-105" />
-                </Link>
-
                 {/* One form wraps the whole login so submit + Enter both work.
                     Input fields are absolutely positioned inside the card image,
                     while the submit button + register link are rendered normally
