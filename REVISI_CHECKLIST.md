@@ -99,7 +99,8 @@ File: `resources/js/Pages/Admin/Dashboard.jsx`, `Admin/DashboardController.php`,
   - [x] Reports: filter per tab (vendor/member, gender/religion, month)
 
 ## F.3 Partner & Member list index
-- [x] Selesai (existing: Admin/Members/Index, Admin/Partners/Index)
+- [x] Members: tampilan list/table seperti sebelumnya.
+- [x] Partners: tampilan diubah dari card grid menjadi list/table seperti Members.
 
 ## F.4 Pengaturan Agenda / Kegiatan - partial
 - [ ] Admin CRUD kegiatan (existing Community, may need event type filter)

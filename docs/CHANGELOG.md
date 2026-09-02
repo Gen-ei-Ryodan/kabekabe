@@ -2,16 +2,17 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
-## 2026-09-02 — Admin index filters + Reports refinement
-- Tambahkan filter di semua halaman index admin:
-  - **Members**: search + status (sudah ada, dipertahankan).
-  - **Partners**: search + status (active/inactive).
-  - **Promos**: search + status (pending/approved/rejected).
-  - **Payments**: search + status (pending/approved/rejected/expired).
-  - **Banners**: type (promo/agenda) + status (active/inactive).
-  - **Community**: search + type + status (published/unpublished).
-  - **Transactions**: from/to + partner dropdown + member dropdown + search.
-  - **Reports**: filter per tab (vendor/member untuk Transaction Report; gender/religion untuk Member Statistics; month untuk Birthday Report).
+## 2026-09-02 — Admin Partners index: list/table layout + filters + Reports refinement
+- Tampilan **Admin Partners index** diubah dari **card grid** menjadi **list/table** seperti halaman Members. Kolom: Partner (logo + nama + deskripsi), Category, Vendor, Status, Actions.
+- Filter di semua halaman index admin sudah lengkap:
+  - **Members**: search + status.
+  - **Partners**: search + status.
+  - **Promos**: search + status.
+  - **Payments**: search + status.
+  - **Banners**: type + status.
+  - **Community**: search + type + status.
+  - **Transactions**: from/to + partner + member + search.
+  - **Reports**: filter per tab.
 - Admin Reports page (`admin.reports.index`) tetap 3 menu/tab: **Transaction Report**, **Member Statistics**, **Birthday Report**.
 - Testing: `php artisan test` → 79 test PASS (505 assertions); build PASS.
 
