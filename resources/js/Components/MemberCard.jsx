@@ -84,27 +84,31 @@ export default function MemberCard({ member }) {
         <div ref={wrapRef} className="relative [perspective:1200px]">
             <div
                 ref={cardRef}
-                className="relative flex aspect-[1600/962] w-full max-w-full flex-col overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:max-w-md"
+                className="relative w-full max-w-full overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:max-w-md"
                 style={{ transformStyle: 'preserve-3d' }}
             >
-                {/* Card background image */}
-                <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: 'url(/bglogin.png)' }}
+                {/* Card base image */}
+                <img
+                    src="/bglogin.png"
+                    alt="Member card background"
+                    className="w-full select-none"
+                    draggable="false"
                 />
 
-                {/* Readability overlays */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-ink/60 via-ink/30 to-transparent" />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-ink/40" />
+                {/* Content overlay */}
+                <div className="absolute inset-0 flex flex-col">
+                    {/* Readability overlays */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-ink/60 via-ink/30 to-transparent" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-ink/40" />
 
-                {/* sheen sweep */}
-                <div
-                    ref={sheenRef}
-                    className="pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                    style={{ transform: 'translateX(-130%)', visibility: 'hidden' }}
-                />
+                    {/* sheen sweep */}
+                    <div
+                        ref={sheenRef}
+                        className="pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                        style={{ transform: 'translateX(-130%)', visibility: 'hidden' }}
+                    />
 
-                {/* top row */}
+                    {/* top row */}
                 <div className="relative flex items-start justify-between px-4 pt-4 sm:px-6 sm:pt-6">
                     <div className="card-line flex items-center gap-2">
                         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gold shadow-sm sm:h-7 sm:w-7">
@@ -181,10 +185,11 @@ export default function MemberCard({ member }) {
                         </div>
                     </div>
                 </div>
+            </div>
 
                 {/* Non-active overlay */}
                 {!isActive && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-ink/60 backdrop-blur-[2px]">
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-ink/60 backdrop-blur-[2px]">
                         <svg
                             className="h-32 w-32 text-ember/90 drop-shadow-lg sm:h-40 sm:w-40"
                             fill="none"
@@ -200,31 +205,31 @@ export default function MemberCard({ member }) {
                         </div>
                     </div>
                 )}
-
-                {/* Photo lightbox */}
-                <Modal
-                    show={photoOpen}
-                    maxWidth="lg"
-                    closeable={true}
-                    onClose={() => setPhotoOpen(false)}
-                >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-ink">
-                        {member.avatar_url ? (
-                            <img
-                                src={member.avatar_url}
-                                alt={member.name}
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                                <span className="font-display text-8xl font-bold text-gold">
-                                    {member.name?.charAt(0) || 'M'}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                </Modal>
             </div>
+
+            {/* Photo lightbox */}
+            <Modal
+                show={photoOpen}
+                maxWidth="lg"
+                closeable={true}
+                onClose={() => setPhotoOpen(false)}
+            >
+                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-ink">
+                    {member.avatar_url ? (
+                        <img
+                            src={member.avatar_url}
+                            alt={member.name}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                            <span className="font-display text-8xl font-bold text-gold">
+                                {member.name?.charAt(0) || 'M'}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </Modal>
         </div>
     );
 }
