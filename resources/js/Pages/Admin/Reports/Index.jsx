@@ -1,21 +1,13 @@
 import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
-const RELIGION_LABELS = {
-    islam: 'Islam',
-    kristen: 'Kristen',
-    katolik: 'Katolik',
-    buddha: 'Buddha',
-    hindu: 'Hindu',
-    lainnya: 'Lainnya',
-};
-
-const GENDER_LABELS = {
-    male: 'Pria',
-    female: 'Wanita',
-    other: 'Lainnya',
-};
+const TABS = [
+    { key: 'transaction', label: 'Transaction Report' },
+    { key: 'member_stats', label: 'Member Statistics' },
+    { key: 'birthday', label: 'Birthday Report' },
+];
 
 function StatBox({ label, value, tone = 'ink' }) {
     return (
@@ -28,23 +20,185 @@ function StatBox({ label, value, tone = 'ink' }) {
     );
 }
 
-function MonthTable({ title, data }) {
-    if (!data || data.length === 0) return null;
+function TabButton({ active, onClick, label }) {
     return (
-        <div className="rounded-2xl border border-ink/10 bg-white/60 p-4">
-            <p className="eyebrow">{title}</p>
-            <table className="mt-2 w-full text-left text-xs">
-                <thead>
-                    <tr className="border-b border-ink/10">
-                        <th className="table-head px-2 py-1">Bulan</th>
-                        <th className="table-head px-2 py-1 text-right">Total</th>
+        <button
+            type="button"
+            onClick={onClick}
+            className={`relative px-4 py-2 text-sm font-medium transition-colors ${
+                active ? 'text-ink' : 'text-slate hover:text-ink'
+            }`}
+        >
+            {label}
+            {active && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-gold" />}
+        </button>
+    );
+}
+
+function SectionTitle({ children }) {
+    return <h2 className="font-display text-lg font-bold">{children}</h2>;
+}
+
+function EmptyRow({ colSpan, message }) {
+    return (
+        <tr>
+            <td colSpan={colSpan} className="px-2 py-4 text-center text-sm text-slate">
+                {message}
+            </td>
+        </tr>
+    );
+}
+
+function TransactionDetails({ transactions }) {
+    return (
+        <section className="card-surface overflow-x-auto p-6">
+            <SectionTitle>Transaction Details</SectionTitle>
+            <table className="mt-4 w-full text-left text-sm">
+                <thead className="border-b border-ink/10">
+                    <tr>
+                        <th className="table-head px-2 py-2">Date</th>
+                        <th className="table-head px-2 py-2">No. Transaction</th>
+                        <th className="table-head px-2 py-2">Member</th>
+                        <th className="table-head px-2 py-2">Partner</th>
+                        <th className="table-head px-2 py-2 text-right">Total</th>
+                        <th className="table-head px-2 py-2 text-right">Discount</th>
+                        <th className="table-head px-2 py-2 text-right">Net</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-ink/5">
-                    {data.map((row, i) => (
-                        <tr key={i}>
-                            <td className="px-2 py-1 font-mono">{row.month}</td>
-                            <td className="px-2 py-1 text-right font-bold">{row.total}</td>
+                    {transactions.length === 0 ? (
+                        <EmptyRow colSpan={7} message="No transactions for this period." />
+                    ) : (
+                        transactions.map((t) => (
+                            <tr key={t.id}>
+                                <td className="px-2 py-2 text-slate">{formatDate(t.transacted_at)}</td>
+                                <td className="px-2 py-2 font-mono text-xs">{t.transaction_number}</td>
+                                <td className="px-2 py-2">{t.member?.name}</td>
+                                <td className="px-2 py-2">{t.partner?.name}</td>
+                                <td className="px-2 py-2 text-right">{formatRupiah(t.total_amount)}</td>
+                                <td className="px-2 py-2 text-right text-sage">-{formatRupiah(t.discount_amount)}</td>
+                                <td className="px-2 py-2 text-right font-bold">{formatRupiah(t.net_amount)}</td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </section>
+    );
+}
+
+function VendorReport({ data }) {
+    if (data.length === 0) {
+        return <p className="text-sm text-slate">No vendor transaction data for this period.</p>;
+    }
+
+    return (
+        <div className="space-y-6">
+            {data.map((month) => (
+                <div key={month.month} className="card-surface overflow-x-auto p-6">
+                    <p className="eyebrow mb-3">{month.label}</p>
+                    <table className="w-full text-left text-sm">
+                        <thead className="border-b border-ink/10">
+                            <tr>
+                                <th className="table-head px-2 py-2">Vendor</th>
+                                <th className="table-head px-2 py-2 text-right">Transactions</th>
+                                <th className="table-head px-2 py-2 text-right">Net Discount</th>
+                                <th className="table-head px-2 py-2 text-right">Net Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-ink/5">
+                            {month.rows.length === 0 ? (
+                                <EmptyRow colSpan={4} message="No data for this month." />
+                            ) : (
+                                month.rows.map((row, i) => (
+                                    <tr key={i}>
+                                        <td className="px-2 py-2 font-semibold">{row.partner}</td>
+                                        <td className="px-2 py-2 text-right">{row.total_transactions}</td>
+                                        <td className="px-2 py-2 text-right text-ember">-{formatRupiah(row.net_discount)}</td>
+                                        <td className="px-2 py-2 text-right font-bold">{formatRupiah(row.net_sales)}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function MemberReport({ data }) {
+    if (data.length === 0) {
+        return <p className="text-sm text-slate">No member transaction data for this period.</p>;
+    }
+
+    return (
+        <div className="space-y-6">
+            {data.map((month) => (
+                <div key={month.month} className="card-surface overflow-x-auto p-6">
+                    <p className="eyebrow mb-3">{month.label}</p>
+                    <table className="w-full text-left text-sm">
+                        <thead className="border-b border-ink/10">
+                            <tr>
+                                <th className="table-head px-2 py-2">Member</th>
+                                <th className="table-head px-2 py-2">Member Code</th>
+                                <th className="table-head px-2 py-2 text-right">Transactions</th>
+                                <th className="table-head px-2 py-2 text-right">Total Discount</th>
+                                <th className="table-head px-2 py-2 text-right">Net Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-ink/5">
+                            {month.rows.length === 0 ? (
+                                <EmptyRow colSpan={5} message="No data for this month." />
+                            ) : (
+                                month.rows.map((row, i) => (
+                                    <tr key={i}>
+                                        <td className="px-2 py-2 font-semibold">{row.member}</td>
+                                        <td className="px-2 py-2 font-mono text-xs">{row.member_code}</td>
+                                        <td className="px-2 py-2 text-right">{row.total_transactions}</td>
+                                        <td className="px-2 py-2 text-right text-ember">-{formatRupiah(row.total_discount)}</td>
+                                        <td className="px-2 py-2 text-right font-bold">{formatRupiah(row.net_sales)}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function MemberStatisticsTable({ data }) {
+    const { months, month_labels, rows } = data;
+
+    if (!months || months.length === 0) {
+        return <p className="text-sm text-slate">No data available.</p>;
+    }
+
+    return (
+        <div className="card-surface overflow-x-auto p-6">
+            <SectionTitle>Laporan Statistik Member</SectionTitle>
+            <table className="mt-4 w-full min-w-[48rem] text-left text-sm">
+                <thead className="border-b border-ink/10">
+                    <tr>
+                        <th className="table-head sticky left-0 bg-paper px-3 py-2">Metric</th>
+                        {month_labels.map((label, i) => (
+                            <th key={months[i]} className="table-head px-3 py-2 text-right">
+                                {label}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-ink/5">
+                    {rows.map((row) => (
+                        <tr key={row.key}>
+                            <td className="sticky left-0 bg-paper px-3 py-2 font-semibold">{row.label}</td>
+                            {row.values.map((value, i) => (
+                                <td key={months[i]} className="px-3 py-2 text-right">
+                                    {value}
+                                </td>
+                            ))}
                         </tr>
                     ))}
                 </tbody>
@@ -53,18 +207,50 @@ function MonthTable({ title, data }) {
     );
 }
 
-export default function ReportIndex({ summary, by_partner, by_member, transactions, member_stats, filters }) {
+function BirthdayReport({ birthdays }) {
+    if (birthdays.length === 0) {
+        return <p className="text-sm text-slate">No birthday data available.</p>;
+    }
+
+    return (
+        <div className="space-y-6">
+            {birthdays.map((group) => (
+                <div key={group.month} className="card-surface overflow-x-auto p-6">
+                    <p className="eyebrow mb-3">{group.month_label}</p>
+                    <table className="w-full text-left text-sm">
+                        <thead className="border-b border-ink/10">
+                            <tr>
+                                <th className="table-head px-2 py-2">Date</th>
+                                <th className="table-head px-2 py-2">Member</th>
+                                <th className="table-head px-2 py-2">Member Code</th>
+                                <th className="table-head px-2 py-2 text-right">Age</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-ink/5">
+                            {group.members.map((member) => (
+                                <tr key={member.id}>
+                                    <td className="px-2 py-2 font-mono text-xs">{formatDate(member.birth_date)}</td>
+                                    <td className="px-2 py-2 font-semibold">{member.name}</td>
+                                    <td className="px-2 py-2 font-mono text-xs">{member.member_code}</td>
+                                    <td className="px-2 py-2 text-right">{member.age}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+export default function ReportIndex({ summary, by_partner, by_member, transactions, member_stats, birthdays, filters }) {
     const filter = useForm(filters);
+    const [activeTab, setActiveTab] = useState('transaction');
 
     const applyFilter = (e) => {
         e.preventDefault();
         filter.get(route('admin.reports.index'), { preserveState: true, replace: true });
     };
-
-    const relig = member_stats?.religions || {};
-    const gen = member_stats?.genders || {};
-    const age = member_stats?.ages || {};
-    const eventsByMonth = member_stats?.events_by_month || [];
 
     return (
         <>
@@ -97,122 +283,51 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
                     <StatBox label="Net Sales" value={formatRupiah(summary.net_amount)} tone="gold" />
                 </section>
 
-                <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <section className="card-surface p-6">
-                        <h2 className="font-display text-lg font-bold">Laporan Transaksi Per Vendor</h2>
-                        <div className="mt-4 space-y-2">
-                            {by_partner.length === 0 ? (
-                                <p className="text-sm text-slate">No data for this period yet.</p>
-                            ) : (
-                                by_partner.map((d) => (
-                                    <div key={d.partner} className="flex items-center justify-between gap-4 border-b border-ink/5 pb-2 text-sm last:border-0">
-                                        <span className="font-semibold">{d.partner}</span>
-                                        <span className="text-slate">{d.total_transactions} trans</span>
-                                        <span className="text-slate">{formatRupiah(d.total_discount)} disc</span>
-                                        <span className="font-display font-bold">{formatRupiah(d.net_sales)}</span>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </section>
-
-                    <section className="card-surface p-6">
-                        <h2 className="font-display text-lg font-bold">Laporan Transaksi Per Member</h2>
-                        <div className="mt-4 space-y-2">
-                            {by_member.length === 0 ? (
-                                <p className="text-sm text-slate">No data for this period yet.</p>
-                            ) : (
-                                by_member.map((d) => (
-                                    <div key={d.member} className="flex items-center justify-between gap-4 border-b border-ink/5 pb-2 text-sm last:border-0">
-                                        <span className="font-semibold">{d.member}</span>
-                                        <span className="text-slate">{d.member_code}</span>
-                                        <span className="font-display font-bold">{formatRupiah(d.net_sales)}</span>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </section>
-
-                    <section className="card-surface p-6">
-                        <h2 className="font-display text-lg font-bold">Laporan HUT</h2>
-                        <MonthTable title="Kehadiran Acara per Bulan" data={eventsByMonth} />
-                    </section>
-                </section>
-
-                <section className="card-surface p-6">
-                    <h2 className="font-display text-lg font-bold">Laporan Statistik Member</h2>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <StatBox label="Member Terdaftar" value={member_stats?.total_registered || 0} />
-                        <StatBox label="Aktif → Non Aktif" value={member_stats?.active_to_inactive || 0} tone="ember" />
-                        <StatBox label="Non Aktif → Aktif" value={member_stats?.inactive_to_active || 0} tone="sage" />
+                <div className="border-b border-ink/10">
+                    <div className="flex gap-2">
+                        {TABS.map((tab) => (
+                            <TabButton
+                                key={tab.key}
+                                active={activeTab === tab.key}
+                                onClick={() => setActiveTab(tab.key)}
+                                label={tab.label}
+                            />
+                        ))}
                     </div>
+                </div>
 
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="rounded-2xl border border-ink/10 bg-white/60 p-4">
-                            <p className="eyebrow">Agama</p>
-                            <div className="mt-2 space-y-1 text-xs">
-                                {Object.entries(RELIGION_LABELS).map(([key, label]) => (
-                                    <div key={key} className="flex items-center justify-between">
-                                        <span>{label}</span>
-                                        <span className="font-bold">{relig[key] || 0}</span>
-                                    </div>
-                                ))}
+                {activeTab === 'transaction' && (
+                    <div className="flex flex-col gap-8">
+                        <section className="card-surface p-6">
+                            <SectionTitle>Laporan Transaksi Per Vendor</SectionTitle>
+                            <div className="mt-4">
+                                <VendorReport data={by_partner} />
                             </div>
-                        </div>
-                        <div className="rounded-2xl border border-ink/10 bg-white/60 p-4">
-                            <p className="eyebrow">Gender</p>
-                            <div className="mt-2 space-y-1 text-xs">
-                                {Object.entries(GENDER_LABELS).map(([key, label]) => (
-                                    <div key={key} className="flex items-center justify-between">
-                                        <span>{label}</span>
-                                        <span className="font-bold">{gen[key] || 0}</span>
-                                    </div>
-                                ))}
+                        </section>
+
+                        <section className="card-surface p-6">
+                            <SectionTitle>Laporan Transaksi Per Member</SectionTitle>
+                            <div className="mt-4">
+                                <MemberReport data={by_member} />
                             </div>
-                        </div>
-                        <div className="rounded-2xl border border-ink/10 bg-white/60 p-4">
-                            <p className="eyebrow">Umur</p>
-                            <div className="mt-2 space-y-1 text-xs">
-                                {['<21', '21-30', '30-40', '40-50', '>50'].map((key) => (
-                                    <div key={key} className="flex items-center justify-between">
-                                        <span>{key}</span>
-                                        <span className="font-bold">{age[key] || 0}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        </section>
+
+                        <TransactionDetails transactions={transactions} />
                     </div>
-                </section>
+                )}
 
-                <section className="card-surface overflow-x-auto p-6">
-                    <h2 className="font-display text-lg font-bold">Transaction Details</h2>
-                    <table className="mt-4 w-full text-left text-sm">
-                        <thead className="border-b border-ink/10">
-                            <tr>
-                                <th className="table-head px-2 py-2">Date</th>
-                                <th className="table-head px-2 py-2">No. Transaction</th>
-                                <th className="table-head px-2 py-2">Member</th>
-                                <th className="table-head px-2 py-2">Partner</th>
-                                <th className="table-head px-2 py-2 text-right">Total</th>
-                                <th className="table-head px-2 py-2 text-right">Discount</th>
-                                <th className="table-head px-2 py-2 text-right">Net</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-ink/5">
-                            {transactions.map((t) => (
-                                <tr key={t.id}>
-                                    <td className="px-2 py-2 text-slate">{formatDate(t.transacted_at)}</td>
-                                    <td className="px-2 py-2 font-mono text-xs">{t.transaction_number}</td>
-                                    <td className="px-2 py-2">{t.member?.name}</td>
-                                    <td className="px-2 py-2">{t.partner?.name}</td>
-                                    <td className="px-2 py-2 text-right">{formatRupiah(t.total_amount)}</td>
-                                    <td className="px-2 py-2 text-right text-sage">-{formatRupiah(t.discount_amount)}</td>
-                                    <td className="px-2 py-2 text-right font-bold">{formatRupiah(t.net_amount)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </section>
+                {activeTab === 'member_stats' && (
+                    <MemberStatisticsTable data={member_stats} />
+                )}
+
+                {activeTab === 'birthday' && (
+                    <section className="card-surface p-6">
+                        <SectionTitle>Laporan HUT</SectionTitle>
+                        <div className="mt-4">
+                            <BirthdayReport birthdays={birthdays} />
+                        </div>
+                    </section>
+                )}
             </div>
         </>
     );

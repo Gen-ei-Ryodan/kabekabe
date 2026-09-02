@@ -101,17 +101,18 @@ File: `resources/js/Pages/Admin/Dashboard.jsx`, `Admin/DashboardController.php`,
 ## G. REPORTS
 File: `resources/js/Pages/Admin/Reports/Index.jsx`, `Admin/ReportController.php`
 
-- [x] Sort DESC + tampil per bulan (`orderByDesc('transacted_at')`)
-- [x] Laporan Transaksi per Vendor (Transaksi, Net Discount)
-- [x] Laporan Transaksi per Member
-- [x] Laporan Statistik Member (1 tabel):
+- [x] Dibuat 3 menu/tab: Transaction Report, Member Statistics, Birthday Report
+- [x] Sort DESC + tampil per bulan untuk Transaction Report
+- [x] Laporan Transaksi per Vendor (Transaksi, Net Discount) — per bulan, sort tertinggi→terendah
+- [x] Laporan Transaksi per Member — per bulan, sort tertinggi→terendah
+- [x] Laporan Statistik Member (1 tabel, bulan di bagian atas):
   - [x] Member Terdaftar
   - [x] Aktif → Non Aktif, Non Aktif → Aktif
   - [x] Agama: Katolik, Kristen, Buddha, Hindu, Islam, Lainnya
   - [x] Pria, Wanita
   - [x] Umur: <21, 21–30, 30–40, 40–50, >50
   - [x] Attendance event
-- [x] Laporan HUT: event attendance per bulan
+- [x] Laporan HUT: ulang tahun member, sort berdasarkan bulan dan tanggal
 - [x] Migration: `2026_09_02_040003_add_member_demographics_to_users_table`
 - [x] Migration: `2026_09_02_040004_create_member_scans_table` (juga utk Poin H)
 

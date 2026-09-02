@@ -2,6 +2,15 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-02 — Fix: Admin Reports (3 menus, monthly view, correct Birthday report)
+- Admin Reports page (`admin.reports.index`) dibuat menjadi 3 menu/tab: **Transaction Report**, **Member Statistics**, **Birthday Report**.
+- **Transaction Report**: Per Vendor dan Per Member kini ditampilkan per bulan (dari terendah ke tertinggi berdasarkan rentang tanggal filter), masing-masing di-sort dari transaksi/discount tertinggi ke terendah.
+- **Member Statistics**: direstruktur menjadi **1 tabel** dengan bulan sebagai kolom header dan baris: Member Terdaftar, Aktif→Non Aktif, Non Aktif→Aktif, Agama (Katolik/Kristen/Buddha/Hindu/Islam/Lainnya), Pria, Wanita, Umur (&lt;21, 21–30, 30–40, 40–50, &gt;50), Jumlah Kehadiran Acara.
+- **Birthday Report (Laporan HUT)**: diperbaiki agar benar-benar menampilkan daftar ulang tahun member, di-sort berdasarkan bulan dan tanggal (bukan kehadiran acara seperti sebelumnya).
+- `User` model `#[Fillable]` ditambahkan `gender`, `religion`, `birth_date`, `city` untuk mendukung demografi member.
+- `Admin/ReportController.php` direfactor: `by_partner`, `by_member`, `member_stats`, dan `birthdays` mengikuti struktur data baru; `summary` dan `transactions` tetap dipertahankan untuk backward compatibility test.
+- Testing: `php artisan test` → 79 test PASS (505 assertions); build PASS.
+
 ## 2026-09-02 — Bugfix: jendela 48 jam scan vendor
 - Halaman `vendor.transactions.create` kini membuat catatan `MemberScan` saat member pertama kali di-resolve (scan QR atau input Member ID), sehingga transaksi bisa disimpan dalam jendela 48 jam setelah scan.
 - Pesan "Masa Input berakhir" hanya muncul setelah benar-benar melewati 48 jam; pesan error/UX diubah ke bahasa Inggris sesuai ketentuan UI.
