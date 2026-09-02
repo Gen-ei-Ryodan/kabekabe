@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\MemberScan;
 use App\Models\Partner;
 use App\Models\Promo;
 use App\Models\Transaction;
@@ -31,6 +32,17 @@ class VendorFlowTest extends TestCase
         ]);
 
         return $member->fresh();
+    }
+
+    private function scanMember(User $member, User $vendor): MemberScan
+    {
+        return MemberScan::create([
+            'member_id' => $member->id,
+            'scanned_by_vendor_id' => $vendor->id,
+            'scanned_at' => now(),
+            'expires_at' => now()->addHours(48),
+            'ip_address' => '127.0.0.1',
+        ]);
     }
 
     public function test_vendor_dashboard_renders_stats(): void
@@ -201,6 +213,7 @@ class VendorFlowTest extends TestCase
     {
         [$partner, $vendor] = $this->vendorWithPartner();
         $member = $this->activeMember();
+        $this->scanMember($member, $vendor);
 
         $promo = Promo::factory()->create([
             'partner_id' => $partner->id,
@@ -268,6 +281,7 @@ class VendorFlowTest extends TestCase
     {
         [$partner, $vendor] = $this->vendorWithPartner();
         $member = $this->activeMember();
+        $this->scanMember($member, $vendor);
 
         $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
             'transaction_number' => 'POS-88123',

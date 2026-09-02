@@ -2,6 +2,13 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-02 — UI member Promo & Partner: judul tunggal, card lebih kecil, foto partner di promo card
+- Halaman `member.partners.index`: menghilangkan judul berulang (eyebrow + h1 sama "Promo & Partner"), kini hanya ada 1 judul utama.
+- Card Promo & Partner diperkecil (padding, font, gambar logo lebih ringkas).
+- Promo card kini menampilkan foto/logo partner di sisi kanan, seragam dengan partner card.
+- Urutan promo & partner tetap di-sort berdasarkan `sort_number` ASC (null di akhir).
+- Fix test `VendorFlowTest`: tambahkan `MemberScan` agar 2 test pencatatan transaksi sesuai aturan 48-jam scan window (77 test PASS).
+
 ## 2026-08-22 — Home banners: slot kurasi admin (promo/agenda)
 - Home member disederhanakan: kartu digital + foto member + **maksimal 3 banner kurasi admin** (list promo otomatis dihapus dari Home).
 - Tabel `home_banners` (type promo|agenda, promo_id/agenda_id FK nullable, sort_order, is_active) + model `HomeBanner` + factory + seeder (3 banner demo: 2 promo + 1 agenda).
