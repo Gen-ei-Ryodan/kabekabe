@@ -168,7 +168,7 @@ export default function TransactionCreate({ promos, member }) {
                                         Scanned at <span className="font-mono font-semibold text-ink">{member.scan.scanned_at}</span>
                                         {' · '}
                                         <span className={member.within_window ? 'font-mono font-semibold text-sage-deep' : 'font-mono font-semibold text-ember'}>
-                                            {member.within_window ? `${member.scan.hours_left}h left` : 'Masa Input berakhir'}
+                                            {member.within_window ? `${member.scan.hours_left}h left` : 'Input window expired'}
                                         </span>
                                     </p>
                                 )}
@@ -181,9 +181,9 @@ export default function TransactionCreate({ promos, member }) {
                         {verified && member.within_window === false && (
                             <div className="rounded-2xl border border-ember/30 bg-ember/10 p-6 text-center">
                                 <span className="text-3xl">⛔</span>
-                                <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Masa Input berakhir</h3>
+                                <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Input window expired</h3>
                                 <p className="mt-2 max-w-sm text-sm text-slate">
-                                    Anda sudah melewati waktu 48 jam setelah scan. Hubungi Admin untuk edit.
+                                    More than 48 hours have passed since the card scan. Please scan again or contact admin to edit.
                                 </p>
                             </div>
                         )}

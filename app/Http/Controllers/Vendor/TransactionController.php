@@ -105,15 +105,17 @@ class TransactionController extends Controller
                 ->latest('scanned_at')
                 ->first();
 
-            if ($latest) {
-                $withinWindow = $latest->expires_at->isFuture();
-                $hoursLeft = $withinWindow ? (int) round(now()->diffInMinutes($latest->expires_at, false) / 60) : 0;
-                $scanData = [
-                    'scanned_at' => $latest->scanned_at?->format('d M Y H:i'),
-                    'expires_at' => $latest->expires_at?->format('d M Y H:i'),
-                    'hours_left' => $hoursLeft,
-                ];
+            if (! $latest || $latest->isExpired()) {
+                $latest = MemberScan::startFor($member->id, $vendor->id, request()->ip());
             }
+
+            $withinWindow = $latest->expires_at->isFuture();
+            $hoursLeft = $withinWindow ? (int) round(now()->diffInMinutes($latest->expires_at, false) / 60) : 0;
+            $scanData = [
+                'scanned_at' => $latest->scanned_at?->format('d M Y H:i'),
+                'expires_at' => $latest->expires_at?->format('d M Y H:i'),
+                'hours_left' => $hoursLeft,
+            ];
         }
 
         return [

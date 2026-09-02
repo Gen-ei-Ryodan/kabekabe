@@ -36,7 +36,7 @@ class TransactionService
             ->first();
 
         if (! $activeScan) {
-            throw new \DomainException('Masa Input berakhir, Hubungi Admin untuk edit.');
+            throw new \DomainException('Input window has expired. Please scan the member card again or contact admin to edit.');
         }
 
         if ($promo !== null && $promo->partner_id !== $partner->id) {

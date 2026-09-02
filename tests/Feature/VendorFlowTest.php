@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\MemberScan;
 use App\Models\Partner;
 use App\Models\Promo;
 use App\Models\Transaction;
@@ -31,6 +32,17 @@ class VendorFlowTest extends TestCase
         ]);
 
         return $member->fresh();
+    }
+
+    private function createActiveScan(User $member, User $vendor): MemberScan
+    {
+        return MemberScan::create([
+            'member_id' => $member->id,
+            'scanned_by_vendor_id' => $vendor->id,
+            'scanned_at' => now()->subHour(),
+            'expires_at' => now()->addHours(47),
+            'ip_address' => '127.0.0.1',
+        ]);
     }
 
     public function test_vendor_dashboard_renders_stats(): void
@@ -202,6 +214,8 @@ class VendorFlowTest extends TestCase
         [$partner, $vendor] = $this->vendorWithPartner();
         $member = $this->activeMember();
 
+        $this->createActiveScan($member, $vendor);
+
         $promo = Promo::factory()->create([
             'partner_id' => $partner->id,
             'status' => Promo::STATUS_APPROVED,
@@ -269,6 +283,8 @@ class VendorFlowTest extends TestCase
         [$partner, $vendor] = $this->vendorWithPartner();
         $member = $this->activeMember();
 
+        $this->createActiveScan($member, $vendor);
+
         $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
             'transaction_number' => 'POS-88123',
             'member_code' => $member->member_code,
@@ -305,6 +321,46 @@ class VendorFlowTest extends TestCase
             'promo_id' => $foreignPromo->id,
             'total' => 200000,
         ])->assertNotFound();
+
+        $this->assertDatabaseCount('transactions', 0);
+    }
+
+    public function test_transaction_create_page_opens_scan_window_for_member(): void
+    {
+        [, $vendor] = $this->vendorWithPartner();
+        $member = $this->activeMember();
+
+        $this->actingAs($vendor)->get(route('vendor.transactions.create', ['scan' => $member->card_token]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Vendor/Transactions/Create')
+                ->where('member.found', true)
+                ->where('member.within_window', true)
+            );
+
+        $this->assertDatabaseHas('member_scans', [
+            'member_id' => $member->id,
+            'scanned_by_vendor_id' => $vendor->id,
+        ]);
+    }
+
+    public function test_transaction_record_fails_when_scan_window_expired(): void
+    {
+        [$partner, $vendor] = $this->vendorWithPartner();
+        $member = $this->activeMember();
+
+        MemberScan::create([
+            'member_id' => $member->id,
+            'scanned_by_vendor_id' => $vendor->id,
+            'scanned_at' => now()->subHours(49),
+            'expires_at' => now()->subHour(),
+            'ip_address' => '127.0.0.1',
+        ]);
+
+        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+            'member_code' => $member->member_code,
+            'total' => 100000,
+        ])->assertSessionHasErrors('member_code');
 
         $this->assertDatabaseCount('transactions', 0);
     }

@@ -2,6 +2,13 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-02 — Bugfix: jendela 48 jam scan vendor
+- Halaman `vendor.transactions.create` kini membuat catatan `MemberScan` saat member pertama kali di-resolve (scan QR atau input Member ID), sehingga transaksi bisa disimpan dalam jendela 48 jam setelah scan.
+- Pesan "Masa Input berakhir" hanya muncul setelah benar-benar melewati 48 jam; pesan error/UX diubah ke bahasa Inggris sesuai ketentuan UI.
+- `MemberScan::SCAN_WINDOW_HOURS` dan `MemberScan::startFor()` digunakan bersama oleh `VerifyController` dan `TransactionController` untuk menghindari duplikasi logika scan window.
+- Update `BUSINESS_RULES.md` tentang aturan 48 jam scan vendor.
+- Testing: 16 test `VendorFlowTest` PASS.
+
 ## 2026-08-22 — Home banners: slot kurasi admin (promo/agenda)
 - Home member disederhanakan: kartu digital + foto member + **maksimal 3 banner kurasi admin** (list promo otomatis dihapus dari Home).
 - Tabel `home_banners` (type promo|agenda, promo_id/agenda_id FK nullable, sort_order, is_active) + model `HomeBanner` + factory + seeder (3 banner demo: 2 promo + 1 agenda).

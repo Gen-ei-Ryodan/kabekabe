@@ -11,8 +11,6 @@ use Inertia\Response;
 
 class VerifyController extends Controller
 {
-    public const SCAN_WINDOW_HOURS = 48;
-
     public function index(): Response
     {
         return Inertia::render('Vendor/Verify', [
@@ -59,15 +57,9 @@ class VerifyController extends Controller
                 $withinWindow = true;
                 $hoursLeft = (int) round(now()->diffInMinutes($lastScan->expires_at, false) / 60);
             } else {
-                $scan = MemberScan::create([
-                    'member_id' => $member->id,
-                    'scanned_by_vendor_id' => $vendor->id,
-                    'scanned_at' => now(),
-                    'expires_at' => now()->addHours(self::SCAN_WINDOW_HOURS),
-                    'ip_address' => $request->ip(),
-                ]);
+                $scan = MemberScan::startFor($member->id, $vendor->id, $request->ip());
                 $withinWindow = true;
-                $hoursLeft = self::SCAN_WINDOW_HOURS;
+                $hoursLeft = MemberScan::SCAN_WINDOW_HOURS;
             }
         }
 
@@ -94,7 +86,7 @@ class VerifyController extends Controller
                     'hours_left' => $hoursLeft,
                 ] : null),
                 'within_window' => $withinWindow,
-                'scan_window_hours' => self::SCAN_WINDOW_HOURS,
+                'scan_window_hours' => MemberScan::SCAN_WINDOW_HOURS,
             ],
         ]);
     }

@@ -21,6 +21,7 @@
 
 ## Transaksi Benefit
 - Hanya member **ACTIVE** yang boleh memakai benefit (`DomainException` bila tidak).
+- Transaksi hanya dapat dicatat dalam jendela **48 jam setelah scan kartu member** oleh vendor yang sama. Jika melewati 48 jam, vendor wajib scan ulang.
 - Promo yang dipakai **harus milik partner yang sama** dengan yang mencatat transaksi.
 - Diskon dihitung: `percent` → `round(total × value / 100)`; `nominal` → `min(value, total)`.
 - Diskon hanya berlaku jika `total >= min_purchase`.
