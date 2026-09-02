@@ -24,7 +24,7 @@ class HomeController extends Controller
             ->groupBy('partner_id')
             ->orderBy('total', 'desc')
             ->limit(5)
-            ->with('partner:id,name,logo_url')
+            ->with('partner:id,name,logo')
             ->get()
             ->map(fn (Transaction $t) => [
                 'partner_id' => $t->partner_id,
