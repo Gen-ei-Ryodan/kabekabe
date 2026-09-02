@@ -12,4 +12,8 @@ DOC=/home/alurelab/membership.solusisurabaya.com
 rm -rf $DOC/build && cp -r public/build $DOC/build
 mkdir -p $DOC/storage
 rm -rf $DOC/storage && cp -r storage/app/public $DOC/storage
+# copy static assets (images, favicon, etc.) from public/ — but skip build/ & storage/
+cp public/bglogin.png $DOC/bglogin.png 2>/dev/null || true
+cp public/favicon.ico $DOC/favicon.ico 2>/dev/null || true
+cp public/robots.txt $DOC/robots.txt 2>/dev/null || true
 echo DEPLOY OK $(date)
