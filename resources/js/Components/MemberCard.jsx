@@ -108,22 +108,22 @@ export default function MemberCard({ member }) {
                         style={{ transform: 'translateX(-130%)', visibility: 'hidden' }}
                     />
 
-                    {/* centered photo */}
-                    <div className="card-line flex flex-1 flex-col items-center justify-center px-4 pt-4 sm:px-6 sm:pt-6">
+                    {/* top row: photo right */}
+                    <div className="card-line relative flex items-start justify-end px-4 pt-4 sm:px-6 sm:pt-6">
                         <button
                             type="button"
                             onClick={() => setPhotoOpen(true)}
-                            className="group relative h-24 w-24 cursor-pointer overflow-hidden rounded-2xl border-2 border-gold shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-32 sm:w-32"
+                            className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-xl border-2 border-gold shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-28 sm:w-28"
                             aria-label="Lihat foto"
                         >
                             <Avatar
                                 src={member.avatar_url}
                                 name={member.name}
                                 tone="dark"
-                                className="h-24 w-24 text-3xl sm:h-32 sm:w-32 sm:text-4xl"
+                                className="h-20 w-20 text-2xl sm:h-28 sm:w-28 sm:text-3xl"
                             />
                             <span className="absolute inset-0 flex items-center justify-center bg-ink/0 transition-colors group-hover:bg-ink/20">
-                                <svg className="h-6 w-6 text-paper opacity-0 drop-shadow transition-opacity group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <svg className="h-5 w-5 text-paper opacity-0 drop-shadow transition-opacity group-hover:opacity-100 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                                 </svg>
                             </span>
@@ -131,8 +131,8 @@ export default function MemberCard({ member }) {
                     </div>
 
                     {/* member info */}
-                    <div className="relative px-4 pb-5 sm:px-6 sm:pb-8">
-                        <div className="card-line mb-2 text-center sm:mb-3">
+                    <div className="relative mt-auto px-4 pb-5 sm:px-6 sm:pb-8">
+                        <div className="card-line mb-2 sm:mb-3">
                             <p className="truncate font-display text-xl font-bold text-paper drop-shadow sm:text-2xl">
                                 {member.name}
                             </p>
@@ -159,7 +159,7 @@ export default function MemberCard({ member }) {
                             </span>
                         </div>
 
-                        <div className="card-line flex items-end justify-between gap-3">
+                        <div className="card-line mb-4 flex items-end justify-between gap-3 sm:mb-6">
                             <div>
                                 <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Joined</div>
                                 <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
@@ -173,10 +173,8 @@ export default function MemberCard({ member }) {
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* footer: QR */}
-                    <div className="relative mt-auto flex items-end justify-between gap-3 px-4 pb-5 pt-3 sm:gap-4 sm:px-6 sm:pb-8 sm:pt-6">
+                        {/* QR */}
                         <div className="card-line flex flex-col gap-1.5 sm:gap-2">
                             <QrCode value={member.card_token} size={72} className="rounded-lg bg-white p-1 shadow-md" />
                             <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">
