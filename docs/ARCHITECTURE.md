@@ -53,7 +53,7 @@ routes/
 ## Frontend Pattern
 - **Layout per role**: komponen `*Layout.jsx` menyediakan shell (sidebar/nav) via `.layout` static property pada halaman.
 - **Reveal**: komponen `Reveal` memakai GSAP ScrollTrigger untuk animasi masuk.
-- **MemberCard**: kartu gold 3D tilt (GSAP), QR dari `card_token`.
+- **MemberCard**: kartu digital 3D tilt (GSAP) dengan latar `bglogin.png`, foto member kanan atas (klik untuk lightbox), QR di kiri bawah, status membership berwarna kontras, dan overlay X untuk member non-active.
 - **StatusChip**: tone `active/inactive/pending/approved/rejected/expired`.
 - **Ziggy**: `route()` dipakai di seluruh frontend; `@routes` diberi CSP nonce via override directive di AppServiceProvider.
 

@@ -2,6 +2,14 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-02 — Redesain kartu member digital
+- `MemberCard` kini menggunakan `bglogin.png` sebagai latar belakang kartu.
+- Foto member dipindah ke kanan atas, tetap dapat diklik untuk membuka tampilan besar (lightbox).
+- QR Code dipindah ke kiri bawah dengan label "Scan here".
+- Status membership (`Active` / `Inactive`) ditampilkan dengan chip kontras tinggi (sage/ember solid dengan teks putih).
+- Jika membership non-active, kartu diberi overlay gelap + ikon X besar di tengah sebagai penanda tidak dapat digunakan.
+- Build PASS.
+
 ## 2026-08-22 — Home banners: slot kurasi admin (promo/agenda)
 - Home member disederhanakan: kartu digital + foto member + **maksimal 3 banner kurasi admin** (list promo otomatis dihapus dari Home).
 - Tabel `home_banners` (type promo|agenda, promo_id/agenda_id FK nullable, sort_order, is_active) + model `HomeBanner` + factory + seeder (3 banner demo: 2 promo + 1 agenda).
