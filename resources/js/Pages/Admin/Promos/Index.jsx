@@ -14,6 +14,10 @@ export default function PromoIndex({ promos, filters, drawer }) {
         router.get(route('admin.promos.index'), { ...filter.data }, { preserveState: true, replace: true });
     };
 
+    const clearFilter = () => {
+        router.get(route('admin.promos.index'), { status: filters.status || undefined }, { preserveState: true, replace: true });
+    };
+
     const openEdit = (id) => {
         router.get(route('admin.promos.index'), { drawer: 'edit', id }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
@@ -32,19 +36,27 @@ export default function PromoIndex({ promos, filters, drawer }) {
                     <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo & Partner</h1>
                 </header>
 
-                <div className="flex flex-wrap gap-2">
-                    {['all', 'pending', 'approved', 'rejected'].map((status) => (
-                        <button
-                            key={status}
-                            onClick={() => router.get(route('admin.promos.index'), { status: status === 'all' ? undefined : status }, { preserveState: true, replace: true })}
-                            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                                (filters.status || 'all') === status ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
-                            }`}
-                        >
-                            {status === 'all' ? 'All' : status === 'pending' ? 'Pending' : status === 'approved' ? 'Approved' : 'Rejected'}
-                        </button>
-                    ))}
-                </div>
+                <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label className="label">Search</label>
+                            <input type="text" className="input" placeholder="Title / partner" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Status</label>
+                            <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                    </div>
+                </form>
 
                 {promos.data.length === 0 ? (
                     <EmptyState title="No promos found" description="No promos match this filter yet." />

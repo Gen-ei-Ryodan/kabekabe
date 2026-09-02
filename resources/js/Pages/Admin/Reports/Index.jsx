@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
@@ -7,6 +7,22 @@ const TABS = [
     { key: 'transaction', label: 'Transaction Report' },
     { key: 'member_stats', label: 'Member Statistics' },
     { key: 'birthday', label: 'Birthday Report' },
+];
+
+const MONTH_OPTIONS = [
+    { value: '', label: 'All months' },
+    { value: '1', label: 'January' },
+    { value: '2', label: 'February' },
+    { value: '3', label: 'March' },
+    { value: '4', label: 'April' },
+    { value: '5', label: 'May' },
+    { value: '6', label: 'June' },
+    { value: '7', label: 'July' },
+    { value: '8', label: 'August' },
+    { value: '9', label: 'September' },
+    { value: '10', label: 'October' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' },
 ];
 
 function StatBox({ label, value, tone = 'ink' }) {
@@ -87,14 +103,22 @@ function TransactionDetails({ transactions }) {
     );
 }
 
-function VendorReport({ data }) {
-    if (data.length === 0) {
-        return <p className="text-sm text-slate">No vendor transaction data for this period.</p>;
+function VendorReport({ data, partnerFilter }) {
+    const filtered = useMemo(() => {
+        if (!partnerFilter) return data;
+        return data.map((month) => ({
+            ...month,
+            rows: month.rows.filter((row) => row.partner === partnerFilter),
+        })).filter((month) => month.rows.length > 0);
+    }, [data, partnerFilter]);
+
+    if (filtered.length === 0) {
+        return <p className="text-sm text-slate">No vendor transaction data for this filter.</p>;
     }
 
     return (
         <div className="space-y-6">
-            {data.map((month) => (
+            {filtered.map((month) => (
                 <div key={month.month} className="card-surface overflow-x-auto p-6">
                     <p className="eyebrow mb-3">{month.label}</p>
                     <table className="w-full text-left text-sm">
@@ -127,14 +151,22 @@ function VendorReport({ data }) {
     );
 }
 
-function MemberReport({ data }) {
-    if (data.length === 0) {
-        return <p className="text-sm text-slate">No member transaction data for this period.</p>;
+function MemberReport({ data, memberFilter }) {
+    const filtered = useMemo(() => {
+        if (!memberFilter) return data;
+        return data.map((month) => ({
+            ...month,
+            rows: month.rows.filter((row) => row.member === memberFilter),
+        })).filter((month) => month.rows.length > 0);
+    }, [data, memberFilter]);
+
+    if (filtered.length === 0) {
+        return <p className="text-sm text-slate">No member transaction data for this filter.</p>;
     }
 
     return (
         <div className="space-y-6">
-            {data.map((month) => (
+            {filtered.map((month) => (
                 <div key={month.month} className="card-surface overflow-x-auto p-6">
                     <p className="eyebrow mb-3">{month.label}</p>
                     <table className="w-full text-left text-sm">
@@ -169,8 +201,16 @@ function MemberReport({ data }) {
     );
 }
 
-function MemberStatisticsTable({ data }) {
+function MemberStatisticsTable({ data, genderFilter, religionFilter }) {
     const { months, month_labels, rows } = data;
+
+    const visibleRows = useMemo(() => {
+        return rows.filter((row) => {
+            if (row.key.startsWith('religion_') && religionFilter && row.key !== `religion_${religionFilter}`) return false;
+            if ((row.key === 'male' || row.key === 'female') && genderFilter && row.key !== genderFilter) return false;
+            return true;
+        });
+    }, [rows, genderFilter, religionFilter]);
 
     if (!months || months.length === 0) {
         return <p className="text-sm text-slate">No data available.</p>;
@@ -191,30 +231,41 @@ function MemberStatisticsTable({ data }) {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-ink/5">
-                    {rows.map((row) => (
-                        <tr key={row.key}>
-                            <td className="sticky left-0 bg-paper px-3 py-2 font-semibold">{row.label}</td>
-                            {row.values.map((value, i) => (
-                                <td key={months[i]} className="px-3 py-2 text-right">
-                                    {value}
-                                </td>
-                            ))}
+                    {visibleRows.length === 0 ? (
+                        <tr>
+                            <td colSpan={months.length + 1} className="px-3 py-4 text-center text-sm text-slate">No rows match the selected filters.</td>
                         </tr>
-                    ))}
+                    ) : (
+                        visibleRows.map((row) => (
+                            <tr key={row.key}>
+                                <td className="sticky left-0 bg-paper px-3 py-2 font-semibold">{row.label}</td>
+                                {row.values.map((value, i) => (
+                                    <td key={months[i]} className="px-3 py-2 text-right">
+                                        {value}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
         </div>
     );
 }
 
-function BirthdayReport({ birthdays }) {
-    if (birthdays.length === 0) {
-        return <p className="text-sm text-slate">No birthday data available.</p>;
+function BirthdayReport({ birthdays, monthFilter }) {
+    const filtered = useMemo(() => {
+        if (!monthFilter) return birthdays;
+        return birthdays.filter((group) => String(group.month) === monthFilter);
+    }, [birthdays, monthFilter]);
+
+    if (filtered.length === 0) {
+        return <p className="text-sm text-slate">No birthday data available for this filter.</p>;
     }
 
     return (
         <div className="space-y-6">
-            {birthdays.map((group) => (
+            {filtered.map((group) => (
                 <div key={group.month} className="card-surface overflow-x-auto p-6">
                     <p className="eyebrow mb-3">{group.month_label}</p>
                     <table className="w-full text-left text-sm">
@@ -246,11 +297,28 @@ function BirthdayReport({ birthdays }) {
 export default function ReportIndex({ summary, by_partner, by_member, transactions, member_stats, birthdays, filters }) {
     const filter = useForm(filters);
     const [activeTab, setActiveTab] = useState('transaction');
+    const [transactionPartner, setTransactionPartner] = useState('');
+    const [transactionMember, setTransactionMember] = useState('');
+    const [statsGender, setStatsGender] = useState('');
+    const [statsReligion, setStatsReligion] = useState('');
+    const [birthdayMonth, setBirthdayMonth] = useState('');
 
     const applyFilter = (e) => {
         e.preventDefault();
         filter.get(route('admin.reports.index'), { preserveState: true, replace: true });
     };
+
+    const partners = useMemo(() => {
+        const set = new Set();
+        by_partner.forEach((m) => m.rows.forEach((r) => set.add(r.partner)));
+        return Array.from(set).sort();
+    }, [by_partner]);
+
+    const members = useMemo(() => {
+        const set = new Set();
+        by_member.forEach((m) => m.rows.forEach((r) => set.add(r.member)));
+        return Array.from(set).sort();
+    }, [by_member]);
 
     return (
         <>
@@ -298,17 +366,41 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
 
                 {activeTab === 'transaction' && (
                     <div className="flex flex-col gap-8">
+                        <div className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+                            <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label className="label">Filter by Vendor</label>
+                                    <select className="input" value={transactionPartner} onChange={(e) => setTransactionPartner(e.target.value)}>
+                                        <option value="">All vendors</option>
+                                        {partners.map((name) => (
+                                            <option key={name} value={name}>{name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="label">Filter by Member</label>
+                                    <select className="input" value={transactionMember} onChange={(e) => setTransactionMember(e.target.value)}>
+                                        <option value="">All members</option>
+                                        {members.map((name) => (
+                                            <option key={name} value={name}>{name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" onClick={() => { setTransactionPartner(''); setTransactionMember(''); }} className="btn-ghost text-xs">Reset</button>
+                        </div>
+
                         <section className="card-surface p-6">
                             <SectionTitle>Laporan Transaksi Per Vendor</SectionTitle>
                             <div className="mt-4">
-                                <VendorReport data={by_partner} />
+                                <VendorReport data={by_partner} partnerFilter={transactionPartner} />
                             </div>
                         </section>
 
                         <section className="card-surface p-6">
                             <SectionTitle>Laporan Transaksi Per Member</SectionTitle>
                             <div className="mt-4">
-                                <MemberReport data={by_member} />
+                                <MemberReport data={by_member} memberFilter={transactionMember} />
                             </div>
                         </section>
 
@@ -317,14 +409,52 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
                 )}
 
                 {activeTab === 'member_stats' && (
-                    <MemberStatisticsTable data={member_stats} />
+                    <div className="flex flex-col gap-4">
+                        <div className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+                            <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label className="label">Filter Gender Row</label>
+                                    <select className="input" value={statsGender} onChange={(e) => setStatsGender(e.target.value)}>
+                                        <option value="">All gender rows</option>
+                                        <option value="male">Pria</option>
+                                        <option value="female">Wanita</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="label">Filter Religion Row</label>
+                                    <select className="input" value={statsReligion} onChange={(e) => setStatsReligion(e.target.value)}>
+                                        <option value="">All religion rows</option>
+                                        <option value="katolik">Katolik</option>
+                                        <option value="kristen">Kristen</option>
+                                        <option value="buddha">Buddha</option>
+                                        <option value="hindu">Hindu</option>
+                                        <option value="islam">Islam</option>
+                                        <option value="lainnya">Lainnya</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" onClick={() => { setStatsGender(''); setStatsReligion(''); }} className="btn-ghost text-xs">Reset</button>
+                        </div>
+                        <MemberStatisticsTable data={member_stats} genderFilter={statsGender} religionFilter={statsReligion} />
+                    </div>
                 )}
 
                 {activeTab === 'birthday' && (
                     <section className="card-surface p-6">
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                            <div className="sm:w-64">
+                                <label className="label">Filter by Month</label>
+                                <select className="input" value={birthdayMonth} onChange={(e) => setBirthdayMonth(e.target.value)}>
+                                    {MONTH_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button type="button" onClick={() => setBirthdayMonth('')} className="btn-ghost text-xs">Reset</button>
+                        </div>
                         <SectionTitle>Laporan HUT</SectionTitle>
                         <div className="mt-4">
-                            <BirthdayReport birthdays={birthdays} />
+                            <BirthdayReport birthdays={birthdays} monthFilter={birthdayMonth} />
                         </div>
                     </section>
                 )}

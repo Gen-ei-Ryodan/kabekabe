@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Pagination from '@/Components/Pagination';
@@ -14,6 +14,17 @@ const TYPE_LABELS = {
 };
 
 export default function CommunityIndex({ infos, filters, drawer }) {
+    const filter = useForm(filters);
+
+    const applyFilter = (e) => {
+        e.preventDefault();
+        router.get(route('admin.community.index'), { ...filter.data }, { preserveState: true, replace: true });
+    };
+
+    const clearFilter = () => {
+        router.get(route('admin.community.index'), { type: filters.type || undefined }, { preserveState: true, replace: true });
+    };
+
     const openCreate = () => {
         router.get(route('admin.community.index'), { drawer: 'create' }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
@@ -23,7 +34,7 @@ export default function CommunityIndex({ infos, filters, drawer }) {
     };
 
     const closeDrawer = () => {
-        router.get(route('admin.community.index'), { type: filters.type || undefined }, { only: ['drawer'], preserveState: true, preserveScroll: true });
+        router.get(route('admin.community.index'), { ...filters }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
     return (
         <>
@@ -39,19 +50,36 @@ export default function CommunityIndex({ infos, filters, drawer }) {
                     <button onClick={openCreate} className="btn-gold">+ Create Content</button>
                 </header>
 
-                <div className="flex flex-wrap gap-2">
-                    {['all', 'event', 'announcement', 'news', 'agenda'].map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => router.get(route('admin.community.index'), { type: type === 'all' ? undefined : type }, { preserveState: true, replace: true })}
-                            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                                (filters.type || 'all') === type ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
-                            }`}
-                        >
-                            {type === 'all' ? 'All' : TYPE_LABELS[type] || type}
-                        </button>
-                    ))}
-                </div>
+                <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-3">
+                        <div>
+                            <label className="label">Search</label>
+                            <input type="text" className="input" placeholder="Title" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Type</label>
+                            <select className="input" value={filter.data.type || ''} onChange={(e) => filter.setData('type', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="event">Event</option>
+                                <option value="announcement">Announcement</option>
+                                <option value="news">News</option>
+                                <option value="agenda">Agenda</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="label">Status</label>
+                            <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="published">Published</option>
+                                <option value="unpublished">Draft</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                    </div>
+                </form>
 
                 {infos.data.length === 0 ? (
                     <EmptyState title="No content yet" description="Create the first community content." action={<button onClick={openCreate} className="btn-gold">Create content</button>} />

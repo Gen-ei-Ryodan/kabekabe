@@ -19,9 +19,21 @@ class CommunityController extends Controller
         $query = CommunityInfo::query()->with('creator:id,name');
 
         $type = $request->string('type')->toString();
+        $search = $request->string('search')->toString();
+        $status = $request->string('status')->toString();
 
         if (in_array($type, CommunityInfo::TYPES, true)) {
             $query->where('type', $type);
+        }
+
+        if ($search !== '') {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        if ($status === 'published') {
+            $query->where('is_published', true);
+        } elseif ($status === 'unpublished') {
+            $query->where('is_published', false);
         }
 
         $infos = $query->orderByDesc('created_at')->paginate(12)->withQueryString();
@@ -34,7 +46,7 @@ class CommunityController extends Controller
 
         return Inertia::render('Admin/Community/Index', [
             'infos' => $infos,
-            'filters' => ['type' => $type],
+            'filters' => ['type' => $type, 'search' => $search, 'status' => $status],
             'drawer' => $drawer,
         ]);
     }

@@ -87,8 +87,16 @@ File: `resources/js/Pages/Admin/Dashboard.jsx`, `Admin/DashboardController.php`,
 - [x] Recent Transactions
 - [x] Runtime-verified: stats + 3 monthly periods
 
-## F.2 Filter (per index) - pending
-- [ ] Filter di semua index (Members, Partners, Promos, Payments, Banners, Community, Transactions)
+## F.2 Filter (per index)
+- [x] Filter di semua index admin:
+  - [x] Members: search + status
+  - [x] Partners: search + status
+  - [x] Promos: search + status
+  - [x] Payments: search + status
+  - [x] Banners: type + status
+  - [x] Community: search + type + status
+  - [x] Transactions: from/to + partner + member + search
+  - [x] Reports: filter per tab (vendor/member, gender/religion, month)
 
 ## F.3 Partner & Member list index
 - [x] Selesai (existing: Admin/Members/Index, Admin/Partners/Index)

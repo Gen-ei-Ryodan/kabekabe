@@ -2,10 +2,23 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-02 — Admin index filters + Reports refinement
+- Tambahkan filter di semua halaman index admin:
+  - **Members**: search + status (sudah ada, dipertahankan).
+  - **Partners**: search + status (active/inactive).
+  - **Promos**: search + status (pending/approved/rejected).
+  - **Payments**: search + status (pending/approved/rejected/expired).
+  - **Banners**: type (promo/agenda) + status (active/inactive).
+  - **Community**: search + type + status (published/unpublished).
+  - **Transactions**: from/to + partner dropdown + member dropdown + search.
+  - **Reports**: filter per tab (vendor/member untuk Transaction Report; gender/religion untuk Member Statistics; month untuk Birthday Report).
+- Admin Reports page (`admin.reports.index`) tetap 3 menu/tab: **Transaction Report**, **Member Statistics**, **Birthday Report**.
+- Testing: `php artisan test` → 79 test PASS (505 assertions); build PASS.
+
 ## 2026-09-02 — Fix: Admin Reports (3 menus, monthly view, correct Birthday report)
 - Admin Reports page (`admin.reports.index`) dibuat menjadi 3 menu/tab: **Transaction Report**, **Member Statistics**, **Birthday Report**.
 - **Transaction Report**: Per Vendor dan Per Member kini ditampilkan per bulan (dari terendah ke tertinggi berdasarkan rentang tanggal filter), masing-masing di-sort dari transaksi/discount tertinggi ke terendah.
-- **Member Statistics**: direstruktur menjadi **1 tabel** dengan bulan sebagai kolom header dan baris: Member Terdaftar, Aktif→Non Aktif, Non Aktif→Aktif, Agama (Katolik/Kristen/Buddha/Hindu/Islam/Lainnya), Pria, Wanita, Umur (&lt;21, 21–30, 30–40, 40–50, &gt;50), Jumlah Kehadiran Acara.
+- **Member Statistics**: direstruktur menjadi **1 tabel** dengan bulan sebagai kolom header dan baris: Member Terdaftar, Aktif→Non Aktif, Non Aktif→Aktif, Agama (Katolik/Kristen/Buddha/Hindu/Islam/Lainnya), Pria, Wanita, Umur (<21, 21–30, 30–40, 40–50, >50), Jumlah Kehadiran Acara.
 - **Birthday Report (Laporan HUT)**: diperbaiki agar benar-benar menampilkan daftar ulang tahun member, di-sort berdasarkan bulan dan tanggal (bukan kehadiran acara seperti sebelumnya).
 - `User` model `#[Fillable]` ditambahkan `gender`, `religion`, `birth_date`, `city` untuk mendukung demografi member.
 - `Admin/ReportController.php` direfactor: `by_partner`, `by_member`, `member_stats`, dan `birthdays` mengikuti struktur data baru; `summary` dan `transactions` tetap dipertahankan untuk backward compatibility test.

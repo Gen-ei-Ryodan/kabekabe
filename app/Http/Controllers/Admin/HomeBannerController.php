@@ -17,9 +17,22 @@ class HomeBannerController extends Controller
 {
     public function index(Request $request): Response
     {
-        $banners = HomeBanner::query()
-            ->with(['promo.partner:id,name', 'agenda'])
-            ->orderBy('sort_order')
+        $query = HomeBanner::query()->with(['promo.partner:id,name', 'agenda']);
+
+        $type = $request->string('type')->toString();
+        $status = $request->string('status')->toString();
+
+        if (in_array($type, [HomeBanner::TYPE_PROMO, HomeBanner::TYPE_AGENDA], true)) {
+            $query->where('type', $type);
+        }
+
+        if ($status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        $banners = $query->orderBy('sort_order')
             ->get()
             ->map(fn (HomeBanner $banner) => [
                 'id' => $banner->id,
@@ -46,6 +59,7 @@ class HomeBannerController extends Controller
 
         return Inertia::render('Admin/Banners/Index', [
             'banners' => $banners,
+            'filters' => ['type' => $type, 'status' => $status],
             'promos' => $this->promoSelect(),
             'agendas' => $this->agendaSelect(),
             'drawer' => $drawer,

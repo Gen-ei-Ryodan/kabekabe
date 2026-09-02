@@ -10,7 +10,11 @@ export default function PartnerIndex({ partners, filters, drawer }) {
 
     const applyFilter = (e) => {
         e.preventDefault();
-        router.get(route('admin.partners.index'), { search: filter.data.search || undefined }, { preserveState: true, replace: true });
+        router.get(route('admin.partners.index'), { ...filter.data }, { preserveState: true, replace: true });
+    };
+
+    const clearFilter = () => {
+        router.get(route('admin.partners.index'), {}, { preserveState: true, replace: true });
     };
 
     const openCreate = () => {
@@ -22,7 +26,7 @@ export default function PartnerIndex({ partners, filters, drawer }) {
     };
 
     const closeDrawer = () => {
-        router.get(route('admin.partners.index'), { search: filters.search || undefined }, { only: ['drawer'], preserveState: true, preserveScroll: true });
+        router.get(route('admin.partners.index'), { ...filters }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
 
     return (
@@ -39,11 +43,24 @@ export default function PartnerIndex({ partners, filters, drawer }) {
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-                    <div className="flex-1">
-                        <label className="label">Search</label>
-                        <input type="text" className="input" placeholder="Name / category" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label className="label">Search</label>
+                            <input type="text" className="input" placeholder="Name / category" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Status</label>
+                            <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
                     </div>
-                    <button type="submit" className="btn-ink text-xs">Apply</button>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                    </div>
                 </form>
 
                 {partners.data.length === 0 ? (
