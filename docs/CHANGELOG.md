@@ -2,6 +2,20 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-02 — Agenda Kegiatan (refactor Community menu)
+- Menu admin **Community** diubah menjadi **Agenda Kegiatan**.
+- Tipe `community_infos` dibatasi hanya **event** dan **agenda**; tipe `announcement` dan `news` dihapus dari UI dan konstanta model.
+- Tambah kolom `fee` di `community_infos` untuk nominal urunan kegiatan.
+- Tambah tabel `event_non_members` untuk mencatat peserta non-member.
+- Halaman admin agenda mendukung:
+  - CRUD agenda/kegiatan dengan `fee`.
+  - Detail agenda (`admin.community.show`) dengan tab Attendance, Member Billing, Non-Member Participants.
+  - Pencatatan kehadiran member via **scan QR / member code** dan **dropdown manual**.
+  - Pencatatan kehadiran non-member via form manual.
+  - Pembuatan tagihan "Urunan Kegiatan" untuk member participant (Payment dengan `event_id`).
+- Update `DatabaseSeeder` agar hanya membuat data event/agenda.
+- Testing: `php artisan test` → 79 test PASS (505 assertions); build PASS.
+
 ## 2026-09-02 — Admin Partners index: list/table layout + filters + Reports refinement
 - Tampilan **Admin Partners index** diubah dari **card grid** menjadi **list/table** seperti halaman Members. Kolom: Partner (logo + nama + deskripsi), Category, Vendor, Status, Actions.
 - Filter di semua halaman index admin sudah lengkap:

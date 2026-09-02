@@ -3,18 +3,17 @@ import AdminLayout from '@/Layouts/AdminLayout';
 
 const TYPE_LABELS = {
     event: 'Event',
-    announcement: 'Announcement',
-    news: 'News',
     agenda: 'Agenda',
 };
 
 export default function CommunityCreate() {
     const form = useForm({
-        type: 'announcement',
+        type: 'event',
         title: '',
         content: '',
         event_date: '',
         location: '',
+        fee: '',
         image: null,
         is_published: true,
     });
@@ -26,17 +25,17 @@ export default function CommunityCreate() {
 
     return (
         <>
-            <Head title="Create Content" />
+            <Head title="Create Agenda" />
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Community Content</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Create Community Content</h1>
+                    <p className="eyebrow">Agenda Kegiatan</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Create Event Agenda</h1>
                 </header>
 
                 <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
                     <div>
-                        <label className="label" htmlFor="type">Content type</label>
+                        <label className="label" htmlFor="type">Type</label>
                         <select id="type" className="input" value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
                             {Object.entries(TYPE_LABELS).map(([value, label]) => (
                                 <option key={value} value={value}>{label}</option>
@@ -56,18 +55,22 @@ export default function CommunityCreate() {
                         {form.errors.content && <p className="mt-1 text-xs text-ember">{form.errors.content}</p>}
                     </div>
 
-                    {(form.data.type === 'event' || form.data.type === 'agenda') && (
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label className="label" htmlFor="event_date">Event date</label>
-                                <input id="event_date" type="datetime-local" className="input" value={form.data.event_date} onChange={(e) => form.setData('event_date', e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="label" htmlFor="location">Location</label>
-                                <input id="location" type="text" className="input" value={form.data.location} onChange={(e) => form.setData('location', e.target.value)} />
-                            </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label className="label" htmlFor="event_date">Event date</label>
+                            <input id="event_date" type="datetime-local" className="input" value={form.data.event_date} onChange={(e) => form.setData('event_date', e.target.value)} />
                         </div>
-                    )}
+                        <div>
+                            <label className="label" htmlFor="location">Location</label>
+                            <input id="location" type="text" className="input" value={form.data.location} onChange={(e) => form.setData('location', e.target.value)} />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="label" htmlFor="fee">Contribution Fee (Urunan) — Rupiah</label>
+                        <input id="fee" type="number" min="0" className="input" value={form.data.fee} onChange={(e) => form.setData('fee', e.target.value)} placeholder="Leave empty for free event" />
+                        {form.errors.fee && <p className="mt-1 text-xs text-ember">{form.errors.fee}</p>}
+                    </div>
 
                     <div>
                         <label className="label" htmlFor="image">Image</label>
@@ -83,7 +86,7 @@ export default function CommunityCreate() {
                     <div className="flex justify-end gap-3">
                         <a href={route('admin.community.index')} className="btn-ghost">Cancel</a>
                         <button type="submit" className="btn-gold" disabled={form.processing}>
-                            {form.processing ? 'Saving…' : 'Save Content'}
+                            {form.processing ? 'Saving…' : 'Save Agenda'}
                         </button>
                     </div>
                 </form>

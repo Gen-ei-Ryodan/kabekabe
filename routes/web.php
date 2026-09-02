@@ -131,9 +131,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/community', [AdminCommunityController::class, 'index'])->name('community.index');
         Route::get('/community/create', [AdminCommunityController::class, 'create'])->name('community.create');
         Route::post('/community', [AdminCommunityController::class, 'store'])->name('community.store');
+        Route::get('/community/{info}', [AdminCommunityController::class, 'show'])->name('community.show');
         Route::get('/community/{info}/edit', [AdminCommunityController::class, 'edit'])->name('community.edit');
         Route::put('/community/{info}', [AdminCommunityController::class, 'update'])->name('community.update');
         Route::delete('/community/{info}', [AdminCommunityController::class, 'destroy'])->name('community.destroy');
+        Route::post('/community/{info}/attendance', [AdminCommunityController::class, 'storeAttendance'])->name('community.attendance.store');
+        Route::post('/community/{info}/attendance/scan', [AdminCommunityController::class, 'scanAttendance'])->name('community.attendance.scan');
+        Route::post('/community/{info}/payments', [AdminCommunityController::class, 'storePayment'])->name('community.payment.store');
+        Route::post('/community/{info}/non-members', [AdminCommunityController::class, 'storeNonMember'])->name('community.non_member.store');
 
         Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications', [AdminNotificationController::class, 'store'])->name('notifications.store');

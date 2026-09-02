@@ -93,10 +93,15 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | PUT | `/payments/{payment}/reject` | `admin.payments.reject` (payload: `reason`) |
 | GET | `/community` | `admin.community.index` |
 | GET | `/community/create` | `admin.community.create` |
-| POST | `/community` | `admin.community.store` |
+| POST | `/community` | `admin.community.store` (payload: `type`, `title`, `content`, `event_date?`, `location?`, `fee?`, `image?`, `is_published`) |
+| GET | `/community/{info}` | `admin.community.show` |
 | GET | `/community/{info}/edit` | `admin.community.edit` |
 | PUT | `/community/{info}` | `admin.community.update` |
 | DELETE | `/community/{info}` | `admin.community.destroy` |
+| POST | `/community/{info}/attendance` | `admin.community.attendance.store` (payload: `member_id` OR `name`, `phone?`, `email?`) |
+| POST | `/community/{info}/attendance/scan` | `admin.community.attendance.scan` (payload: `token` = card_token or member_code) |
+| POST | `/community/{info}/payments` | `admin.community.payment.store` (payload: `member_id`) |
+| POST | `/community/{info}/non-members` | `admin.community.non_member.store` (payload: `name`, `phone?`, `email?`)
 | GET | `/notifications` | `admin.notifications.index` |
 | POST | `/notifications` | `admin.notifications.store` (payload: `title`, `body`, `type`, `recipient_id?`, `action_url?`) |
 | GET | `/transactions` | `admin.transactions.index` |
@@ -108,7 +113,7 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 - `admin.partners.index`: `search`
 - `admin.promos.index` / `vendor.promos.index`: `status(pending|approved|rejected)`
 - `admin.payments.index`: `status(pending|approved|rejected|expired)`
-- `admin.community.index`: `type(event|announcement|news|agenda)`
+- `admin.community.index`: `type(event|agenda)`, `search`, `status(published|unpublished)`
 - `admin.transactions.index` / `vendor.transactions.index`: `from`, `to`, `search`
 - `admin.reports.index` / `vendor.reports.index`: `from`, `to`
 - `member.partners.index`: `category`

@@ -102,10 +102,17 @@ File: `resources/js/Pages/Admin/Dashboard.jsx`, `Admin/DashboardController.php`,
 - [x] Members: tampilan list/table seperti sebelumnya.
 - [x] Partners: tampilan diubah dari card grid menjadi list/table seperti Members.
 
-## F.4 Pengaturan Agenda / Kegiatan - partial
-- [ ] Admin CRUD kegiatan (existing Community, may need event type filter)
-- [x] Tagihan "Urunan Kegiatan" via Payment.event_id (Poin C)
-- [ ] Peserta: Member, Non Member flow
+## F.4 Pengaturan Agenda / Kegiatan
+- [x] Menu Community diubah menjadi Agenda Kegiatan
+- [x] Tipe community_infos hanya event & agenda (announcement & news dihapus dari UI)
+- [x] Admin CRUD kegiatan dengan field fee (urunan)
+- [x] Detail kegiatan (`admin.community.show`) dengan tab Attendance, Member Billing, Non-Member Participants
+- [x] Attendance member via scan QR / member code
+- [x] Attendance member via dropdown manual
+- [x] Attendance non-member via input manual
+- [x] Tagihan "Urunan Kegiatan" via Payment.event_id untuk member participant
+- [x] Tabel `event_non_members` untuk peserta non-member
+- [x] Update DatabaseSeeder, docs, dan API_REFERENCE
 
 ## G. REPORTS
 File: `resources/js/Pages/Admin/Reports/Index.jsx`, `Admin/ReportController.php`
