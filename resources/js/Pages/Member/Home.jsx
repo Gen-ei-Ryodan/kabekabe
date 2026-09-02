@@ -4,21 +4,9 @@ import MemberLayout from '@/Layouts/MemberLayout';
 import MemberCard from '@/Components/MemberCard';
 import StatusChip from '@/Components/StatusChip';
 import Reveal from '@/Components/Reveal';
-import Avatar from '@/Components/Avatar';
+
 import PrimaryButton from '@/Components/PrimaryButton';
 import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
-
-function Portrait({ member }) {
-    return (
-        <div className="w-36 shrink-0 sm:w-44">
-            <Avatar
-                src={member?.avatar_url}
-                name={member?.name}
-                className="aspect-[3/4] w-full rounded-2xl text-5xl shadow-card"
-            />
-        </div>
-    );
-}
 
 function VendorRanking({ vendors }) {
     const medals = ['🥇', '🥈', '🥉', '4', '5'];
@@ -348,13 +336,8 @@ export default function Home({ member, banners = [], vendor_ranking = [] }) {
                     )}
                 </header>
 
-                <section className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:gap-6">
-                    <Reveal className="shrink-0">
-                        <Portrait member={member} />
-                    </Reveal>
-                    <div className="flex min-w-0 flex-1 justify-center sm:justify-start">
-                        <MemberCard member={member} />
-                    </div>
+                <section className="flex justify-center px-2">
+                    <MemberCard member={member} />
                 </section>
 
                 {vendor_ranking.length > 0 && (
