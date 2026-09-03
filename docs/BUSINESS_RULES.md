@@ -32,6 +32,7 @@
 - Diskon hanya berlaku jika `total >= min_purchase`.
 - `net_amount = total_amount - discount_amount`; `transaction_number` unik `TRX-{timestamp}-{rand}`.
 - Notifikasi "Benefit Terpakai" dikirim ke member.
+- Scan vendor yang belum memiliki transaksi ditampilkan sebagai **Pending Transaction**. Vendor dapat melengkapi transaksi secara manual sampai 48 jam setelah scan; setelah transaksi disimpan, scan tidak lagi pending.
 
 ## Pembayaran & Verifikasi
 - **Member TIDAK membayar/submit pembayaran di sistem.** Pembayaran dilakukan langsung ke admin (offline); admin yang mencatat.

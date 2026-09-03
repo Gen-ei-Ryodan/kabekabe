@@ -4,7 +4,7 @@ import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
-export default function TransactionIndex({ transactions, filters }) {
+export default function TransactionIndex({ transactions, pending_scans = [], filters }) {
     const filter = useForm(filters);
 
     const applyFilter = (e) => {
@@ -52,6 +52,29 @@ export default function TransactionIndex({ transactions, filters }) {
                         <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
                     </div>
                 </form>
+
+                {pending_scans.length > 0 && (
+                    <section className="card-surface overflow-hidden">
+                        <div className="border-b border-gold/20 bg-gold/10 px-5 py-4">
+                            <h2 className="font-display text-lg font-bold">Pending Transactions ({pending_scans.length})</h2>
+                            <p className="mt-1 text-sm text-slate">Scanned members without a transaction. Complete them before the 48-hour window ends.</p>
+                        </div>
+                        <div className="divide-y divide-ink/5">
+                            {pending_scans.map((scan) => (
+                                <div key={scan.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p className="font-semibold">{scan.member?.name}</p>
+                                        <p className="font-mono text-xs text-slate">{scan.member?.member_code} · scanned {scan.scanned_at}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-xs font-semibold text-sage-deep">{scan.hours_left}h left</span>
+                                        <Link href={route('vendor.transactions.create', { scan_id: scan.id })} className="btn-ink text-xs">Complete Transaction</Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {transactions.data.length === 0 ? (
                     <EmptyState

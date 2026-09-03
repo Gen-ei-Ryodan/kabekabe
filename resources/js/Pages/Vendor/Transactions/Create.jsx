@@ -77,7 +77,7 @@ export default function TransactionCreate({ promos, member }) {
         e.preventDefault();
         form.post(route('vendor.transactions.store'), {
             preserveScroll: true,
-            transform: (data) => ({ ...data, member_code: member.member_code }),
+            transform: (data) => ({ ...data, member_code: member.member_code, scan_id: member.scan_id }),
         });
     };
 
@@ -191,7 +191,8 @@ export default function TransactionCreate({ promos, member }) {
                         {verified && member.within_window !== false ? (
                             <form onSubmit={submit} className="card-surface space-y-6 p-6 sm:p-8">
                                 <div className="rounded-xl border border-sage/30 bg-sage/10 px-4 py-3 text-sm font-semibold text-sage-deep">
-                                    &#10003; Membership verified — you can record this transaction.
+                                    <span className="font-semibold">&#10003; Member scan saved</span>
+                                    <span className="mt-1 block font-normal">Complete this now or return from Pending Transactions within 48 hours.</span>
                                 </div>
 
                                 <div>

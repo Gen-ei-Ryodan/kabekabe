@@ -2,6 +2,11 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Vendor pending transactions
+- Scan member vendor yang belum memiliki transaksi ditampilkan pada section **Pending Transactions**.
+- Vendor dapat membuka kembali form transaksi dari scan pending selama jendela 48 jam masih berlaku.
+- Transaksi menyimpan `member_scan_id` untuk menandai scan yang sudah diselesaikan dan mencegah scan yang sama dipakai dua kali.
+
 ## 2026-09-03 — Admin banner, attendance scan, dan Reports
 - Featured Home Banners kini khusus promo; field Banner type dihapus dari form dan backend selalu menyimpan tipe promo.
 - Detail Events & Activities menggunakan kamera untuk scan QR kartu member; input member code pada panel scan dihapus dan endpoint hanya menerima token QR.

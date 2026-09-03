@@ -22,20 +22,29 @@ class TransactionService
      *
      * @param  array{member: User, promo: Promo|null, total: int, note: ?string, proof: mixed}  $payload
      */
-    public function record(Partner $partner, User $member, ?Promo $promo, int $total, ?string $note = null, mixed $proofPath = null, ?string $transactionNumber = null): Transaction
+    public function record(Partner $partner, User $member, ?Promo $promo, int $total, ?string $note = null, mixed $proofPath = null, ?string $transactionNumber = null, ?MemberScan $scan = null): Transaction
     {
         if (! $this->memberships->isActive($member)) {
             throw new \DomainException('Member is inactive and cannot use benefits.');
         }
 
-        $activeScan = MemberScan::query()
+        $activeScan = $scan ?: MemberScan::query()
             ->where('member_id', $member->id)
             ->where('scanned_by_vendor_id', $partner->user_id)
             ->where('expires_at', '>', now())
+            ->whereDoesntHave('transaction')
             ->latest('scanned_at')
             ->first();
 
-        if (! $activeScan) {
+        if ($scan && ($scan->member_id !== $member->id || $scan->scanned_by_vendor_id !== $partner->user_id)) {
+            throw new \DomainException('This member scan does not belong to this vendor.');
+        }
+
+        if ($scan && $scan->transaction()->exists()) {
+            throw new \DomainException('This member scan already has a transaction.');
+        }
+
+        if (! $activeScan || $activeScan->isExpired()) {
             throw new \DomainException('Input window has expired. Please scan the member card again or contact admin to edit.');
         }
 
@@ -51,10 +60,11 @@ class TransactionService
             $discountAmount = $promo->discountAmountFor($total);
         }
 
-        $transaction = DB::transaction(function () use ($partner, $member, $promo, $total, $discountPercent, $discountAmount, $note, $proofPath, $transactionNumber) {
+        $transaction = DB::transaction(function () use ($partner, $member, $promo, $total, $discountPercent, $discountAmount, $note, $proofPath, $transactionNumber, $activeScan) {
             return $partner->transactions()->create([
                 'transaction_number' => $transactionNumber ?: $this->nextTransactionNumber(),
                 'member_id' => $member->id,
+                'member_scan_id' => $activeScan->id,
                 'promo_id' => $promo?->id,
                 'total_amount' => $total,
                 'discount_percent' => $discountPercent,

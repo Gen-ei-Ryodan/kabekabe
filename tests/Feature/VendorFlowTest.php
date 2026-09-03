@@ -364,4 +364,39 @@ class VendorFlowTest extends TestCase
 
         $this->assertDatabaseCount('transactions', 0);
     }
+
+    public function test_vendor_transaction_index_lists_unfinished_scans(): void
+    {
+        [$partner, $vendor] = $this->vendorWithPartner();
+        $member = $this->activeMember();
+        $scan = $this->createActiveScan($member, $vendor);
+
+        $this->actingAs($vendor)->get(route('vendor.transactions.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('pending_scans.0.id', $scan->id)
+                ->where('pending_scans.0.member.member_code', $member->member_code)
+            );
+    }
+
+    public function test_transaction_completes_a_selected_pending_scan(): void
+    {
+        [$partner, $vendor] = $this->vendorWithPartner();
+        $member = $this->activeMember();
+        $scan = $this->createActiveScan($member, $vendor);
+
+        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+            'member_code' => $member->member_code,
+            'scan_id' => $scan->id,
+            'total' => 100000,
+        ])->assertRedirect(route('vendor.transactions.index'));
+
+        $this->assertDatabaseHas('transactions', [
+            'partner_id' => $partner->id,
+            'member_scan_id' => $scan->id,
+        ]);
+
+        $this->actingAs($vendor)->get(route('vendor.transactions.index'))
+            ->assertInertia(fn ($page) => $page->has('pending_scans', 0));
+    }
 }

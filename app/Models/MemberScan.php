@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['member_id', 'scanned_by_vendor_id', 'scanned_at', 'expires_at', 'ip_address'])]
 #[Appends(['expires_in_human'])]
@@ -43,6 +44,11 @@ class MemberScan extends Model
     public function scannedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'scanned_by_vendor_id');
+    }
+
+    public function transaction(): HasOne
+    {
+        return $this->hasOne(Transaction::class);
     }
 
     public function scopeActive(Builder $query): Builder

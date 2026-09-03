@@ -40,8 +40,23 @@ class TransactionController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $pendingScans = MemberScan::query()
+            ->where('scanned_by_vendor_id', $partner->user_id)
+            ->where('expires_at', '>', now())
+            ->whereDoesntHave('transaction')
+            ->with('member:id,name,member_code')
+            ->latest('scanned_at')
+            ->get()
+            ->map(fn (MemberScan $scan) => [
+                'id' => $scan->id,
+                'scanned_at' => $scan->scanned_at?->format('d M Y H:i'),
+                'hours_left' => max(0, (int) round(now()->diffInMinutes($scan->expires_at, false) / 60)),
+                'member' => $scan->member,
+            ]);
+
         return Inertia::render('Vendor/Transactions/Index', [
             'transactions' => $transactions,
+            'pending_scans' => $pendingScans,
             'filters' => [
                 'from' => $request->string('from')->toString(),
                 'to' => $request->string('to')->toString(),
@@ -66,9 +81,27 @@ class TransactionController extends Controller
 
         $scan = $request->string('scan')->toString() ?: $request->string('member_code')->toString();
 
+        $member = $this->resolveScannedMember($scan);
+
+        if ($request->filled('scan_id')) {
+            $savedScan = MemberScan::query()
+                ->whereKey($request->integer('scan_id'))
+                ->where('scanned_by_vendor_id', auth()->id())
+                ->with('member.membership')
+                ->firstOrFail();
+            $member = $this->resolveScannedMember($savedScan->member->member_code);
+            $member['scan_id'] = $savedScan->id;
+            $member['scan'] = [
+                'scanned_at' => $savedScan->scanned_at?->format('d M Y H:i'),
+                'expires_at' => $savedScan->expires_at?->format('d M Y H:i'),
+                'hours_left' => max(0, (int) round(now()->diffInMinutes($savedScan->expires_at, false) / 60)),
+            ];
+            $member['within_window'] = $savedScan->expires_at->isFuture();
+        }
+
         return Inertia::render('Vendor/Transactions/Create', [
             'promos' => $promos,
-            'member' => $this->resolveScannedMember($scan),
+            'member' => $member,
         ]);
     }
 
@@ -95,6 +128,7 @@ class TransactionController extends Controller
         $active = $member->hasActiveMembership();
         $vendor = auth()->user();
         $scanData = null;
+        $scanId = null;
         $withinWindow = false;
         $hoursLeft = 0;
 
@@ -116,6 +150,7 @@ class TransactionController extends Controller
                 'expires_at' => $latest->expires_at?->format('d M Y H:i'),
                 'hours_left' => $hoursLeft,
             ];
+            $scanId = $latest->id;
         }
 
         return [
@@ -128,6 +163,7 @@ class TransactionController extends Controller
             'status_label' => $active ? 'ACTIVE' : 'INACTIVE',
             'expires_at' => $member->membership?->expires_at?->format('d M Y'),
             'scan' => $scanData,
+            'scan_id' => $scanId,
             'within_window' => $withinWindow,
         ];
     }
@@ -139,6 +175,10 @@ class TransactionController extends Controller
         abort_if($partner === null, 403);
 
         $member = User::query()->where('member_code', $request->input('member_code'))->firstOrFail();
+
+        $scan = $request->filled('scan_id')
+            ? MemberScan::query()->whereKey($request->integer('scan_id'))->firstOrFail()
+            : null;
 
         $promo = $request->filled('promo_id')
             ? Promo::query()->where('partner_id', $partner->id)->findOrFail($request->integer('promo_id'))
@@ -159,6 +199,7 @@ class TransactionController extends Controller
                 $request->input('note'),
                 $proofPath,
                 $request->input('transaction_number'),
+                $scan,
             );
         } catch (\DomainException $e) {
             if ($proofPath) {
