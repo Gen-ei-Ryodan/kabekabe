@@ -12,8 +12,7 @@ export default function Billing({ membership, plans }) {
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Account</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Billing Management</h1>
+                    <h1 className="font-display text-3xl font-bold tracking-tight">Billing Management</h1>
                 </header>
 
                 <div className="mt-8 space-y-8">

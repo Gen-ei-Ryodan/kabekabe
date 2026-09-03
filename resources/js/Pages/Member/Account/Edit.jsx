@@ -25,8 +25,7 @@ export default function AccountEdit({ account }) {
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Account</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Profile Settings</h1>
+                    <h1 className="font-display text-3xl font-bold tracking-tight">Profile Settings</h1>
                 </header>
 
                 <form onSubmit={submit} className="mt-8 space-y-8">

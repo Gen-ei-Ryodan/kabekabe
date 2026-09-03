@@ -2,11 +2,10 @@ import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import MemberCard from '@/Components/MemberCard';
-import StatusChip from '@/Components/StatusChip';
 import Reveal from '@/Components/Reveal';
 
 import Modal from '@/Components/Modal';
-import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
+import { formatDate, formatRupiah } from '@/Utils/format';
 
 function VendorRanking({ vendors }) {
     const medals = ['🥇', '🥈', '🥉', '4', '5'];
@@ -382,7 +381,6 @@ export default function Home({ member, banners = [], vendor_ranking = [], popup 
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
     const firstName = (member?.name || '').split(' ')[0];
-    const active = member?.membership_status === 'active';
     const bannerList = Array.isArray(banners) ? banners : [];
 
     const [popupOpen, setPopupOpen] = useState(false);
@@ -400,27 +398,10 @@ export default function Home({ member, banners = [], vendor_ranking = [], popup 
 
             <div className="flex flex-col gap-6">
                 <header className="flex flex-col gap-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <p className="eyebrow">
-                            Member Card
-                        </p>
-                        <StatusChip status={member?.membership_status} label={member?.membership_status_label} pulse />
-                    </div>
                     <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
                         {greeting}, {firstName}
                     </h1>
                     <p className="sr-only">Your member card is ready.</p>
-                    {active && member?.expires_at && (
-                        <p className="text-sm text-slate">
-                            {member.is_expiring_soon ? (
-                                <span className="font-medium text-ember">
-                                    Expires in {daysUntil(member.expires_at)} days
-                                </span>
-                            ) : (
-                                <>Valid until {formatDate(member.expires_at)}</>
-                            )}
-                        </p>
-                    )}
                 </header>
 
                 <section className="flex w-full justify-center">

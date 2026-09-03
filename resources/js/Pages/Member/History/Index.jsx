@@ -42,8 +42,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <p className="eyebrow">History</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Membership activity</h1>
+                        <h1 className="font-display text-3xl font-bold tracking-tight">History</h1>
                         <p className="mt-2 text-sm text-slate">Payments and benefits used across partner stores.</p>
                     </div>
                     <div className="inline-flex w-fit rounded-full border border-ink/10 bg-white/70 p-1">

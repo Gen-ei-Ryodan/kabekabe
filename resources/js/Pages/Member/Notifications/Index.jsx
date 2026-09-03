@@ -24,8 +24,7 @@ export default function NotificationIndex({ notifications }) {
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                     <div>
-                        <p className="eyebrow">Notifications</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Your messages</h1>
+                        <h1 className="font-display text-3xl font-bold tracking-tight">Notification</h1>
                     </div>
                     <button onClick={() => router.post(route('member.notifications.read-all'), {}, { preserveScroll: true })} className="btn-ghost text-xs">
                         Mark all as read
