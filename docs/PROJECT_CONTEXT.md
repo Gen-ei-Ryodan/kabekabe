@@ -31,6 +31,7 @@ Platform digital untuk manajemen membership dan komunitas. Member memiliki **kar
 - **Admin Home Banners:** Featured banners hanya untuk promo; field Banner type di form Create/Edit dihapus. Agenda tetap tampil otomatis dari Events & Activities.
 - **Admin Events & Activities:** label UI menggunakan bahasa Inggris; Content type tidak ditampilkan pada form Create/Edit, detail event memuat attendance serta contribution payments, dan kehadiran member dicatat dengan scan QR kartu.
 - **Vendor pending transactions:** hasil scan member yang belum dilengkapi transaksi muncul di daftar Pending Transactions dan dapat diselesaikan manual dalam 48 jam.
+- Setelah scan vendor, form transaksi tidak langsung ditampilkan; form dibuka dari tombol Complete Transaction pada daftar pending.
 
 ## Akun Demo (password: `password`)
 - Admin: `admin@sentra.test`

@@ -6,6 +6,7 @@ Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 - Scan member vendor yang belum memiliki transaksi ditampilkan pada section **Pending Transactions**.
 - Vendor dapat membuka kembali form transaksi dari scan pending selama jendela 48 jam masih berlaku.
 - Transaksi menyimpan `member_scan_id` untuk menandai scan yang sudah diselesaikan dan mencegah scan yang sama dipakai dua kali.
+- Setelah scan, form transaksi tidak lagi langsung muncul; form hanya dibuka dari aksi **Complete Transaction**.
 
 ## 2026-09-03 — Admin banner, attendance scan, dan Reports
 - Featured Home Banners kini khusus promo; field Banner type dihapus dari form dan backend selalu menyimpan tipe promo.

@@ -102,6 +102,7 @@ class TransactionController extends Controller
         return Inertia::render('Vendor/Transactions/Create', [
             'promos' => $promos,
             'member' => $member,
+            'is_completing' => $request->filled('scan_id'),
         ]);
     }
 
