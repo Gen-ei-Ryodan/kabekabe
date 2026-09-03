@@ -29,6 +29,8 @@ class MemberController extends Controller
         $query = User::query()->where('role', User::ROLE_MEMBER)->with('membership');
 
         $search = $request->string('search')->toString();
+        $name = $request->string('name')->toString();
+        $memberId = $request->string('member_id')->toString();
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -36,6 +38,14 @@ class MemberController extends Controller
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('member_code', 'like', "%{$search}%");
             });
+        }
+
+        if ($name !== '') {
+            $query->where('name', 'like', "%{$name}%");
+        }
+
+        if ($memberId !== '') {
+            $query->where('member_code', 'like', "%{$memberId}%");
         }
 
         $status = $request->string('status')->toString();
@@ -49,6 +59,21 @@ class MemberController extends Controller
             });
         }
 
+        $validFrom = $request->string('valid_from')->toString();
+        $validTo = $request->string('valid_to')->toString();
+        $joinedFrom = $request->string('joined_from')->toString();
+        $joinedTo = $request->string('joined_to')->toString();
+
+        if ($validFrom !== '' || $validTo !== '') {
+            $query->whereHas('membership', function ($q) use ($validFrom, $validTo) {
+                $q->when($validFrom !== '', fn ($membership) => $membership->whereDate('expires_at', '>=', $validFrom))
+                    ->when($validTo !== '', fn ($membership) => $membership->whereDate('expires_at', '<=', $validTo));
+            });
+        }
+
+        $query->when($joinedFrom !== '', fn ($q) => $q->whereDate('created_at', '>=', $joinedFrom))
+            ->when($joinedTo !== '', fn ($q) => $q->whereDate('created_at', '<=', $joinedTo));
+
         $members = $query->orderByDesc('created_at')->paginate(12)->withQueryString();
 
         $members->getCollection()->transform(fn (User $m) => $this->memberPayload($m));
@@ -61,7 +86,16 @@ class MemberController extends Controller
 
         return Inertia::render('Admin/Members/Index', [
             'members' => $members,
-            'filters' => ['search' => $search, 'status' => $status],
+            'filters' => [
+                'search' => $search,
+                'name' => $name,
+                'member_id' => $memberId,
+                'status' => $status,
+                'valid_from' => $validFrom,
+                'valid_to' => $validTo,
+                'joined_from' => $joinedFrom,
+                'joined_to' => $joinedTo,
+            ],
             'drawer' => $drawer,
         ]);
     }

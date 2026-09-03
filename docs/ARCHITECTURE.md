@@ -52,6 +52,7 @@ routes/
 
 ## Frontend Pattern
 - **Layout per role**: komponen `*Layout.jsx` menyediakan shell (sidebar/nav) via `.layout` static property pada halaman.
+- **Admin index filters**: filter list dikirim sebagai query parameter dan diproses server-side; state filter dipertahankan saat pagination maupun drawer dibuka.
 - **Reveal**: komponen `Reveal` memakai GSAP ScrollTrigger untuk animasi masuk.
 - **MemberCard**: kartu digital 3D tilt (GSAP) dengan latar `bglogin.png`, foto member kanan atas (klik untuk lightbox), QR di kiri bawah, status membership berwarna kontras, dan overlay X untuk member non-active.
 - **StatusChip**: tone `active/inactive/pending/approved/rejected/expired`.

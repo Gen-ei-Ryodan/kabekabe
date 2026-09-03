@@ -54,11 +54,19 @@ export default function MemberIndex({ members, filters, drawer }) {
                     </div>
                 </header>
 
-                <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-                    <div className="grid flex-1 gap-3 sm:grid-cols-3">
+                <form onSubmit={applyFilter} className="card-surface flex flex-col gap-4 p-4">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
                             <label className="label">Search</label>
                             <input type="text" className="input" placeholder="Name / email / member ID" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Name</label>
+                            <input type="text" className="input" placeholder="Member name" value={filter.data.name || ''} onChange={(e) => filter.setData('name', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Member ID</label>
+                            <input type="text" className="input" placeholder="MMB-XXXXX" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)} />
                         </div>
                         <div>
                             <label className="label">Status</label>
@@ -68,8 +76,24 @@ export default function MemberIndex({ members, filters, drawer }) {
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
+                        <div>
+                            <label className="label">Valid from</label>
+                            <input type="date" className="input" value={filter.data.valid_from || ''} onChange={(e) => filter.setData('valid_from', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Valid until</label>
+                            <input type="date" className="input" value={filter.data.valid_to || ''} onChange={(e) => filter.setData('valid_to', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Joined from</label>
+                            <input type="date" className="input" value={filter.data.joined_from || ''} onChange={(e) => filter.setData('joined_from', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Joined until</label>
+                            <input type="date" className="input" value={filter.data.joined_to || ''} onChange={(e) => filter.setData('joined_to', e.target.value)} />
+                        </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 self-end">
                         <button type="submit" className="btn-ink text-xs">Apply</button>
                         <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
                     </div>

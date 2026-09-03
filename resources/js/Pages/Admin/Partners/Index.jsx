@@ -5,7 +5,7 @@ import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
 import PartnerDrawer from '@/Components/Admin/PartnerDrawer';
 
-export default function PartnerIndex({ partners, filters, drawer }) {
+export default function PartnerIndex({ partners, filters, categories = [], drawer }) {
     const filter = useForm(filters);
 
     const applyFilter = (e) => {
@@ -43,10 +43,17 @@ export default function PartnerIndex({ partners, filters, drawer }) {
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                    <div className="grid flex-1 gap-3 sm:grid-cols-3">
                         <div>
                             <label className="label">Search</label>
                             <input type="text" className="input" placeholder="Name / category" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="label">Category</label>
+                            <select className="input" value={filter.data.category || ''} onChange={(e) => filter.setData('category', e.target.value)}>
+                                <option value="">All</option>
+                                {categories.map((category) => <option key={category} value={category}>{category}</option>)}
+                            </select>
                         </div>
                         <div>
                             <label className="label">Status</label>

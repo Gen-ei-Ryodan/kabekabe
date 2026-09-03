@@ -20,6 +20,7 @@ class PartnerController extends Controller
         $query = Partner::query()->with('user:id,name,email');
 
         $search = $request->string('search')->toString();
+        $category = $request->string('category')->toString();
         $status = $request->string('status')->toString();
 
         if ($search !== '') {
@@ -35,6 +36,10 @@ class PartnerController extends Controller
             $query->where('is_active', false);
         }
 
+        if ($category !== '') {
+            $query->where('category', $category);
+        }
+
         $partners = $query->orderByRaw('COALESCE(sort_number, 999999) ASC')
             ->orderBy('name')
             ->paginate(12)
@@ -48,7 +53,8 @@ class PartnerController extends Controller
 
         return Inertia::render('Admin/Partners/Index', [
             'partners' => $partners,
-            'filters' => ['search' => $search, 'status' => $status],
+            'filters' => ['search' => $search, 'category' => $category, 'status' => $status],
+            'categories' => Partner::query()->select('category')->distinct()->orderBy('category')->pluck('category'),
             'drawer' => $drawer,
         ]);
     }
