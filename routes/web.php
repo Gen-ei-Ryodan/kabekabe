@@ -58,6 +58,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
         Route::put('/account', [AccountController::class, 'update'])->name('account.update');
+
+        Route::get('/billing', [\App\Http\Controllers\Member\BillingController::class, 'index'])->name('billing.index');
     });
 
     // ---------- VENDOR ----------

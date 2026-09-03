@@ -2,6 +2,14 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Member Billing Management
+- Halaman baru **Billing** di menu Account member (`member.billing.index`).
+- Menampilkan status membership (active/inactive), current plan, masa berlaku, dan sisa hari.
+- Menampilkan daftar semua plan yang tersedia (harga + durasi).
+- Navbar member ditambahkan menu **Billing** (sebelum Profile).
+- Menambahkan `BillingController` dan `Billing.jsx`.
+- **Pembayaran tetap offline:** member tidak bisa payment langsung; petunjuk menghubungi admin untuk renew/extend.
+
 ## 2026-09-03 — Admin Events & Activities
 - Label menu dan halaman Agenda Kegiatan diterjemahkan menjadi **Events & Activities**.
 - Field **Content type** dihapus dari form Create/Edit; event baru menggunakan tipe agenda secara internal.

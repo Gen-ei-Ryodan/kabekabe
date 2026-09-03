@@ -61,7 +61,8 @@
 - Popup muncul 3 detik setelah setiap pembukaan halaman Home; menutup popup hanya berlaku untuk kunjungan tersebut.
 
 ## Menu & Navigasi Member (revisi)
-- Navbar member: **HOME, HISTORY, PARTNER, NOTIF, ACCOUNT** (bahasa Inggris).
+- Navbar member: **HOME, HISTORY, PARTNER, NOTIF, BILLING, ACCOUNT** (bahasa Inggris).
+- **BILLING** = halaman manajemen billing: status membership, current plan, masa berlaku, daftar plan tersedia, dan petunjuk renew/extend (offline payment).
 - PARTNER = gabungan daftar **Promo** + daftar **Partner** (satu halaman, dua tab).
 - HISTORY = gabungan **riwayat pembayaran** + **riwayat penggunaan benefit** (satu halaman, dua tab).
 - Home: kartu digital + foto member, dan maksimal **3 promo terbaru** (limit 3).

@@ -64,6 +64,7 @@ class AllRoutesSmokeTest extends TestCase
             route('member.partners.show', Partner::first()),
             route('member.history.index'),
             route('member.notifications.index'),
+            route('member.billing.index'),
             route('member.account.edit'),
         ];
 

@@ -33,6 +33,7 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | POST | `/notifications/{notification}/read` | `member.notifications.read` |
 | GET | `/account` | `member.account.edit` |
 | PUT | `/account` | `member.account.update` |
+| GET | `/billing` | `member.billing.index` |
 
 > **Dihapus (revisi klien):** `member.payments.index/store/proof` (member tidak membayar via sistem; admin yang mencatat), `member.promos.index` (list promo digabung ke PARTNER), `member.community.*` (fitur komunitas tidak lagi tampil untuk member).
 

@@ -12,7 +12,7 @@
 app/
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Member/    # Home, Promo (show), Partner, History, Notification, Account (Payment & Community dihapus)
+│   │   ├── Member/    # Home, Promo (show), Partner, History, Notification, Account, Billing (menu baru)
 │   │   ├── Vendor/    # Dashboard, Verify, Promo, Transaction, Report
 │   │   └── Admin/     # Dashboard, Member, Partner, Promo, Payment (+create/store), HomeBanner, Community, Notification, Transaction, Report
 │   ├── Middleware/    # EnsureRole, SecurityHeaders, HandleInertiaRequests

@@ -9,6 +9,7 @@ const NAV = [
     { name: 'History', route: 'member.history.index' },
     { name: 'Partner', route: 'member.partners.index' },
     { name: 'Notification', route: 'member.notifications.index', badge: true },
+    { name: 'Billing', route: 'member.billing.index' },
     { name: 'Profile', route: 'member.account.edit' },
 ];
 
