@@ -13,12 +13,13 @@ class PartnerController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Partner::query()->active()->withCount(['promos' => fn ($q) => $q->where('status', 'approved')]);
-
         $category = $request->string('category')->toString();
+        $query = Partner::query()->active()->withCount(['promos' => fn ($q) => $q->where('status', 'approved')]);
+        $promoQuery = Promo::query()->visibleToMembers();
 
         if ($category !== '' && $category !== 'all') {
             $query->where('category', $category);
+            $promoQuery->whereHas('partner', fn ($q) => $q->where('category', $category));
         }
 
         $partners = $query->orderByRaw('COALESCE(sort_number, 999999) ASC')
@@ -30,8 +31,7 @@ class PartnerController extends Controller
             'partners' => $partners,
             'categories' => Partner::query()->active()->distinct()->pluck('category'),
             'filters' => ['category' => $category],
-            'promos' => Promo::query()
-                ->visibleToMembers()
+            'promos' => $promoQuery
                 ->orderByRaw('COALESCE(sort_number, 999999) ASC')
                 ->latest('end_date')
                 ->paginate(9)

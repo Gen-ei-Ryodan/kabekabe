@@ -22,9 +22,9 @@ Platform digital untuk manajemen membership dan komunitas. Member memiliki **kar
 ## Catatan Revisi (2026-08-22)
 - **UI seluruhnya bahasa Inggris.**
 - Navbar member: **HOME, HISTORY, PARTNER, NOTIF, ACCOUNT** (menu Promo & Pembayaran dihapus, Komunitas tidak lagi tampil untuk member).
-- Home: kartu digital + foto member + **maksimal 3 banner kurasi admin** (promo atau agenda) — layout adaptif 1/2/3 kartu; tidak ada list promo/agenda.
+- Home: kartu digital + foto member + **maksimal 3 promo banner kurasi admin** serta agenda aktif dari Events & Activities — layout adaptif 1/2/3 kartu.
 - Home juga dapat menampilkan satu popup promo terkonfigurasi admin setelah jeda 3 detik setiap halaman Home dibuka.
-- PARTNER = tab Promo + Partner dalam satu halaman.
+- PARTNER = tab Promo + Partner dalam satu halaman, dengan filter kategori yang berlaku untuk keduanya.
 - HISTORY = tab Payments + Usage dalam satu halaman.
 - **Pembayaran offline:** member tidak membayar di sistem; admin mencatat via `admin.payments.store` (langsung approved → membership diperpanjang).
 - **Demografi member:** admin dapat mengisi jenis kelamin, tanggal lahir, dan agama saat membuat atau mengedit member; data ini dipakai pada Member Statistics.

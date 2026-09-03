@@ -2,6 +2,10 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Agenda Home otomatis dan filter kategori member
+- Home member mengambil maksimal 3 agenda aktif/published langsung dari Events & Activities, tanpa memerlukan banner agenda manual.
+- Filter kategori di halaman Promo & Partner kini ikut memfilter promo berdasarkan kategori partner.
+
 ## 2026-09-03 — Member Billing Management
 - Halaman baru **Billing** di menu Account member (`member.billing.index`).
 - Menampilkan status membership (active/inactive), current plan, masa berlaku, dan sisa hari.

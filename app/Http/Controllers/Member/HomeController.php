@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
 use App\Models\HomePopup;
 use App\Models\Transaction;
@@ -52,7 +53,8 @@ class HomeController extends Controller
             'vendor_ranking' => $vendorRanking,
             'banners' => HomeBanner::query()
                 ->active()
-                ->with(['promo.partner:id,name', 'agenda'])
+                ->where('type', HomeBanner::TYPE_PROMO)
+                ->with('promo.partner:id,name')
                 ->orderBy('sort_order')
                 ->get()
                 ->map(fn (HomeBanner $banner) => [
@@ -71,26 +73,25 @@ class HomeController extends Controller
                             'partner' => ['name' => $banner->promo->partner?->name],
                         ]
                         : null,
-                    'agenda' => $banner->type === HomeBanner::TYPE_AGENDA
-                        && $banner->agenda
-                        && $banner->agenda->is_published
-                        && $banner->agenda->published_at
-                        && $banner->agenda->published_at->lte(now())
-                        ? [
-                            'id' => $banner->agenda->id,
-                            'title' => $banner->agenda->title,
-                            'event_date' => $banner->agenda->event_date?->toISOString(),
-                            'location' => $banner->agenda->location,
-                            'type' => $banner->agenda->type,
-                        ]
-                        : null,
                 ])
-                ->filter(fn (array $banner) => $banner['promo'] !== null || $banner['agenda'] !== null)
-                ->groupBy('type')
-                ->map(fn ($banners, $type) => $banners->take(
-                    $type === HomeBanner::TYPE_PROMO ? 3 : 1,
-                ))
-                ->collapse()
+                ->filter(fn (array $banner) => $banner['promo'] !== null)
+                ->take(3)
+                ->values(),
+            'agendas' => CommunityInfo::query()
+                ->published()
+                ->whereIn('type', CommunityInfo::TYPES)
+                ->orderByRaw('CASE WHEN event_date IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('event_date')
+                ->limit(3)
+                ->get(['id', 'title', 'event_date', 'location', 'type', 'image'])
+                ->map(fn (CommunityInfo $agenda) => [
+                    'id' => $agenda->id,
+                    'title' => $agenda->title,
+                    'event_date' => $agenda->event_date?->toISOString(),
+                    'location' => $agenda->location,
+                    'type' => $agenda->type,
+                    'image_url' => $agenda->imageUrl(),
+                ])
                 ->values(),
             'popup' => ($popup = HomePopup::query()->with('promo.partner')->where('is_active', true)->first())
                 && $popup->promo

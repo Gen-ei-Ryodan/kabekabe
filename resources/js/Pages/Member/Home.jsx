@@ -351,9 +351,14 @@ function BannerSection({ label, banners, renderBanner }) {
     );
 }
 
-function BannerZone({ banners }) {
+function BannerZone({ banners, agendas }) {
     const promoBanners = banners.filter((banner) => banner.type === 'promo' && banner.promo);
-    const agendaBanners = banners.filter((banner) => banner.type === 'agenda' && banner.agenda);
+    const agendaBanners = agendas.map((agenda) => ({
+        id: `agenda-${agenda.id}`,
+        type: 'agenda',
+        agenda,
+        image_url: agenda.image_url,
+    }));
 
     return (
         <div className="flex flex-col gap-4">
@@ -376,7 +381,7 @@ function BannerZone({ banners }) {
     );
 }
 
-export default function Home({ member, banners = [], vendor_ranking = [], popup = null }) {
+export default function Home({ member, banners = [], agendas = [], vendor_ranking = [], popup = null }) {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
@@ -412,7 +417,7 @@ export default function Home({ member, banners = [], vendor_ranking = [], popup 
                     <VendorRanking vendors={vendor_ranking} />
                 )}
 
-                {bannerList.length > 0 && <BannerZone banners={bannerList} />}
+                {(bannerList.length > 0 || agendas.length > 0) && <BannerZone banners={bannerList} agendas={agendas} />}
             </div>
 
             <PromoPopup popup={popup} open={popupOpen} onClose={() => setPopupOpen(false)} />

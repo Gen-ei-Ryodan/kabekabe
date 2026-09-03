@@ -7,6 +7,7 @@ use App\Models\HomeBanner;
 use App\Models\HomePopup;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
+use App\Models\Partner;
 use App\Models\Promo;
 use App\Models\Transaction;
 use App\Models\User;
@@ -122,7 +123,7 @@ class MemberFlowTest extends TestCase
             );
     }
 
-    public function test_member_home_returns_curated_promo_and_agenda_banners(): void
+    public function test_member_home_returns_active_agendas_automatically(): void
     {
         $member = $this->activeMember();
 
@@ -141,21 +142,40 @@ class MemberFlowTest extends TestCase
         ]);
 
         HomeBanner::create(['type' => 'promo', 'promo_id' => $promo->id, 'sort_order' => 1, 'is_active' => true]);
-        HomeBanner::create(['type' => 'agenda', 'agenda_id' => $agenda->id, 'sort_order' => 2, 'is_active' => true]);
+        CommunityInfo::factory()->create([
+            'type' => CommunityInfo::TYPE_AGENDA,
+            'is_published' => false,
+            'published_at' => null,
+        ]);
 
         $this->actingAs($member)->get(route('member.home'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Member/Home')
-                ->has('banners', 2)
+                ->has('banners', 1)
                 ->where('banners.0.type', 'promo')
                 ->where('banners.0.promo.id', $promo->id)
                 ->where('banners.0.promo.partner.name', $promo->partner->name)
-                ->where('banners.0.agenda', null)
-                ->where('banners.1.type', 'agenda')
-                ->where('banners.1.agenda.id', $agenda->id)
-                ->where('banners.1.agenda.event_date', $agenda->event_date->toISOString())
-                ->where('banners.1.promo', null)
+                ->has('agendas', 1)
+                ->where('agendas.0.id', $agenda->id)
+                ->where('agendas.0.event_date', $agenda->event_date->toISOString())
+            );
+    }
+
+    public function test_member_promo_filter_uses_partner_category(): void
+    {
+        $member = $this->activeMember();
+        $fnbPartner = Partner::factory()->create(['category' => 'FNB']);
+        $retailPartner = Partner::factory()->create(['category' => 'Retail']);
+        $fnbPromo = Promo::factory()->create(['partner_id' => $fnbPartner->id]);
+        Promo::factory()->create(['partner_id' => $retailPartner->id]);
+
+        $this->actingAs($member)->get(route('member.partners.index', ['category' => 'FNB']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('promos.data', 1)
+                ->where('promos.data.0.id', $fnbPromo->id)
+                ->where('filters.category', 'FNB')
             );
     }
 

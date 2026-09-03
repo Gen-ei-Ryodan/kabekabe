@@ -47,12 +47,13 @@
 - **Member tidak lagi melihat fitur komunitas** — halaman, route, dan controller sisi member dihapus (revisi klien).
 - Admin tetap bisa membuat/mengedit/menghapus konten komunitas.
 
-## Home Banners (kurasi admin)
-- Home member menampilkan **maksimal 3 banner** yang dikurasi admin (bukan list promo otomatis).
-- Setiap banner bertipe `promo` (referensi promo) atau `agenda` (referensi konten komunitas).
+## Home Banners dan Agenda
+- Home member menampilkan **maksimal 3 banner promo** yang dikurasi admin.
+- Agenda Home diambil otomatis, maksimal 3 event/activity dari Events & Activities yang berstatus published/aktif.
+- Banner dapat bertipe `promo` atau `agenda` untuk kebutuhan administrasi, tetapi agenda Home tidak lagi bergantung pada banner agenda manual.
 - **Maksimal 3 banner aktif**; admin menambah/edithapus/aktifnonaktif via `admin.banners.*`.
 - Layout member adaptif: 1 banner → 1 kartu; 2 → dua kartu sejajar (kiri-kanan); 3 → dua sejajar + satu lebar di bawah.
-- Banner promo hanya tampil jika targetnya visible (approved + aktif + dalam periode); banner agenda hanya jika konten `is_published`. Target yang tidak valid/dihapus di-filter dari payload member.
+- Banner promo hanya tampil jika targetnya visible (approved + aktif + dalam periode); agenda otomatis hanya tampil jika `is_published`, `published_at <= now()`, dan diurutkan berdasarkan tanggal kegiatan. Target yang tidak valid/dihapus di-filter dari payload member.
 - Seeder: 3 banner demo (2 promo + 1 agenda).
 
 ## Home Opening Popup
@@ -64,6 +65,7 @@
 - Navbar member: **HOME, HISTORY, PARTNER, NOTIF, BILLING, ACCOUNT** (bahasa Inggris).
 - **BILLING** = halaman manajemen billing: status membership, current plan, masa berlaku, daftar plan tersedia, dan petunjuk renew/extend (offline payment).
 - PARTNER = gabungan daftar **Promo** + daftar **Partner** (satu halaman, dua tab).
+- Filter kategori pada PARTNER diterapkan ke daftar promo berdasarkan kategori partner dan ke daftar partner.
 - HISTORY = gabungan **riwayat pembayaran** + **riwayat penggunaan benefit** (satu halaman, dua tab).
 - Home: kartu digital + foto member, dan maksimal **3 promo terbaru** (limit 3).
 
