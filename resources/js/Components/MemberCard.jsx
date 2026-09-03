@@ -84,14 +84,14 @@ export default function MemberCard({ member }) {
         <div ref={wrapRef} className="relative w-full [perspective:1200px]">
             <div
                 ref={cardRef}
-                className="relative min-h-[18rem] w-full max-w-full overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:mx-auto sm:max-w-md"
+                className="relative w-full max-w-full overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:mx-auto sm:max-w-md"
                 style={{ transformStyle: 'preserve-3d' }}
             >
                 {/* Card base image */}
                 <img
                     src="/bglogin.png"
                     alt="Member card background"
-                    className="absolute inset-0 h-full w-full select-none object-cover"
+                    className="relative block h-auto w-full select-none"
                     draggable="false"
                 />
 
