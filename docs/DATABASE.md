@@ -93,7 +93,7 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | transaction_number | string unique |
 | partner_id | FK partners cascade |
 | member_id | FK users restrict |
-| member_scan_id | FK member_scans nullable, unique; scan yang menjadi dasar transaksi |
+| member_scan_id | ID `member_scans` nullable, unique; scan yang menjadi dasar transaksi (relasi dan ownership divalidasi service karena engine tabel legacy berbeda) |
 | promo_id | FK promos nullOnDelete nullable |
 | total_amount | unsignedBigInteger |
 | discount_percent | unsignedBigInteger nullable |
