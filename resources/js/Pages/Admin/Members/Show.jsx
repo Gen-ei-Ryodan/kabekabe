@@ -2,9 +2,12 @@ import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Avatar from '@/Components/Avatar';
-import { formatDate, formatRupiah } from '@/Utils/format';
+import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
 
 export default function MemberShow({ member, membership, payments, transactions }) {
+    const daysLeft = membership?.expires_at ? daysUntil(membership.expires_at) : null;
+    const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
+
     return (
         <>
             <Head title={member.name} />
@@ -33,29 +36,65 @@ export default function MemberShow({ member, membership, payments, transactions 
 
                 <section className="grid gap-4 lg:grid-cols-3">
                     <div className="card-surface p-6 lg:col-span-1">
-                        <h2 className="font-display text-lg font-bold">Membership</h2>
+                        <div className="flex items-center justify-between">
+                            <h2 className="font-display text-lg font-bold">Membership</h2>
+                            {membership && (
+                                <StatusChip status={membership.status} label={membership.status === 'active' ? 'Active' : 'Inactive'} pulse={membership.status === 'active'} />
+                            )}
+                        </div>
+
                         {membership ? (
                             <div className="mt-4 space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="eyebrow">Status</span>
-                                    <StatusChip status={membership.status} label={membership.status === 'active' ? 'Active' : 'Inactive'} pulse={membership.status === 'active'} />
+                                <div className="rounded-xl bg-paper p-3">
+                                    <dt className="eyebrow">Current Plan</dt>
+                                    <dd className="mt-1 text-sm font-bold">{membership.plan?.name || '-'}</dd>
+                                    {membership.plan?.duration_months && (
+                                        <dd className="text-xs text-slate">{membership.plan.duration_months} months · {formatRupiah(membership.plan?.price)}</dd>
+                                    )}
                                 </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate">Plan</span>
-                                    <span className="font-semibold">{membership.plan?.name || '-'}</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="rounded-xl bg-paper p-3">
+                                        <dt className="eyebrow">Started</dt>
+                                        <dd className="mt-1 font-mono text-xs">{formatDate(membership.started_at)}</dd>
+                                    </div>
+                                    <div className="rounded-xl bg-paper p-3">
+                                        <dt className="eyebrow">Valid Until</dt>
+                                        <dd className="mt-1 font-mono text-xs">{formatDate(membership.expires_at)}</dd>
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate">Start</span>
-                                    <span className="font-mono text-xs">{formatDate(membership.starts_at)}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate">Valid until</span>
-                                    <span className="font-mono text-xs">{formatDate(membership.expires_at)}</span>
-                                </div>
-                                <Link href={route('admin.members.edit', member.id)} className="btn-ink mt-4 w-full text-xs">Edit Member</Link>
+                                {daysLeft !== null && (
+                                    <div className={`rounded-xl p-3 ${isExpiringSoon ? 'bg-amber-50 border border-amber-200' : 'bg-paper'}`}>
+                                        <dt className={`eyebrow ${isExpiringSoon ? 'text-amber-700' : ''}`}>Days Remaining</dt>
+                                        <dd className={`mt-1 font-mono text-sm font-bold ${isExpiringSoon ? 'text-amber-700' : ''}`}>
+                                            {daysLeft >= 0 ? `${daysLeft} days` : 'Expired'}
+                                        </dd>
+                                    </div>
+                                )}
+                                <Link
+                                    href={route('admin.payments.create')}
+                                    method="get"
+                                    data={{ member_id: member.id }}
+                                    className="btn-gold mt-4 flex w-full items-center justify-center gap-2 text-xs"
+                                >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Record Payment
+                                </Link>
+                                <Link href={route('admin.members.edit', member.id)} className="btn-ink flex w-full justify-center text-xs">Edit Member</Link>
                             </div>
                         ) : (
-                            <p className="mt-4 text-sm text-slate">No membership yet.</p>
+                            <div className="mt-4 space-y-3">
+                                <p className="text-sm text-slate">No membership yet.</p>
+                                <Link
+                                    href={route('admin.payments.create')}
+                                    method="get"
+                                    data={{ member_id: member.id }}
+                                    className="btn-gold flex w-full items-center justify-center gap-2 text-xs"
+                                >
+                                    Create Membership
+                                </Link>
+                            </div>
                         )}
                     </div>
 
@@ -98,7 +137,10 @@ export default function MemberShow({ member, membership, payments, transactions 
                     </div>
 
                     <div className="card-surface p-6">
-                        <h2 className="font-display text-lg font-bold">Payment History</h2>
+                        <div className="flex items-center justify-between">
+                            <h2 className="font-display text-lg font-bold">Payment History</h2>
+                            <Link href={route('admin.payments.index')} className="text-xs font-medium text-gold hover:underline">View All</Link>
+                        </div>
                         <div className="mt-4 space-y-3">
                             {payments.length === 0 ? (
                                 <p className="text-sm text-slate">No payments yet.</p>
@@ -107,7 +149,7 @@ export default function MemberShow({ member, membership, payments, transactions 
                                     <Link key={p.id} href={route('admin.payments.show', p.id)} className="flex items-center justify-between rounded-xl border border-ink/10 p-4 transition-colors hover:bg-paper/60">
                                         <div>
                                             <p className="text-sm font-semibold">{formatRupiah(p.amount)}</p>
-                                            <p className="font-mono text-xs text-slate">{formatDate(p.created_at)}</p>
+                                            <p className="font-mono text-xs text-slate">{p.plan?.name || '-'} · {formatDate(p.created_at)}</p>
                                         </div>
                                         <StatusChip status={p.status} label={p.status} />
                                     </Link>

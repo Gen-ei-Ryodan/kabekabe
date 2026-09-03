@@ -10,6 +10,12 @@ Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 - Menambahkan `BillingController` dan `Billing.jsx`.
 - **Pembayaran tetap offline:** member tidak bisa payment langsung; petunjuk menghubungi admin untuk renew/extend.
 
+## 2026-09-03 — Admin Billing Enhancement
+- Admin Members Show: card membership diperkaya dengan current plan (nama, durasi, harga), sisa hari, dan tombol **Record Payment** langsung ke halaman record payment.
+- Admin Payments Create: saat member dipilih, menampilkan status membership, current plan, masa berlaku, dan sisa hari secara real-time.
+- PaymentController: member query sekarang eager-load membership dan latest plan via `getLatestPlan()`.
+- Membership model: tambah method `getLatestPlan()` untuk mengambil plan dari payment approved terakhir tanpa ambiguity column.
+
 ## 2026-09-03 — Admin Events & Activities
 - Label menu dan halaman Agenda Kegiatan diterjemahkan menjadi **Events & Activities**.
 - Field **Content type** dihapus dari form Create/Edit; event baru menggunakan tipe agenda secara internal.

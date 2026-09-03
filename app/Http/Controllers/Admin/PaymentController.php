@@ -85,11 +85,24 @@ class PaymentController extends Controller
 
     public function create(): Response
     {
+        $members = User::query()
+            ->where('role', User::ROLE_MEMBER)
+            ->with('membership')
+            ->orderBy('name')
+            ->get(['id', 'name', 'member_code']);
+
+        $members->each(function (User $member) {
+            $member->membership_status = $member->hasActiveMembership() ? 'active' : 'inactive';
+            $plan = $member->membership?->getLatestPlan();
+            $member->membership_plan = $plan ? [
+                'name' => $plan->name,
+                'price' => $plan->price,
+                'duration_months' => $plan->duration_months,
+            ] : null;
+        });
+
         return Inertia::render('Admin/Payments/Create', [
-            'members' => User::query()
-                ->where('role', User::ROLE_MEMBER)
-                ->orderBy('name')
-                ->get(['id', 'name', 'member_code']),
+            'members' => $members,
             'plans' => MembershipPlan::query()
                 ->where('is_active', true)
                 ->orderBy('duration_months')

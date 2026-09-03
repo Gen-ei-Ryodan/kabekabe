@@ -43,6 +43,17 @@ class Membership extends Model
             ->latest('payments.approved_at');
     }
 
+    public function getLatestPlan()
+    {
+        $latestPayment = Payment::where('member_id', $this->member_id)
+            ->where('status', Payment::STATUS_APPROVED)
+            ->whereNotNull('plan_id')
+            ->latest('approved_at')
+            ->first();
+
+        return $latestPayment?->plan;
+    }
+
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE
