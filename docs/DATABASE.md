@@ -93,6 +93,7 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | transaction_number | string unique |
 | partner_id | FK partners cascade |
 | member_id | FK users restrict |
+| member_scan_id | FK member_scans nullable, unique; scan yang menjadi dasar transaksi |
 | promo_id | FK promos nullOnDelete nullable |
 | total_amount | unsignedBigInteger |
 | discount_percent | unsignedBigInteger nullable |
@@ -102,6 +103,15 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | proof_path | string nullable |
 | transacted_at | timestamp |
 | index | (partner_id,transacted_at), (member_id,transacted_at) |
+
+## member_scans
+| kolom | tipe | keterangan |
+|-------|------|------------|
+| member_id | FK users cascade | member yang diverifikasi |
+| scanned_by_vendor_id | FK users cascade | akun vendor yang melakukan scan |
+| scanned_at / expires_at | timestamp | jendela input transaksi 48 jam |
+| ip_address | string nullable | alamat IP saat scan |
+| index | (member_id, scanned_by_vendor_id, expires_at) |
 
 ## app_notifications
 | kolom | tipe |

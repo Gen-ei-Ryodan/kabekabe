@@ -17,6 +17,7 @@ class StoreTransactionRequest extends FormRequest
         return [
             'transaction_number' => ['nullable', 'string', 'max:64', Rule::unique('transactions', 'transaction_number')],
             'member_code' => ['required', 'string', 'max:32', 'exists:users,member_code'],
+            'scan_id' => ['nullable', 'integer', 'exists:member_scans,id'],
             'promo_id' => ['nullable', 'integer', 'exists:promos,id'],
             'total' => ['required', 'integer', 'min:1'],
             'note' => ['nullable', 'string', 'max:1000'],

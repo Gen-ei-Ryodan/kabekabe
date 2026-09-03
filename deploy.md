@@ -1,0 +1,1 @@
+anda push ke github main kemudian anda buka ssh alurelab hosting saya kemudian masuk ke repositories/kabekabe kemudian anda pull main terbaru di path itu setelah itu anda deploy ke domain membership.solusisurabaya.com

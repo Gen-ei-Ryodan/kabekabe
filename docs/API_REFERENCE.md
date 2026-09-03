@@ -49,9 +49,9 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | GET | `/promos/{promo}/edit` | `vendor.promos.edit` |
 | PUT | `/promos/{promo}` | `vendor.promos.update` |
 | DELETE | `/promos/{promo}` | `vendor.promos.destroy` |
-| GET | `/transactions` | `vendor.transactions.index` |
+| GET | `/transactions` | `vendor.transactions.index` (props: `transactions`, `pending_scans`, `filters`) |
 | GET | `/transactions/create` | `vendor.transactions.create` |
-| POST | `/transactions` | `vendor.transactions.store` (payload: `member_code`, `promo_id?`, `total`, `note?`, `proof?`) |
+| POST | `/transactions` | `vendor.transactions.store` (payload: `member_code`, `scan_id?`, `promo_id?`, `total`, `note?`, `proof?`; `scan_id` mengikat transaksi ke scan vendor) |
 | GET | `/reports` | `vendor.reports.index` |
 
 ## Admin (`/admin`, middleware `role:admin`)

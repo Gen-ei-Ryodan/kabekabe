@@ -29,7 +29,7 @@ resources/
 │   ├── Pages/
 │   │   ├── Auth/      # Login, Register, dsb (SENTRA style)
 │   │   ├── Member/    # 7 halaman: Home, History, Partners (Index/Show), Promos/Show, Notifications, Account
-│   │   ├── Vendor/    # 9 halaman (lengkap)
+│   │   ├── Vendor/    # 9 halaman (transaksi memiliki daftar pending scan)
 │   │   └── Admin/     # 18 halaman + Payments/Create + Banners (banner + Opening popup)
 │   └── Utils/format.js
 ├── css/app.css        # Design tokens + utility classes (.input, .label, .btn-*, .card-surface, .eyebrow)
@@ -46,7 +46,7 @@ routes/
 | `MembershipService` | `ensureMembership`, `extend`, `deactivate`, `activate`, `isActive` |
 | `PaymentService` | `createPending`, `approve` (perpanjang membership), `reject`, `expireOverduePayments` |
 | `PromoService` | `submit`, `approve`, `reject` (+ notifikasi) |
-| `TransactionService` | `record` — validasi member aktif + promo milik partner, hitung diskon |
+| `TransactionService` | `record` — validasi member aktif, scan milik vendor dalam 48 jam, promo milik partner, hitung diskon |
 | `NotificationService` | `send`, `broadcastToMembers` |
 | `ReportingService` | `adminDashboard`, `vendorDashboard`, `transactionsReport` |
 
