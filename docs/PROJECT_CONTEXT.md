@@ -27,6 +27,7 @@ Platform digital untuk manajemen membership dan komunitas. Member memiliki **kar
 - PARTNER = tab Promo + Partner dalam satu halaman.
 - HISTORY = tab Payments + Usage dalam satu halaman.
 - **Pembayaran offline:** member tidak membayar di sistem; admin mencatat via `admin.payments.store` (langsung approved → membership diperpanjang).
+- **Demografi member:** admin dapat mengisi jenis kelamin, tanggal lahir, dan agama saat membuat atau mengedit member; data ini dipakai pada Member Statistics.
 
 ## Akun Demo (password: `password`)
 - Admin: `admin@sentra.test`

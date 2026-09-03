@@ -4,6 +4,9 @@ import AdminLayout from '@/Layouts/AdminLayout';
 export default function MemberEdit({ member }) {
     const form = useForm({
         name: member.name,
+        gender: member.gender || '',
+        birth_date: member.birth_date || '',
+        religion: member.religion || '',
         email: member.email,
         phone: member.phone || '',
         whatsapp: member.whatsapp || '',
@@ -34,6 +37,34 @@ export default function MemberEdit({ member }) {
                             <label className="label" htmlFor="name">Full name</label>
                             <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                             {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
+                        </div>
+                        <div>
+                            <label className="label" htmlFor="gender">Gender</label>
+                            <select id="gender" className="input" value={form.data.gender} onChange={(e) => form.setData('gender', e.target.value)}>
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                            {form.errors.gender && <p className="mt-1 text-xs text-ember">{form.errors.gender}</p>}
+                        </div>
+                        <div>
+                            <label className="label" htmlFor="birth_date">Birth date</label>
+                            <input id="birth_date" type="date" className="input" value={form.data.birth_date} onChange={(e) => form.setData('birth_date', e.target.value)} />
+                            {form.errors.birth_date && <p className="mt-1 text-xs text-ember">{form.errors.birth_date}</p>}
+                        </div>
+                        <div>
+                            <label className="label" htmlFor="religion">Religion</label>
+                            <select id="religion" className="input" value={form.data.religion} onChange={(e) => form.setData('religion', e.target.value)}>
+                                <option value="">Select religion</option>
+                                <option value="islam">Islam</option>
+                                <option value="kristen">Kristen</option>
+                                <option value="katolik">Katolik</option>
+                                <option value="buddha">Buddha</option>
+                                <option value="hindu">Hindu</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                            {form.errors.religion && <p className="mt-1 text-xs text-ember">{form.errors.religion}</p>}
                         </div>
                         <div>
                             <label className="label" htmlFor="email">Email</label>

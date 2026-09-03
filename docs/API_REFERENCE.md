@@ -110,8 +110,8 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | GET | `/reports` | `admin.reports.index` |
 
 ## Query Parameters (Index)
-- `admin.members.index`: `search`, `status(active|inactive)`
-- `admin.partners.index`: `search`
+- `admin.members.index`: `search`, `name`, `member_id`, `status(active|inactive)`, `valid_from`, `valid_to`, `joined_from`, `joined_to` (date range filters)
+- `admin.partners.index`: `search`, `category`, `status(active|inactive)`
 - `admin.promos.index` / `vendor.promos.index`: `status(pending|approved|rejected)`
 - `admin.payments.index`: `status(pending|approved|rejected|expired)`
 - `admin.community.index`: `type(event|agenda)`, `search`, `status(published|unpublished)`

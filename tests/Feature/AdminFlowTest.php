@@ -60,6 +60,48 @@ class AdminFlowTest extends TestCase
         $this->assertTrue($member->hasActiveMembership());
     }
 
+    public function test_admin_can_create_member_with_demographics(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post(route('admin.members.store'), [
+            'name' => 'Member Demografi',
+            'email' => 'demografi@example.com',
+            'password' => 'secret-password',
+            'password_confirmation' => 'secret-password',
+            'valid_until' => now()->addMonths(6)->toDateString(),
+            'gender' => 'female',
+            'birth_date' => '1995-04-12',
+            'religion' => 'katolik',
+        ])->assertRedirect();
+
+        $member = User::where('email', 'demografi@example.com')->firstOrFail();
+
+        $this->assertSame('female', $member->gender);
+        $this->assertSame('1995-04-12', $member->birth_date->toDateString());
+        $this->assertSame('katolik', $member->religion);
+    }
+
+    public function test_admin_can_update_member_demographics(): void
+    {
+        $admin = $this->admin();
+        $member = User::factory()->member()->create();
+
+        $this->actingAs($admin)->put(route('admin.members.update', $member), [
+            'name' => $member->name,
+            'email' => $member->email,
+            'gender' => 'male',
+            'birth_date' => '1990-01-01',
+            'religion' => 'islam',
+        ])->assertRedirect();
+
+        $member->refresh();
+
+        $this->assertSame('male', $member->gender);
+        $this->assertSame('1990-01-01', $member->birth_date->toDateString());
+        $this->assertSame('islam', $member->religion);
+    }
+
     public function test_admin_can_create_partner_with_vendor_account(): void
     {
         $admin = $this->admin();
@@ -407,6 +449,50 @@ class AdminFlowTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Members/Show')
                 ->where('member.id', $member->id)
+            );
+    }
+
+    public function test_admin_member_index_supports_member_and_date_filters(): void
+    {
+        $admin = $this->admin();
+        $matching = User::factory()->member()->create([
+            'name' => 'Filter Member',
+            'member_code' => 'MMB-12345',
+            'created_at' => now()->subDays(10),
+        ]);
+        $matching->membership()->create([
+            'status' => 'active',
+            'started_at' => now()->subDays(10),
+            'expires_at' => now()->addDays(20),
+        ]);
+        User::factory()->member()->create(['name' => 'Other Member', 'member_code' => 'MMB-99999']);
+
+        $this->actingAs($admin)->get(route('admin.members.index', [
+            'name' => 'Filter',
+            'member_id' => '12345',
+            'valid_from' => now()->addDays(19)->toDateString(),
+            'valid_to' => now()->addDays(21)->toDateString(),
+            'joined_from' => now()->subDays(11)->toDateString(),
+            'joined_to' => now()->subDays(9)->toDateString(),
+        ]))->assertInertia(fn ($page) => $page
+            ->component('Admin/Members/Index')
+            ->has('members.data', 1)
+            ->where('members.data.0.id', $matching->id)
+        );
+    }
+
+    public function test_admin_partner_index_supports_category_filter(): void
+    {
+        $admin = $this->admin();
+        $matching = Partner::factory()->create(['category' => 'Retail']);
+        Partner::factory()->create(['category' => 'Salon']);
+
+        $this->actingAs($admin)->get(route('admin.partners.index', ['category' => 'Retail']))
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Partners/Index')
+                ->has('partners.data', 1)
+                ->where('partners.data.0.id', $matching->id)
+                ->where('filters.category', 'Retail')
             );
     }
 }

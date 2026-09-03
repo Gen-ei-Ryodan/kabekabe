@@ -7,6 +7,11 @@
 - Perpanjangan menambah bulan dari `expires_at` saat ini bila masih aktif, jika tidak dari `now()`.
 - `ensureMembership()` membuat baris inactive bila belum ada; selalu `setRelation('membership', ...)` untuk hindari stale relation.
 
+## Demografi Member
+- Jenis kelamin member menggunakan nilai `male`, `female`, atau `other`.
+- Agama member menggunakan nilai `islam`, `kristen`, `katolik`, `buddha`, `hindu`, atau `lainnya`.
+- Tanggal lahir bersifat opsional dan tidak boleh berada di masa depan.
+
 ## Kartu Digital & QR
 - `card_token` (UUID) dibangkitkan otomatis saat user member dibuat, dan dijamin via `ensureCardToken()`.
 - `member_code` format `MMB-XXXXX`, auto-increment per member.
