@@ -130,55 +130,56 @@ export default function MemberCard({ member }) {
                         </button>
                     </div>
 
-                    {/* member info */}
-                    <div className="relative mt-auto px-4 pb-5 sm:px-6 sm:pb-8">
-                        <div className="card-line mb-2 sm:mb-3">
-                            <p className="truncate font-display text-xl font-bold text-paper drop-shadow sm:text-2xl">
-                                {member.name}
-                            </p>
-                        </div>
-
-                        <div className="card-line mb-2 flex items-center justify-between gap-3 sm:mb-3">
-                            <p className="font-mono text-[10px] tracking-wider text-gold-light drop-shadow sm:text-[11px]">
-                                {member.member_code}
-                            </p>
-                            <span
-                                className={`chip border px-2 py-0.5 text-[10px] font-semibold shadow sm:text-xs ${
-                                    isActive
-                                        ? 'border-sage bg-sage text-white'
-                                        : 'border-ember bg-ember text-white'
-                                }`}
-                            >
-                                {isActive && (
-                                    <span className="relative flex h-1.5 w-1.5">
-                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
-                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
-                                    </span>
-                                )}
-                                {member.membership_status_label}
-                            </span>
-                        </div>
-
-                        <div className="card-line mb-4 flex items-end justify-between gap-3 sm:mb-6">
-                            <div>
-                                <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Joined</div>
-                                <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
-                                    {member.joined_at}
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Valid until</div>
-                                <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
-                                    {member.expires_at ? formatDateEn(member.expires_at) : '—'}
-                                </div>
-                            </div>
-                        </div>
-
+                    {/* bottom area: QR left, info right */}
+                    <div className="relative mt-auto flex items-end gap-4 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-8">
                         {/* QR */}
                         <div className="card-line flex flex-col gap-1.5 sm:gap-2">
                             <QrCode value={member.card_token} size={72} className="rounded-lg bg-white p-1 shadow-md" />
                             <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">
                                 Scan here
+                            </div>
+                        </div>
+
+                        {/* info right */}
+                        <div className="card-line flex min-w-0 flex-1 flex-col gap-1.5 sm:gap-2">
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="truncate font-display text-lg font-bold text-paper drop-shadow sm:text-xl">
+                                    {member.name}
+                                </p>
+                                <span
+                                    className={`chip shrink-0 border px-2 py-0.5 text-[10px] font-semibold shadow sm:text-xs ${
+                                        isActive
+                                            ? 'border-sage bg-sage text-white'
+                                            : 'border-ember bg-ember text-white'
+                                    }`}
+                                >
+                                    {isActive && (
+                                        <span className="relative flex h-1.5 w-1.5">
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+                                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
+                                        </span>
+                                    )}
+                                    {member.membership_status_label}
+                                </span>
+                            </div>
+
+                            <p className="font-mono text-[10px] tracking-wider text-gold-light drop-shadow sm:text-[11px]">
+                                {member.member_code}
+                            </p>
+
+                            <div className="flex items-end justify-between gap-3">
+                                <div>
+                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Joined</div>
+                                    <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
+                                        {member.joined_at}
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Valid until</div>
+                                    <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
+                                        {member.expires_at ? formatDateEn(member.expires_at) : '—'}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
