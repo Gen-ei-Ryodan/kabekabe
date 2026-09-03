@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -46,7 +47,7 @@ class User extends Authenticatable
         static::creating(function (User $user) {
             if ($user->role === self::ROLE_MEMBER) {
                 $user->card_token ??= (string) Str::uuid();
-                $user->member_code ??= self::nextMemberCode();
+                $user->member_code ??= DB::transaction(fn () => self::nextMemberCode());
             }
         });
     }
@@ -57,7 +58,7 @@ class User extends Authenticatable
         $prefix = '7030' . $year;
         $pattern = $prefix . '%';
 
-        $lastInYear = static::query()
+        $lastInYear = DB::table('users')
             ->where('role', self::ROLE_MEMBER)
             ->where('member_code', 'like', $pattern)
             ->orderByDesc('member_code')
@@ -171,7 +172,7 @@ class User extends Authenticatable
             return $this->member_code;
         }
 
-        $code = 'MMB-' . str_pad((string) ($this->id ?? 0), 5, '0', STR_PAD_LEFT);
+        $code = self::nextMemberCode();
 
         $this->forceFill(['member_code' => $code])->save();
 
