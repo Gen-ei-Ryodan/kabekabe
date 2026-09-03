@@ -2,6 +2,11 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Popup promo pembuka Home member
+- Tambah konfigurasi singleton `home_popups` untuk satu promo popup dengan gambar opsional dan status aktif.
+- Admin Home Banners memiliki menu **Opening popup** untuk memilih promo, mengunggah gambar, dan mengaktifkan popup.
+- Home member menampilkan modal promo terpusat setelah 3 detik setiap halaman Home dibuka; popup hanya dikirim jika promo masih visible.
+
 ## 2026-09-03 — Redesain kartu member digital
 - `MemberCard` kini menggunakan `bglogin.png` sebagai latar belakang kartu.
 - Foto member di kanan atas berbentuk kotak besar, tetap dapat diklik untuk membuka tampilan besar (lightbox).

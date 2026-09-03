@@ -50,6 +50,11 @@
 - Banner promo hanya tampil jika targetnya visible (approved + aktif + dalam periode); banner agenda hanya jika konten `is_published`. Target yang tidak valid/dihapus di-filter dari payload member.
 - Seeder: 3 banner demo (2 promo + 1 agenda).
 
+## Home Opening Popup
+- Admin dapat mengatur satu popup promo terpisah dari tiga slot Home Banners melalui menu **Opening popup**.
+- Popup hanya tampil jika konfigurasi aktif dan promo target visible untuk member.
+- Popup muncul 3 detik setelah setiap pembukaan halaman Home; menutup popup hanya berlaku untuk kunjungan tersebut.
+
 ## Menu & Navigasi Member (revisi)
 - Navbar member: **HOME, HISTORY, PARTNER, NOTIF, ACCOUNT** (bahasa Inggris).
 - PARTNER = gabungan daftar **Promo** + daftar **Partner** (satu halaman, dua tab).

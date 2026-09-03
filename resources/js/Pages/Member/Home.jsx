@@ -5,7 +5,7 @@ import MemberCard from '@/Components/MemberCard';
 import StatusChip from '@/Components/StatusChip';
 import Reveal from '@/Components/Reveal';
 
-import PrimaryButton from '@/Components/PrimaryButton';
+import Modal from '@/Components/Modal';
 import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
 
 function VendorRanking({ vendors }) {
@@ -50,15 +50,16 @@ function VendorRanking({ vendors }) {
     );
 }
 
-function PromoPopup({ open, onClose, promo }) {
+function PromoPopup({ open, onClose, popup }) {
+    const promo = popup?.promo;
     if (!promo) return null;
 
     return (
         <Modal show={open} maxWidth="md" closeable={true} onClose={onClose}>
             <div className="overflow-hidden rounded-xl">
-                <div className="relative h-48 bg-ink">
-                    {promo.image_url ? (
-                        <img src={promo.image_url} alt="" className="h-full w-full object-cover" />
+                <div className="relative h-56 bg-ink sm:h-72">
+                    {popup.image_url ? (
+                        <img src={popup.image_url} alt="" className="h-full w-full object-cover" />
                     ) : (
                         <div className="flex h-full items-center justify-center">
                             <span className="font-display text-6xl font-bold text-gold">🎉</span>
@@ -67,45 +68,17 @@ function PromoPopup({ open, onClose, promo }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
                 </div>
                 <div className="p-6">
-                    <p className="eyebrow">Special Promo</p>
-                    <h3 className="mt-1 font-display text-xl font-bold text-ink">{promo.title}</h3>
+                    <p className="eyebrow">Member exclusive</p>
+                    <h3 className="mt-1 font-display text-2xl font-bold text-ink">{promo.title}</h3>
                     <p className="mt-2 text-sm text-slate">
                         {promo.partner?.name && `from ${promo.partner.name}`}
                     </p>
-                    <PrimaryButton
-                        className="mt-4 w-full justify-center"
-                        onClick={onClose}
-                    >
-                        Got it
-                    </PrimaryButton>
+                    <Link href={route('member.promos.show', promo.id)} onClick={onClose} className="btn-gold mt-5 w-full justify-center">
+                        View promo
+                    </Link>
                 </div>
             </div>
         </Modal>
-    );
-}
-
-// Toast-style promo hint — non-blocking, only shown if popup wasn't dismissed
-function PromoToast({ promo, onDismiss }) {
-    if (!promo) return null;
-    return (
-        <div className="pointer-events-none fixed bottom-4 right-4 z-30 max-w-sm">
-            <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-gold/40 bg-white/95 p-3 shadow-lift backdrop-blur">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-gold-light">
-                    🎉
-                </div>
-                <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-ink">{promo.title}</p>
-                    <p className="truncate text-xs text-slate">Lihat di menu Promo</p>
-                </div>
-                <button
-                    onClick={onDismiss}
-                    className="shrink-0 rounded-lg p-1.5 text-slate hover:bg-ink/5 hover:text-ink"
-                    aria-label="Tutup"
-                >
-                    ✕
-                </button>
-            </div>
-        </div>
     );
 }
 
@@ -263,7 +236,7 @@ function BannerZone({ banners }) {
     );
 }
 
-export default function Home({ member, banners = [], vendor_ranking = [] }) {
+export default function Home({ member, banners = [], vendor_ranking = [], popup = null }) {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
@@ -271,41 +244,14 @@ export default function Home({ member, banners = [], vendor_ranking = [] }) {
     const active = member?.membership_status === 'active';
     const bannerList = (Array.isArray(banners) ? banners : []).slice(0, 3);
 
-    const [promoPopup, setPromoPopup] = useState(null);
-    const [dismissed, setDismissed] = useState(false);
+    const [popupOpen, setPopupOpen] = useState(false);
 
     useEffect(() => {
-        try {
-            if (localStorage.getItem('promo_popup_dismissed')) {
-                setDismissed(true);
-                return;
-            }
-        } catch {
-            // ignore
-        }
-
-        const activePromo = bannerList.find(
-            (b) => b.type === 'promo' && b.promo
-        );
-        if (activePromo) {
-            const timer = setTimeout(() => {
-                setPromoPopup(activePromo.promo);
-            }, 1500);
+        if (popup?.promo) {
+            const timer = setTimeout(() => setPopupOpen(true), 3000);
             return () => clearTimeout(timer);
         }
-    }, []);
-
-    const handleDismissPopup = () => {
-        try {
-            localStorage.setItem('promo_popup_dismissed', '1');
-        } catch {
-            // ignore
-        }
-        setDismissed(true);
-        setPromoPopup(null);
-    };
-
-    const closePopup = () => setPromoPopup(null);
+    }, [popup]);
 
     return (
         <>
@@ -347,9 +293,7 @@ export default function Home({ member, banners = [], vendor_ranking = [] }) {
                 {bannerList.length > 0 && <BannerZone banners={bannerList} />}
             </div>
 
-            {!dismissed && (
-                <PromoToast promo={promoPopup} onDismiss={handleDismissPopup} />
-            )}
+            <PromoPopup popup={popup} open={popupOpen} onClose={() => setPopupOpen(false)} />
         </>
     );
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
+use App\Models\HomePopup;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Models\Promo;
@@ -38,6 +39,25 @@ class MemberFlowTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('Member/Home')
                 ->where('member.membership_status', 'active')
+            );
+    }
+
+    public function test_member_home_returns_only_active_visible_opening_popup(): void
+    {
+        $member = $this->activeMember();
+        $promo = Promo::factory()->create([
+            'status' => Promo::STATUS_APPROVED,
+            'is_active' => true,
+            'start_date' => now()->subDay(),
+            'end_date' => now()->addDays(15),
+        ]);
+        HomePopup::create(['promo_id' => $promo->id, 'is_active' => true]);
+
+        $this->actingAs($member)->get(route('member.home'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('popup.promo.id', $promo->id)
+                ->where('popup.promo.title', $promo->title)
             );
     }
 

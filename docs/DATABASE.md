@@ -147,5 +147,14 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | is_active | boolean default true |
 | index | (is_active, sort_order) |
 
+## home_popups (singleton popup promo home member)
+| kolom | tipe | keterangan |
+|-------|------|------------|
+| promo_id | FK promos cascade | promo yang ditampilkan |
+| image_path | string nullable | gambar popup di storage |
+| is_active | boolean default true | popup tampil atau tidak |
+
+Hanya satu konfigurasi popup yang digunakan. Popup aktif dikirim ke member Home dan ditampilkan setelah jeda 3 detik.
+
 ## Seed Data
-`DatabaseSeeder`: 25 member, 5 partner (kfc, gramedia, rudy, transmart, gymfit), 5 promo, 4 transaksi, 1 payment, 19 notifikasi, 4 konten komunitas, 4 plan, 3 home banner (2 promo + 1 agenda).
+`DatabaseSeeder`: 25 member, 5 partner (kfc, gramedia, rudy, transmart, gymfit), 5 promo, 4 transaksi, 1 payment, 19 notifikasi, 4 konten komunitas, 4 plan, 3 home banner (2 promo + 1 agenda), 1 home popup.

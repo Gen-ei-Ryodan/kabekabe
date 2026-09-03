@@ -123,6 +123,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/banners', [AdminHomeBannerController::class, 'index'])->name('banners.index');
         Route::get('/banners/create', [AdminHomeBannerController::class, 'create'])->name('banners.create');
         Route::post('/banners', [AdminHomeBannerController::class, 'store'])->name('banners.store');
+        Route::put('/banners/popup', [AdminHomeBannerController::class, 'updatePopup'])->name('banners.popup.update');
         Route::get('/banners/{banner}/edit', [AdminHomeBannerController::class, 'edit'])->name('banners.edit');
         Route::put('/banners/{banner}', [AdminHomeBannerController::class, 'update'])->name('banners.update');
         Route::put('/banners/{banner}/toggle', [AdminHomeBannerController::class, 'toggle'])->name('banners.toggle');

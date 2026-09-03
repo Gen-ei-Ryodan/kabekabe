@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\AppNotification;
 use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
+use App\Models\HomePopup;
 use App\Models\MembershipPlan;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -303,6 +304,13 @@ class DatabaseSeeder extends Seeder
                 ['sort_order' => $seed['sort_order']],
                 array_merge($seed, ['is_active' => true]),
             );
+        }
+
+        if ($bannerPromos->first()) {
+            HomePopup::firstOrCreate([], [
+                'promo_id' => $bannerPromos->first()->id,
+                'is_active' => true,
+            ]);
         }
 
         // ---------- Notifications ----------

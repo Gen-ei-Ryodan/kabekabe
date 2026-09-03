@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
+use App\Models\HomePopup;
 use App\Models\Promo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,6 +64,8 @@ class HomeBannerController extends Controller
             'promos' => $this->promoSelect(),
             'agendas' => $this->agendaSelect(),
             'drawer' => $drawer,
+            'popup' => $this->popupPayload(),
+            'popup_promos' => $this->promoSelect(),
         ]);
     }
 
@@ -161,6 +164,55 @@ class HomeBannerController extends Controller
         return redirect()
             ->route('admin.banners.index')
             ->with('success', 'Home banner deleted.');
+    }
+
+    public function updatePopup(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'promo_id' => ['required', 'integer', Rule::exists('promos', 'id')],
+            'is_active' => ['required', 'boolean'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_image' => ['nullable', 'boolean'],
+        ]);
+
+        $popup = HomePopup::query()->first();
+        $data = [
+            'promo_id' => $validated['promo_id'],
+            'is_active' => $validated['is_active'],
+        ];
+
+        if ($request->hasFile('image')) {
+            if ($popup?->image_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($popup->image_path);
+            }
+            $data['image_path'] = $request->file('image')->store('home-popups', 'public');
+        } elseif ($request->boolean('remove_image') && $popup?->image_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($popup->image_path);
+            $data['image_path'] = null;
+        }
+
+        $popup ??= new HomePopup();
+        $popup->fill($data);
+        $popup->save();
+
+        return redirect()->route('admin.banners.index')->with('success', 'Opening popup settings saved.');
+    }
+
+    private function popupPayload(): ?array
+    {
+        $popup = HomePopup::query()->with('promo.partner')->first();
+
+        return $popup ? [
+            'id' => $popup->id,
+            'promo_id' => $popup->promo_id,
+            'image_path' => $popup->image_path,
+            'image_url' => $popup->imageUrl(),
+            'is_active' => $popup->is_active,
+            'promo' => $popup->promo ? [
+                'title' => $popup->promo->title,
+                'partner' => ['name' => $popup->promo->partner?->name],
+            ] : null,
+        ] : null;
     }
 
     private function validateBanner(Request $request, ?HomeBanner $banner = null): array

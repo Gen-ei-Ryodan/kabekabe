@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
+use App\Models\HomePopup;
 use App\Models\MembershipPlan;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -208,6 +209,22 @@ class AdminFlowTest extends TestCase
             'promo_id' => $promo->id,
             'agenda_id' => null,
             'sort_order' => 1,
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_admin_can_configure_home_opening_popup(): void
+    {
+        $admin = $this->admin();
+        $promo = Promo::factory()->create(['status' => Promo::STATUS_APPROVED, 'is_active' => true]);
+
+        $this->actingAs($admin)->put(route('admin.banners.popup.update'), [
+            'promo_id' => $promo->id,
+            'is_active' => true,
+        ])->assertRedirect(route('admin.banners.index'));
+
+        $this->assertDatabaseHas('home_popups', [
+            'promo_id' => $promo->id,
             'is_active' => true,
         ]);
     }

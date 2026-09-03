@@ -89,6 +89,7 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | PUT | `/banners/{banner}` | `admin.banners.update` |
 | PUT | `/banners/{banner}/toggle` | `admin.banners.toggle` |
 | DELETE | `/banners/{banner}` | `admin.banners.destroy` |
+| PUT | `/banners/popup` | `admin.banners.popup.update` (payload: `promo_id`, `is_active`, `image?`, `remove_image?`) |
 | PUT | `/payments/{payment}/approve` | `admin.payments.approve` |
 | PUT | `/payments/{payment}/reject` | `admin.payments.reject` (payload: `reason`) |
 | GET | `/community` | `admin.community.index` |

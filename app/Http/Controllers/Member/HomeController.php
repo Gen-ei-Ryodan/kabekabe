@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\HomeBanner;
+use App\Models\HomePopup;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -87,6 +88,22 @@ class HomeController extends Controller
                 ->filter(fn (array $banner) => $banner['promo'] !== null || $banner['agenda'] !== null)
                 ->take(3)
                 ->values(),
+            'popup' => ($popup = HomePopup::query()->with('promo.partner')->where('is_active', true)->first())
+                && $popup->promo
+                && $popup->promo->isActive()
+                ? [
+                    'id' => $popup->id,
+                    'image_url' => $popup->imageUrl(),
+                    'promo' => [
+                        'id' => $popup->promo->id,
+                        'title' => $popup->promo->title,
+                        'description' => $popup->promo->description,
+                        'discount_type' => $popup->promo->discount_type,
+                        'discount_value' => $popup->promo->discount_value,
+                        'partner' => ['name' => $popup->promo->partner?->name],
+                    ],
+                ]
+                : null,
             'notifications_unread' => $user->appNotifications()->unread()->count(),
         ]);
     }

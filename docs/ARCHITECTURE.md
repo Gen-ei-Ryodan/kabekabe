@@ -17,7 +17,7 @@ app/
 │   │   └── Admin/     # Dashboard, Member, Partner, Promo, Payment (+create/store), HomeBanner, Community, Notification, Transaction, Report
 │   ├── Middleware/    # EnsureRole, SecurityHeaders, HandleInertiaRequests
 │   └── Requests/      # 17 FormRequests
-├── Models/            # User, Membership, MembershipPlan, Payment, Partner, Promo, Transaction, AppNotification, CommunityInfo
+├── Models/            # User, Membership, MembershipPlan, Payment, Partner, Promo, HomeBanner, HomePopup, Transaction, AppNotification, CommunityInfo
 ├── Policies/          # PaymentPolicy, PromoPolicy, TransactionPolicy, PartnerPolicy, CommunityInfoPolicy, MembershipPolicy
 ├── Providers/         # AppServiceProvider (Vite prefetch + @routes nonce CSP)
 └── Services/          # MembershipService, PaymentService, PromoService, TransactionService, NotificationService, ReportingService
@@ -30,7 +30,7 @@ resources/
 │   │   ├── Auth/      # Login, Register, dsb (SENTRA style)
 │   │   ├── Member/    # 7 halaman: Home, History, Partners (Index/Show), Promos/Show, Notifications, Account
 │   │   ├── Vendor/    # 9 halaman (lengkap)
-│   │   └── Admin/     # 18 halaman + Payments/Create + Banners (lengkap)
+│   │   └── Admin/     # 18 halaman + Payments/Create + Banners (banner + Opening popup)
 │   └── Utils/format.js
 ├── css/app.css        # Design tokens + utility classes (.input, .label, .btn-*, .card-surface, .eyebrow)
 └── views/app.blade.php # Fonts + @routes (nonce) + @vite
