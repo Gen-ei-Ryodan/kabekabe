@@ -128,7 +128,7 @@ export default function Verify({ result }) {
 
                             <form onSubmit={submitManual} className="mt-4">
                                 <label className="label" htmlFor="query">Member ID / Token</label>
-                                <input id="query" type="text" className="input font-mono" value={manual.data.query} onChange={(e) => manual.setData('query', e.target.value)} placeholder="MMB-00001" />
+                                <input id="query" type="text" className="input font-mono" value={manual.data.query} onChange={(e) => manual.setData('query', e.target.value)} placeholder="7030260001" />
                                 {manual.errors.query && <p className="mt-1 text-xs text-ember">{manual.errors.query}</p>}
                                 <button type="submit" className="btn-gold mt-4 w-full" disabled={manual.processing}>
                                     {manual.processing ? 'Checking…' : 'Check Status'}

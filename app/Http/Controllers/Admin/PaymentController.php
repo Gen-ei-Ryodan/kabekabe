@@ -137,7 +137,7 @@ class PaymentController extends Controller
         return $templates->download(
             'payments-import-template.xlsx',
             ['Member Code', 'Plan', 'Period Months', 'Amount', 'Paid At'],
-            ['MMB-00001', '', 12, 500000, now()->toDateString()],
+            ['7030260001', '', 12, 500000, now()->toDateString()],
         );
     }
 

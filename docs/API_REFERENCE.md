@@ -101,7 +101,7 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | PUT | `/community/{info}` | `admin.community.update` |
 | DELETE | `/community/{info}` | `admin.community.destroy` |
 | POST | `/community/{info}/attendance` | `admin.community.attendance.store` (payload: `member_id` OR `name`, `phone?`, `email?`) |
-| POST | `/community/{info}/attendance/scan` | `admin.community.attendance.scan` (payload: `token` = card_token or member_code) |
+| POST | `/community/{info}/attendance/scan` | `admin.community.attendance.scan` (payload: `token` = card_token dari QR kartu member) |
 | POST | `/community/{info}/payments` | `admin.community.payment.store` (payload: `member_id`) |
 | POST | `/community/{info}/non-members` | `admin.community.non_member.store` (payload: `name`, `phone?`, `email?`)
 | GET | `/notifications` | `admin.notifications.index` |

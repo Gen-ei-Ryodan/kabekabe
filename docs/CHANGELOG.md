@@ -7,6 +7,9 @@ Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 - Detail Events & Activities menggunakan kamera untuk scan QR kartu member; input member code pada panel scan dihapus dan endpoint hanya menerima token QR.
 - Admin Reports diperbaiki agar Birthday Report kompatibel dengan SQLite dan MySQL, sehingga tidak lagi gagal karena fungsi `strftime` yang spesifik SQLite.
 - Form Create/Edit pada drawer menu Admin Members kini menampilkan gender, birth date, dan religion.
+- Dropdown gender dibatasi menjadi Male dan Female; factory dummy tidak lagi menghasilkan `MMB-*`.
+- Migration `migrate_legacy_member_codes` mengonversi kode member lama ke format `7030YYNNNN`.
+- Contoh kode pada filter member, verifikasi vendor, dan template payment diperbarui menjadi `7030260001`.
 
 ## 2026-09-03 — Agenda Home otomatis dan filter kategori member
 - Home member mengambil maksimal 3 agenda aktif/published langsung dari Events & Activities, tanpa memerlukan banner agenda manual.

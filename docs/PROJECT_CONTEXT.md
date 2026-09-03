@@ -27,7 +27,7 @@ Platform digital untuk manajemen membership dan komunitas. Member memiliki **kar
 - PARTNER = tab Promo + Partner dalam satu halaman, dengan filter kategori yang berlaku untuk keduanya.
 - HISTORY = tab Payments + Usage dalam satu halaman.
 - **Pembayaran offline:** member tidak membayar di sistem; admin mencatat via `admin.payments.store` (langsung approved → membership diperpanjang).
-- **Demografi member:** admin dapat mengisi jenis kelamin, tanggal lahir, dan agama saat membuat atau mengedit member; data ini dipakai pada Member Statistics.
+- **Demografi member:** admin dapat mengisi jenis kelamin (male/female), tanggal lahir, dan agama saat membuat atau mengedit member; data ini dipakai pada Member Statistics.
 - **Admin Home Banners:** Featured banners hanya untuk promo; field Banner type di form Create/Edit dihapus. Agenda tetap tampil otomatis dari Events & Activities.
 - **Admin Events & Activities:** label UI menggunakan bahasa Inggris; Content type tidak ditampilkan pada form Create/Edit, detail event memuat attendance serta contribution payments, dan kehadiran member dicatat dengan scan QR kartu.
 

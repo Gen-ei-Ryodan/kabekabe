@@ -8,13 +8,13 @@
 - `ensureMembership()` membuat baris inactive bila belum ada; selalu `setRelation('membership', ...)` untuk hindari stale relation.
 
 ## Demografi Member
-- Jenis kelamin member menggunakan nilai `male`, `female`, atau `other`.
+- Jenis kelamin member menggunakan nilai `male` atau `female`.
 - Agama member menggunakan nilai `islam`, `kristen`, `katolik`, `buddha`, `hindu`, atau `lainnya`.
 - Tanggal lahir bersifat opsional dan tidak boleh berada di masa depan.
 
 ## Kartu Digital & QR
 - `card_token` (UUID) dibangkitkan otomatis saat user member dibuat, dan dijamin via `ensureCardToken()`.
-- `member_code` format `MMB-XXXXX`, auto-increment per member.
+- `member_code` format `7030YYNNNN` (contoh `7030260001` untuk member pertama tahun 2026), auto-increment per tahun.
 - QR kartu berisi `card_token`; scan kehadiran admin hanya menerima token QR kartu, bukan `member_code` yang sudah tercatat.
 
 ## Promo

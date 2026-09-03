@@ -44,7 +44,6 @@ export default function MemberEdit({ member }) {
                                 <option value="">Select gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
-                                <option value="other">Other</option>
                             </select>
                             {form.errors.gender && <p className="mt-1 text-xs text-ember">{form.errors.gender}</p>}
                         </div>

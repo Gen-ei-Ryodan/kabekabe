@@ -34,7 +34,8 @@ class UserFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'whatsapp' => fake()->phoneNumber(),
             'company' => fake()->company(),
-            'member_code' => 'MMB-' . str_pad((string) $this->faker->unique()->numberBetween(1, 99999), 5, '0', STR_PAD_LEFT),
+            // Let User::booted() assign the current member numbering format.
+            'member_code' => null,
             'card_token' => (string) Str::uuid(),
         ];
     }

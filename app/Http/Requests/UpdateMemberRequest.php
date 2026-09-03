@@ -18,7 +18,7 @@ class UpdateMemberRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'gender' => ['nullable', 'string', Rule::in(['male', 'female', 'other'])],
+            'gender' => ['nullable', 'string', Rule::in(['male', 'female'])],
             'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
             'religion' => ['nullable', 'string', Rule::in(['islam', 'kristen', 'katolik', 'buddha', 'hindu', 'lainnya'])],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($member->id)],

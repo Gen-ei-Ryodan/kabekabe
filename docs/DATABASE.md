@@ -13,9 +13,13 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | role | enum(member,admin,vendor) default member, index | |
 | phone, whatsapp, company | string nullable | |
 | avatar | string nullable | storage path |
-| member_code | string unique nullable | `MMB-XXXXX` |
+| member_code | string unique nullable | `7030YYNNNN`, contoh `7030260001` |
 | card_token | string unique nullable | UUID QR |
 | notification_settings | json nullable | |
+| gender | enum nullable | `male` atau `female` |
+| religion | enum nullable | islam, kristen, katolik, buddha, hindu, lainnya |
+| birth_date | date nullable | tidak boleh di masa depan |
+| city | string nullable | |
 
 ## memberships (1:1 per member)
 | kolom | tipe |

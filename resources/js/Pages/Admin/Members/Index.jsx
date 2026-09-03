@@ -66,7 +66,7 @@ export default function MemberIndex({ members, filters, drawer }) {
                         </div>
                         <div>
                             <label className="label">Member ID</label>
-                            <input type="text" className="input" placeholder="MMB-XXXXX" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)} />
+                            <input type="text" className="input" placeholder="7030260001" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)} />
                         </div>
                         <div>
                             <label className="label">Status</label>
