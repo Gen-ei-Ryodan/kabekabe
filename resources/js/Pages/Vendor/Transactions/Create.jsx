@@ -5,7 +5,7 @@ import VendorLayout from '@/Layouts/VendorLayout';
 import StatusChip from '@/Components/StatusChip';
 import Avatar from '@/Components/Avatar';
 
-export default function TransactionCreate({ promos, member }) {
+export default function TransactionCreate({ promos, member, is_completing = false }) {
     const { errors } = usePage().props;
 
     const [manualQuery, setManualQuery] = useState('');
@@ -188,7 +188,19 @@ export default function TransactionCreate({ promos, member }) {
                             </div>
                         )}
 
-                        {verified && member.within_window !== false ? (
+                        {verified && member.within_window !== false && !is_completing ? (
+                            <div className="card-surface p-6 text-center sm:p-8">
+                                <p className="eyebrow">Scan saved</p>
+                                <h3 className="mt-2 font-display text-xl font-bold">Ready for transaction input later</h3>
+                                <p className="mx-auto mt-2 max-w-md text-sm text-slate">
+                                    The member scan has been saved. Open Pending Transactions when you are ready to enter the purchase details, within 48 hours.
+                                </p>
+                                <div className="mt-5 flex flex-wrap justify-center gap-3">
+                                    <button type="button" onClick={() => router.get(route('vendor.transactions.index'))} className="btn-gold">Open Pending Transactions</button>
+                                    <button type="button" onClick={resetScan} className="btn-ghost">Scan a different card</button>
+                                </div>
+                            </div>
+                        ) : verified && member.within_window !== false ? (
                             <form onSubmit={submit} className="card-surface space-y-6 p-6 sm:p-8">
                                 <div className="rounded-xl border border-sage/30 bg-sage/10 px-4 py-3 text-sm font-semibold text-sage-deep">
                                     <span className="font-semibold">&#10003; Member scan saved</span>
