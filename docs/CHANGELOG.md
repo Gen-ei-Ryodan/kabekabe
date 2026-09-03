@@ -2,6 +2,15 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Redesain kartu member digital
+- `MemberCard` kini menggunakan `bglogin.png` sebagai latar belakang kartu.
+- Foto member di kanan atas berbentuk kotak besar, tetap dapat diklik untuk membuka tampilan besar (lightbox).
+- QR Code di kiri bawah dengan label "Scan here".
+- Status membership (`Active` / `Inactive`) ditampilkan dengan chip kontras tinggi (sage/ember solid dengan teks putih).
+- Layout informasi: nama di atas status, nomor member di kiri status, joined di kiri valid until.
+- Jika membership non-active, kartu diberi overlay gelap + ikon X besar di tengah sebagai penanda tidak dapat digunakan.
+- Build PASS.
+
 ## 2026-09-03 — Admin dashboard: Total Promo stat menampilkan jumlah aktif
 - `ReportingService::adminDashboard()` menambahkan `active_promos` (promo approved & `is_active = true`).
 - Halaman `Admin/Dashboard.jsx`: stat card "Total Promo" kini menampilkan sub-label `${active_promos} Active` (sebelumnya `${pending_promos} pending review`).

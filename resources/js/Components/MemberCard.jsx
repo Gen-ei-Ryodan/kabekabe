@@ -84,133 +84,149 @@ export default function MemberCard({ member }) {
         <div ref={wrapRef} className="relative [perspective:1200px]">
             <div
                 ref={cardRef}
-                className="relative flex min-h-[15rem] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-paper via-paper-deep to-paper shadow-card will-change-transform sm:aspect-[1.586]"
+                className="relative min-h-[18rem] w-full max-w-full overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:mx-auto sm:max-w-md"
                 style={{ transformStyle: 'preserve-3d' }}
             >
-                {/* ambient glow */}
-                <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-gold/15 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-gold/10 blur-3xl" />
-
-                {/* sheen sweep */}
-                <div
-                    ref={sheenRef}
-                    className="pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/25 to-transparent"
-                    style={{ transform: 'translateX(-130%)', visibility: 'hidden' }}
+                {/* Card base image */}
+                <img
+                    src="/bglogin.png"
+                    alt="Member card background"
+                    className="absolute inset-0 h-full w-full select-none object-cover"
+                    draggable="false"
                 />
 
-                {/* texture */}
-                <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.5]"
-                    style={{
-                        backgroundImage:
-                            'radial-gradient(rgba(11,21,38,0.06) 1px, transparent 1px)',
-                        backgroundSize: '16px 16px',
-                    }}
-                />
+                {/* Content overlay */}
+                <div className="absolute inset-0 flex flex-col">
+                    {/* Readability overlays */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-ink/60 via-ink/30 to-transparent" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-ink/40" />
 
-                {/* top row */}
-                <div className="relative flex items-start justify-between px-5 pt-5 sm:px-6 sm:pt-6">
-                    <div className="card-line flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gold">
-                            <span className="font-display text-sm font-bold text-paper">K</span>
-                        </span>
-                        <span className="font-display text-sm font-bold uppercase tracking-[0.2em] text-paper">
-                            KBKB
-                        </span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setPhotoOpen(true)}
-                        className="card-line relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-full border-2 border-gold/60 transition-opacity hover:opacity-80"
-                        aria-label="Lihat foto"
-                    >
-                        <Avatar
-                            src={member.avatar_url}
-                            name={member.name}
-                            tone="dark"
-                            className="h-12 w-12 text-lg"
-                        />
-                    </button>
-                </div>
+                    {/* sheen sweep */}
+                    <div
+                        ref={sheenRef}
+                        className="pointer-events-none absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                        style={{ transform: 'translateX(-130%)', visibility: 'hidden' }}
+                    />
 
-                {/* body */}
-                <div className="relative flex items-center justify-between gap-4 px-5 sm:px-6">
-                    <div className="min-w-0">
-                        <div className="card-line mb-2 flex items-center gap-3">
-                            <div className="min-w-0">
-                                <p className="truncate font-display text-lg font-bold text-paper">{member.name}</p>
-                                <p className="font-mono text-[11px] tracking-wider text-gold-light">{member.member_code}</p>
-                            </div>
-                        </div>
-                        <div className="card-line mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-paper/50">
-                            Joined {member.joined_at}
-                        </div>
-                    </div>
-                </div>
-
-                {/* footer */}
-                <div className="relative mt-auto flex items-end justify-between px-5 pb-6 pt-5 sm:px-6 sm:pb-8 sm:pt-6">
-                    <div className="card-line">
-                        <span
-                            className={`chip border ${
-                                isActive
-                                    ? 'border-sage/40 bg-sage/20 text-sage'
-                                    : 'border-ember/40 bg-ember/20 text-ember'
-                            }`}
+                    {/* top row: photo right */}
+                    <div className="card-line relative flex items-start justify-end px-4 pt-4 sm:px-6 sm:pt-6">
+                        <button
+                            type="button"
+                            onClick={() => setPhotoOpen(true)}
+                            className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-xl border-2 border-gold shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-28 sm:w-28"
+                            aria-label="Lihat foto"
                         >
-                            {isActive && (
-                                <span className="relative flex h-1.5 w-1.5">
-                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
-                                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
-                                </span>
-                            )}
-                            {member.membership_status_label}
-                        </span>
+                            <Avatar
+                                src={member.avatar_url}
+                                name={member.name}
+                                tone="dark"
+                                className="h-20 w-20 text-2xl sm:h-28 sm:w-28 sm:text-3xl"
+                            />
+                            <span className="absolute inset-0 flex items-center justify-center bg-ink/0 transition-colors group-hover:bg-ink/20">
+                                <svg className="h-5 w-5 text-paper opacity-0 drop-shadow transition-opacity group-hover:opacity-100 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                            </span>
+                        </button>
                     </div>
-                    <div className="card-line flex flex-col items-end gap-2">
-                        <QrCode value={member.card_token} size={80} />
-                        <div className="text-right">
-                            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-paper/50">Valid until</div>
-                            <div className="font-display text-sm font-bold text-paper">
-                                {member.expires_at ? formatDateEn(member.expires_at) : '—'}
+
+                    {/* member info */}
+                    <div className="relative mt-auto px-4 pb-5 sm:px-6 sm:pb-8">
+                        <div className="card-line mb-2 sm:mb-3">
+                            <p className="truncate font-display text-xl font-bold text-paper drop-shadow sm:text-2xl">
+                                {member.name}
+                            </p>
+                        </div>
+
+                        <div className="card-line mb-2 flex items-center justify-between gap-3 sm:mb-3">
+                            <p className="font-mono text-[10px] tracking-wider text-gold-light drop-shadow sm:text-[11px]">
+                                {member.member_code}
+                            </p>
+                            <span
+                                className={`chip border px-2 py-0.5 text-[10px] font-semibold shadow sm:text-xs ${
+                                    isActive
+                                        ? 'border-sage bg-sage text-white'
+                                        : 'border-ember bg-ember text-white'
+                                }`}
+                            >
+                                {isActive && (
+                                    <span className="relative flex h-1.5 w-1.5">
+                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
+                                    </span>
+                                )}
+                                {member.membership_status_label}
+                            </span>
+                        </div>
+
+                        <div className="card-line mb-4 flex items-end justify-between gap-3 sm:mb-6">
+                            <div>
+                                <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Joined</div>
+                                <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
+                                    {member.joined_at}
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Valid until</div>
+                                <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
+                                    {member.expires_at ? formatDateEn(member.expires_at) : '—'}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* QR */}
+                        <div className="card-line flex flex-col gap-1.5 sm:gap-2">
+                            <QrCode value={member.card_token} size={72} className="rounded-lg bg-white p-1 shadow-md" />
+                            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">
+                                Scan here
                             </div>
                         </div>
                     </div>
-                </div>
+            </div>
 
+                {/* Non-active overlay */}
                 {!isActive && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-ink/70 backdrop-blur-[2px]">
-                        <div className="rounded-2xl border border-ember/40 bg-ember/10 px-5 py-3 text-center">
-                            <p className="font-display text-sm font-bold text-ember">Membership Inactive</p>
-                            <p className="mt-0.5 text-xs text-paper/70">Renew to use your benefits</p>
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-ink/60 backdrop-blur-[2px]">
+                        <svg
+                            className="h-32 w-32 text-ember/90 drop-shadow-lg sm:h-40 sm:w-40"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.2}
+                            aria-hidden="true"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                        <div className="absolute rounded-2xl border border-ember/50 bg-ember/90 px-5 py-2.5 text-center shadow-lg">
+                            <p className="font-display text-sm font-bold text-white">Membership Inactive</p>
                         </div>
                     </div>
                 )}
-
-                {/* Photo lightbox */}
-                <Modal
-                    show={photoOpen}
-                    maxWidth="lg"
-                    closeable={true}
-                    onClose={() => setPhotoOpen(false)}
-                >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-ink">
-                        {member.avatar_url ? (
-                            <img
-                                src={member.avatar_url}
-                                alt={member.name}
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                                <span className="font-display text-8xl font-bold text-gold">
-                                    {member.name?.charAt(0) || 'M'}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                </Modal>
             </div>
+
+            {/* Photo lightbox */}
+            <Modal
+                show={photoOpen}
+                maxWidth="lg"
+                closeable={true}
+                onClose={() => setPhotoOpen(false)}
+            >
+                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-ink">
+                    {member.avatar_url ? (
+                        <img
+                            src={member.avatar_url}
+                            alt={member.name}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                            <span className="font-display text-8xl font-bold text-gold">
+                                {member.name?.charAt(0) || 'M'}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </Modal>
         </div>
     );
 }
