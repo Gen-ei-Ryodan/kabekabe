@@ -2,6 +2,10 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Demografi Member di form Admin
+- Form Create dan Edit Member kini mendukung jenis kelamin, tanggal lahir, dan agama.
+- Nilai divalidasi sesuai pilihan demografi yang digunakan oleh laporan Member Statistics.
+
 ## 2026-09-03 — Filter index Admin Member dan Partner
 - Admin Members menambahkan filter search, nama, Member ID, status, rentang tanggal valid, dan rentang tanggal join.
 - Admin Partners menambahkan filter search, kategori, dan status.

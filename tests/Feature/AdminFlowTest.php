@@ -60,6 +60,48 @@ class AdminFlowTest extends TestCase
         $this->assertTrue($member->hasActiveMembership());
     }
 
+    public function test_admin_can_create_member_with_demographics(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post(route('admin.members.store'), [
+            'name' => 'Member Demografi',
+            'email' => 'demografi@example.com',
+            'password' => 'secret-password',
+            'password_confirmation' => 'secret-password',
+            'valid_until' => now()->addMonths(6)->toDateString(),
+            'gender' => 'female',
+            'birth_date' => '1995-04-12',
+            'religion' => 'katolik',
+        ])->assertRedirect();
+
+        $member = User::where('email', 'demografi@example.com')->firstOrFail();
+
+        $this->assertSame('female', $member->gender);
+        $this->assertSame('1995-04-12', $member->birth_date->toDateString());
+        $this->assertSame('katolik', $member->religion);
+    }
+
+    public function test_admin_can_update_member_demographics(): void
+    {
+        $admin = $this->admin();
+        $member = User::factory()->member()->create();
+
+        $this->actingAs($admin)->put(route('admin.members.update', $member), [
+            'name' => $member->name,
+            'email' => $member->email,
+            'gender' => 'male',
+            'birth_date' => '1990-01-01',
+            'religion' => 'islam',
+        ])->assertRedirect();
+
+        $member->refresh();
+
+        $this->assertSame('male', $member->gender);
+        $this->assertSame('1990-01-01', $member->birth_date->toDateString());
+        $this->assertSame('islam', $member->religion);
+    }
+
     public function test_admin_can_create_partner_with_vendor_account(): void
     {
         $admin = $this->admin();

@@ -139,6 +139,9 @@ class MemberController extends Controller
 
         $member = User::create([
             'name' => $validated['name'],
+            'gender' => $validated['gender'] ?? null,
+            'birth_date' => $validated['birth_date'] ?? null,
+            'religion' => $validated['religion'] ?? null,
             'email' => $validated['email'],
             'password' => $validated['password'],
             'role' => User::ROLE_MEMBER,
@@ -209,6 +212,9 @@ class MemberController extends Controller
 
         $member->update([
             'name' => $validated['name'],
+            'gender' => $validated['gender'] ?? null,
+            'birth_date' => $validated['birth_date'] ?? null,
+            'religion' => $validated['religion'] ?? null,
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'whatsapp' => $validated['whatsapp'] ?? null,
@@ -256,6 +262,9 @@ class MemberController extends Controller
         return [
             'id' => $m->id,
             'name' => $m->name,
+            'gender' => $m->gender,
+            'birth_date' => $m->birth_date?->toDateString(),
+            'religion' => $m->religion,
             'email' => $m->email,
             'member_code' => $m->member_code,
             'phone' => $m->phone,
