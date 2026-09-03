@@ -8,7 +8,7 @@ import { formatDate } from '@/Utils/format';
 
 const TYPE_LABELS = {
     event: 'Event',
-    agenda: 'Agenda',
+    agenda: 'Activity',
 };
 
 export default function CommunityIndex({ infos, filters, drawer }) {
@@ -36,16 +36,16 @@ export default function CommunityIndex({ infos, filters, drawer }) {
     };
     return (
         <>
-            <Head title="Community" />
+            <Head title="Events & Activities" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="eyebrow">Agenda Kegiatan</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Agenda Kegiatan</h1>
+                        <p className="eyebrow">Events & Activities</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Events & Activities</h1>
                         <p className="mt-2 text-sm text-slate">Manage events, attendance, and contribution billing.</p>
                     </div>
-                    <button onClick={openCreate} className="btn-gold">+ Create Agenda</button>
+                    <button onClick={openCreate} className="btn-gold">+ Create Event</button>
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
@@ -55,11 +55,11 @@ export default function CommunityIndex({ infos, filters, drawer }) {
                             <input type="text" className="input" placeholder="Title" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">Type</label>
+                            <label className="label">Category</label>
                             <select className="input" value={filter.data.type || ''} onChange={(e) => filter.setData('type', e.target.value)}>
                                 <option value="">All</option>
                                 <option value="event">Event</option>
-                                <option value="agenda">Agenda</option>
+                                <option value="agenda">Activity</option>
                             </select>
                         </div>
                         <div>
@@ -78,7 +78,7 @@ export default function CommunityIndex({ infos, filters, drawer }) {
                 </form>
 
                 {infos.data.length === 0 ? (
-                    <EmptyState title="No agenda yet" description="Create the first event agenda." action={<button onClick={openCreate} className="btn-gold">Create agenda</button>} />
+                    <EmptyState title="No events yet" description="Create the first event or activity." action={<button onClick={openCreate} className="btn-gold">Create event</button>} />
                 ) : (
                     <div className="space-y-3">
                         {infos.data.map((info) => (
@@ -105,7 +105,7 @@ export default function CommunityIndex({ infos, filters, drawer }) {
                                     <button onClick={() => openEdit(info.id)} className="btn-ghost text-xs">Edit</button>
                                     <button
                                         onClick={() => {
-                                            if (confirm('Delete this agenda?')) router.delete(route('admin.community.destroy', info.id));
+                                            if (confirm('Delete this event?')) router.delete(route('admin.community.destroy', info.id));
                                         }}
                                         className="btn-danger text-xs"
                                     >

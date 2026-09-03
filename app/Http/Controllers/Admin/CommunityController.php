@@ -108,7 +108,7 @@ class CommunityController extends Controller
 
         return redirect()
             ->route('admin.community.index')
-            ->with('success', 'Event agenda created successfully.');
+            ->with('success', 'Event created successfully.');
     }
 
     public function show(CommunityInfo $info): Response
@@ -203,7 +203,7 @@ class CommunityController extends Controller
 
         return redirect()
             ->route('admin.community.index')
-            ->with('success', 'Event agenda updated successfully.');
+            ->with('success', 'Event updated successfully.');
     }
 
     public function destroy(CommunityInfo $info): RedirectResponse
@@ -212,7 +212,7 @@ class CommunityController extends Controller
 
         return redirect()
             ->route('admin.community.index')
-            ->with('success', 'Event agenda deleted.');
+            ->with('success', 'Event deleted.');
     }
 
     public function scanAttendance(Request $request, CommunityInfo $info): RedirectResponse

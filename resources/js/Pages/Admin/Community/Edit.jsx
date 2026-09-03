@@ -1,11 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 
-const TYPE_LABELS = {
-    event: 'Event',
-    agenda: 'Agenda',
-};
-
 export default function CommunityEdit({ info }) {
     const form = useForm({
         type: info.type,
@@ -25,24 +20,15 @@ export default function CommunityEdit({ info }) {
 
     return (
         <>
-            <Head title="Edit Agenda" />
+            <Head title="Edit Event" />
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Agenda Kegiatan</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Edit Event Agenda</h1>
+                    <p className="eyebrow">Events & Activities</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Edit Event</h1>
                 </header>
 
                 <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
-                    <div>
-                        <label className="label" htmlFor="type">Type</label>
-                        <select id="type" className="input" value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
-                            {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                                <option key={value} value={value}>{label}</option>
-                            ))}
-                        </select>
-                    </div>
-
                     <div>
                         <label className="label" htmlFor="title">Title</label>
                         <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
@@ -67,7 +53,7 @@ export default function CommunityEdit({ info }) {
                     </div>
 
                     <div>
-                        <label className="label" htmlFor="fee">Contribution Fee (Urunan) — Rupiah</label>
+                        <label className="label" htmlFor="fee">Contribution Fee — Rupiah</label>
                         <input id="fee" type="number" min="0" className="input" value={form.data.fee} onChange={(e) => form.setData('fee', e.target.value)} placeholder="Leave empty for free event" />
                         {form.errors.fee && <p className="mt-1 text-xs text-ember">{form.errors.fee}</p>}
                     </div>

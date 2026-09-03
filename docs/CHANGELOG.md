@@ -2,6 +2,11 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Admin Events & Activities
+- Label menu dan halaman Agenda Kegiatan diterjemahkan menjadi **Events & Activities**.
+- Field **Content type** dihapus dari form Create/Edit; event baru menggunakan tipe agenda secara internal.
+- Detail event diperbaiki dengan relasi `CommunityInfo::payments()` agar tidak lagi memunculkan `RelationNotFoundException`.
+
 ## 2026-09-03 — Demografi Member di form Admin
 - Form Create dan Edit Member kini mendukung jenis kelamin, tanggal lahir, dan agama.
 - Nilai divalidasi sesuai pilihan demografi yang digunakan oleh laporan Member Statistics.

@@ -10,7 +10,7 @@ const NAV = [
     { name: 'Promos', route: 'admin.promos.index', icon: '◉' },
     { name: 'Home Banners', route: 'admin.banners.index', icon: '❏' },
     { name: 'Payments', route: 'admin.payments.index', icon: '⭑' },
-    { name: 'Agenda Kegiatan', route: 'admin.community.index', icon: '✎' },
+    { name: 'Events & Activities', route: 'admin.community.index', icon: '✎' },
     { name: 'Notifications', route: 'admin.notifications.index', icon: '◌' },
     { name: 'Transactions', route: 'admin.transactions.index', icon: '⤹' },
     { name: 'Integrations', route: 'admin.integrations.index', icon: '⇄' },

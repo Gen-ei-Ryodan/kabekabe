@@ -28,6 +28,7 @@ Platform digital untuk manajemen membership dan komunitas. Member memiliki **kar
 - HISTORY = tab Payments + Usage dalam satu halaman.
 - **Pembayaran offline:** member tidak membayar di sistem; admin mencatat via `admin.payments.store` (langsung approved → membership diperpanjang).
 - **Demografi member:** admin dapat mengisi jenis kelamin, tanggal lahir, dan agama saat membuat atau mengedit member; data ini dipakai pada Member Statistics.
+- **Admin Events & Activities:** label UI menggunakan bahasa Inggris; Content type tidak ditampilkan pada form Create/Edit, dan detail event memuat attendance serta contribution payments.
 
 ## Akun Demo (password: `password`)
 - Admin: `admin@sentra.test`

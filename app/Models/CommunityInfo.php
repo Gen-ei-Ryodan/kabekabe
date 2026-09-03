@@ -46,6 +46,11 @@ class CommunityInfo extends Model
         return $this->hasMany(EventNonMember::class, 'event_id');
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'event_id');
+    }
+
     public function memberAttendeesCount(): int
     {
         return $this->attendances()->count();

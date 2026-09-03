@@ -231,6 +231,24 @@ class AdminFlowTest extends TestCase
             );
     }
 
+    public function test_admin_can_open_event_detail_with_attendees_and_payments(): void
+    {
+        $admin = $this->admin();
+        $info = CommunityInfo::factory()->create([
+            'type' => CommunityInfo::TYPE_EVENT,
+            'created_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)->get(route('admin.community.show', $info))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Community/Show')
+                ->where('event.id', $info->id)
+                ->has('event.member_attendees')
+                ->has('event.payments')
+            );
+    }
+
     public function test_admin_can_create_promo_banner(): void
     {
         $admin = $this->admin();

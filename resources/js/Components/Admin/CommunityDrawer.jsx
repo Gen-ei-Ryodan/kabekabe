@@ -1,16 +1,9 @@
 import { useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
 
-const TYPE_LABELS = {
-    event: 'Event',
-    announcement: 'Announcement',
-    news: 'News',
-    agenda: 'Agenda',
-};
-
 function CreateCommunityDrawer({ onClose }) {
     const form = useForm({
-        type: 'announcement',
+        type: 'agenda',
         title: '',
         content: '',
         event_date: '',
@@ -27,15 +20,6 @@ function CreateCommunityDrawer({ onClose }) {
     return (
         <form id="community-form" onSubmit={submit} className="space-y-5">
             <div>
-                <label className="label" htmlFor="type">Content type</label>
-                <select id="type" className="input" value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
-                    {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                    ))}
-                </select>
-            </div>
-
-            <div>
                 <label className="label" htmlFor="title">Title</label>
                 <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                 {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
@@ -47,8 +31,7 @@ function CreateCommunityDrawer({ onClose }) {
                 {form.errors.content && <p className="mt-1 text-xs text-ember">{form.errors.content}</p>}
             </div>
 
-            {(form.data.type === 'event' || form.data.type === 'agenda') && (
-                <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="label" htmlFor="event_date">Event date</label>
                         <input id="event_date" type="datetime-local" className="input" value={form.data.event_date} onChange={(e) => form.setData('event_date', e.target.value)} />
@@ -57,8 +40,7 @@ function CreateCommunityDrawer({ onClose }) {
                         <label className="label" htmlFor="location">Location</label>
                         <input id="location" type="text" className="input" value={form.data.location} onChange={(e) => form.setData('location', e.target.value)} />
                     </div>
-                </div>
-            )}
+            </div>
 
             <div>
                 <label className="label" htmlFor="image">Image</label>
@@ -74,7 +56,7 @@ function CreateCommunityDrawer({ onClose }) {
             <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
                 <button type="submit" className="btn-gold" disabled={form.processing}>
-                    {form.processing ? 'Saving…' : 'Save Content'}
+                    {form.processing ? 'Saving…' : 'Save Event'}
                 </button>
             </div>
         </form>
@@ -100,15 +82,6 @@ function EditCommunityDrawer({ info, onClose }) {
     return (
         <form id="community-form" onSubmit={submit} className="space-y-5">
             <div>
-                <label className="label" htmlFor="type">Content type</label>
-                <select id="type" className="input" value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
-                    {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                    ))}
-                </select>
-            </div>
-
-            <div>
                 <label className="label" htmlFor="title">Title</label>
                 <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                 {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
@@ -120,8 +93,7 @@ function EditCommunityDrawer({ info, onClose }) {
                 {form.errors.content && <p className="mt-1 text-xs text-ember">{form.errors.content}</p>}
             </div>
 
-            {(form.data.type === 'event' || form.data.type === 'agenda') && (
-                <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="label" htmlFor="event_date">Event date</label>
                         <input id="event_date" type="datetime-local" className="input" value={form.data.event_date} onChange={(e) => form.setData('event_date', e.target.value)} />
@@ -130,8 +102,7 @@ function EditCommunityDrawer({ info, onClose }) {
                         <label className="label" htmlFor="location">Location</label>
                         <input id="location" type="text" className="input" value={form.data.location} onChange={(e) => form.setData('location', e.target.value)} />
                     </div>
-                </div>
-            )}
+            </div>
 
             <div>
                 <label className="label" htmlFor="image">Replace image</label>
@@ -158,8 +129,8 @@ export default function CommunityDrawer({ drawer, onClose }) {
     if (!drawer?.mode) return null;
 
     const meta = {
-        create: ['Create Community Content', 'Create an event, announcement, or agenda.'],
-        edit: ['Edit Content', drawer.info?.title],
+        create: ['Create Event', 'Create an event or activity.'],
+        edit: ['Edit Event', drawer.info?.title],
     };
 
     const [title, subtitle] = meta[drawer.mode] || ['', ''];

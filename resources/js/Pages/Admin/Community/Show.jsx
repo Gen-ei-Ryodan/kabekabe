@@ -51,7 +51,7 @@ export default function CommunityShow({ event, members }) {
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="eyebrow">Agenda Kegiatan</p>
+                        <p className="eyebrow">Events & Activities</p>
                         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">{event.title}</h1>
                         <p className="mt-2 text-sm text-slate">
                             {formatDate(event.event_date, true)} · {event.location || 'No location'}
