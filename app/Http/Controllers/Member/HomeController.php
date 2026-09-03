@@ -86,7 +86,11 @@ class HomeController extends Controller
                         : null,
                 ])
                 ->filter(fn (array $banner) => $banner['promo'] !== null || $banner['agenda'] !== null)
-                ->take(3)
+                ->groupBy('type')
+                ->map(fn ($banners, $type) => $banners->take(
+                    $type === HomeBanner::TYPE_PROMO ? 3 : 1,
+                ))
+                ->collapse()
                 ->values(),
             'popup' => ($popup = HomePopup::query()->with('promo.partner')->where('is_active', true)->first())
                 && $popup->promo

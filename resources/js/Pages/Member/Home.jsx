@@ -82,11 +82,11 @@ function PromoPopup({ open, onClose, popup }) {
     );
 }
 
-function BannerImage({ url }) {
+function BannerImage({ url, className = '' }) {
     if (!url) return null;
 
     return (
-        <div className="relative h-32 w-full overflow-hidden sm:h-36">
+        <div className={`relative overflow-hidden ${className}`}>
             <img src={url} alt="" className="h-full w-full object-cover" />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink/25 to-transparent" />
         </div>
@@ -99,36 +99,120 @@ function PromoBanner({ promo, imageUrl }) {
             ? `${promo.discount_value}%`
             : formatRupiah(promo.discount_value);
 
+    const [isPortrait, setIsPortrait] = useState(null);
+
+    useEffect(() => {
+        if (!imageUrl) return;
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => {
+            setIsPortrait(img.height > img.width);
+        };
+    }, [imageUrl]);
+
+    if (isPortrait === null) {
+        return (
+            <Link
+                href={route('member.promos.show', promo.id)}
+                className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
+            >
+                <BannerImage url={imageUrl} className="h-16 w-full sm:h-20" />
+                <div className="relative flex items-center justify-between gap-2 bg-ink px-3 py-1.5 sm:px-4 sm:py-2">
+                    <span className="relative font-display text-sm font-bold text-gold-light sm:text-base">
+                        {discountLabel}
+                    </span>
+                    <span className="relative truncate rounded-full bg-gold/15 px-2 py-0.5 font-mono text-[7px] uppercase tracking-widest text-gold-light">
+                        {promo.partner?.name}
+                    </span>
+                </div>
+                <div className="flex flex-1 flex-col p-2 sm:p-2.5">
+                    <p className="eyebrow text-[8px]">Promo</p>
+                    <h3 className="mt-0.5 font-display text-[11px] font-bold leading-snug text-ink group-hover:text-ink-soft line-clamp-1">
+                        {promo.title}
+                    </h3>
+                    <div className="mt-auto pt-1.5">
+                        <div className="flex items-center justify-between gap-2 border-t border-ink/5 pt-1.5">
+                            <span className="font-mono text-[7px] uppercase tracking-wide text-slate-soft">
+                                {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
+                            </span>
+                            <span className="shrink-0 font-mono text-[7px] font-semibold uppercase tracking-widest text-gold-deep">
+                                View →
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        );
+    }
+
+    if (isPortrait) {
+        return (
+            <Link
+                href={route('member.promos.show', promo.id)}
+                className="group relative flex h-full flex-row overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
+            >
+                <BannerImage url={imageUrl} className="h-full w-20 shrink-0 sm:w-24" />
+                <div className="flex flex-1 flex-col">
+                    <div className="relative flex items-center justify-between gap-2 bg-ink px-2.5 py-1 sm:px-3 sm:py-1.5">
+                        <span className="relative font-display text-xs font-bold text-gold-light sm:text-sm">
+                            {discountLabel}
+                        </span>
+                        <span className="relative truncate rounded-full bg-gold/15 px-1.5 py-0.5 font-mono text-[6px] uppercase tracking-widest text-gold-light">
+                            {promo.partner?.name}
+                        </span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-2 sm:p-2.5">
+                        <p className="eyebrow text-[8px]">Promo</p>
+                        <h3 className="mt-0.5 font-display text-[11px] font-bold leading-snug text-ink group-hover:text-ink-soft line-clamp-1">
+                            {promo.title}
+                        </h3>
+                        {promo.min_purchase > 0 && (
+                            <p className="mt-0.5 text-[9px] text-slate">Min. {formatRupiah(promo.min_purchase)}</p>
+                        )}
+                        <div className="mt-auto pt-1.5">
+                            <div className="flex items-center justify-between gap-2 border-t border-ink/5 pt-1.5">
+                                <span className="font-mono text-[7px] uppercase tracking-wide text-slate-soft">
+                                    {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
+                                </span>
+                                <span className="shrink-0 font-mono text-[7px] font-semibold uppercase tracking-widest text-gold-deep">
+                                    View →
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        );
+    }
+
     return (
         <Link
             href={route('member.promos.show', promo.id)}
-            className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
+            className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
         >
-            <BannerImage url={imageUrl} />
-            <div className="relative flex items-center justify-between gap-3 bg-ink px-4 py-3 sm:px-5">
-                <span className="relative font-display text-xl font-bold text-gold-light sm:text-2xl">
+            <BannerImage url={imageUrl} className="h-16 w-full sm:h-20" />
+            <div className="relative flex items-center justify-between gap-2 bg-ink px-3 py-1.5 sm:px-4 sm:py-2">
+                <span className="relative font-display text-sm font-bold text-gold-light sm:text-base">
                     {discountLabel}
                 </span>
-                <span className="relative truncate rounded-full bg-gold/15 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-gold-light">
+                <span className="relative truncate rounded-full bg-gold/15 px-2 py-0.5 font-mono text-[7px] uppercase tracking-widest text-gold-light">
                     {promo.partner?.name}
                 </span>
             </div>
-
-            <div className="flex flex-1 flex-col p-4 sm:p-5">
-                <p className="eyebrow">Promo</p>
-                <h3 className="mt-1.5 font-display font-bold leading-snug text-ink group-hover:text-ink-soft">
+            <div className="flex flex-1 flex-col p-2 sm:p-2.5">
+                <p className="eyebrow text-[8px]">Promo</p>
+                <h3 className="mt-0.5 font-display text-[11px] font-bold leading-snug text-ink group-hover:text-ink-soft line-clamp-1">
                     {promo.title}
                 </h3>
                 {promo.min_purchase > 0 && (
-                    <p className="mt-2 text-xs text-slate">Min. purchase {formatRupiah(promo.min_purchase)}</p>
+                    <p className="mt-0.5 text-[9px] text-slate">Min. {formatRupiah(promo.min_purchase)}</p>
                 )}
-
-                <div className="mt-auto pt-4">
-                    <div className="flex items-center justify-between gap-3 border-t border-ink/5 pt-3">
-                        <span className="font-mono text-[10px] uppercase tracking-wide text-slate-soft">
+                <div className="mt-auto pt-1.5">
+                    <div className="flex items-center justify-between gap-2 border-t border-ink/5 pt-1.5">
+                        <span className="font-mono text-[7px] uppercase tracking-wide text-slate-soft">
                             {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
                         </span>
-                        <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-widest text-gold-deep transition-transform duration-300 group-hover:translate-x-0.5">
+                        <span className="shrink-0 font-mono text-[7px] font-semibold uppercase tracking-widest text-gold-deep">
                             View →
                         </span>
                     </div>
@@ -153,50 +237,93 @@ function AgendaBanner({ agenda, imageUrl }) {
         rest = parts.slice(1).join(' ') || '';
     }
 
+    const [isPortrait, setIsPortrait] = useState(null);
+
+    useEffect(() => {
+        if (!imageUrl) {
+            setIsPortrait(false);
+            return;
+        }
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => {
+            setIsPortrait(img.height > img.width);
+        };
+    }, [imageUrl]);
+
+    const dateBlock = day ? (
+        <div className="flex w-9 shrink-0 flex-col items-center rounded-lg border border-gold/30 bg-paper px-0.5 py-1 text-center">
+            <span className="font-display text-xs font-bold leading-none text-ink">{day}</span>
+            {rest && (
+                <span className="mt-0.5 font-mono text-[6px] uppercase leading-tight tracking-widest text-gold-deep">
+                    {rest}
+                </span>
+            )}
+        </div>
+    ) : null;
+
+    if (isPortrait === null || isPortrait) {
+        return (
+            <div className="relative flex h-full flex-row-reverse overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift">
+                <BannerImage url={imageUrl} className="h-full w-20 shrink-0 sm:w-24" />
+                <div aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-gold via-gold-light/40 to-transparent" />
+                <div className="flex flex-1 flex-col">
+                    <div className="flex flex-1 items-start gap-2 p-2 sm:p-2.5">
+                        {dateBlock}
+                        <div className="min-w-0 flex-1">
+                            <p className="eyebrow text-[8px]">Agenda</p>
+                            <h3 className="mt-0.5 font-display text-[11px] font-bold leading-snug text-ink line-clamp-1">{agenda.title}</h3>
+                            {agenda.location && (
+                                <p className="mt-0.5 flex items-start gap-1 text-[9px] text-slate">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-px h-2.5 w-2.5 shrink-0 text-gold-deep" aria-hidden="true">
+                                        <path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z" />
+                                        <circle cx="12" cy="10" r="2.5" />
+                                    </svg>
+                                    <span className="line-clamp-1">{agenda.location}</span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-ink/5 px-2 py-1 sm:px-2.5">
+                        <span className="font-mono text-[7px] uppercase tracking-widest text-slate-soft">
+                            {agenda.type || 'Event'}
+                        </span>
+                        <span className="font-mono text-[7px] uppercase tracking-widest text-slate/60">
+                            Information
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white/80 shadow-lift">
-            <BannerImage url={imageUrl} />
+        <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift">
+            <BannerImage url={imageUrl} className="h-16 w-full sm:h-20" />
             <div aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-gold via-gold-light/40 to-transparent" />
 
-            <div className="flex flex-1 items-start gap-4 p-5 sm:p-6">
-                {day && (
-                    <div className="flex w-14 shrink-0 flex-col items-center rounded-xl border border-gold/30 bg-paper px-1 py-2.5 text-center">
-                        <span className="font-display text-xl font-bold leading-none text-ink">{day}</span>
-                        {rest && (
-                            <span className="mt-1.5 font-mono text-[9px] uppercase leading-tight tracking-widest text-gold-deep">
-                                {rest}
-                            </span>
-                        )}
-                    </div>
-                )}
-
+            <div className="flex flex-1 items-start gap-2 p-2 sm:p-2.5">
+                {dateBlock}
                 <div className="min-w-0 flex-1">
-                    <p className="eyebrow">Agenda</p>
-                    <h3 className="mt-1.5 font-display font-bold leading-snug text-ink">{agenda.title}</h3>
+                    <p className="eyebrow text-[8px]">Agenda</p>
+                    <h3 className="mt-0.5 font-display text-[11px] font-bold leading-snug text-ink line-clamp-1">{agenda.title}</h3>
                     {agenda.location && (
-                        <p className="mt-2 flex items-start gap-1.5 text-xs text-slate">
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                className="mt-px h-3.5 w-3.5 shrink-0 text-gold-deep"
-                                aria-hidden="true"
-                            >
+                        <p className="mt-0.5 flex items-start gap-1 text-[9px] text-slate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-px h-2.5 w-2.5 shrink-0 text-gold-deep" aria-hidden="true">
                                 <path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z" />
                                 <circle cx="12" cy="10" r="2.5" />
                             </svg>
-                            {agenda.location}
+                            <span className="line-clamp-1">{agenda.location}</span>
                         </p>
                     )}
                 </div>
             </div>
 
-            <div className="flex items-center justify-between border-t border-ink/5 px-5 py-2.5 sm:px-6">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-slate-soft">
+            <div className="flex items-center justify-between border-t border-ink/5 px-2 py-1 sm:px-2.5">
+                <span className="font-mono text-[7px] uppercase tracking-widest text-slate-soft">
                     {agenda.type || 'Event'}
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-slate/60">
+                <span className="font-mono text-[7px] uppercase tracking-widest text-slate/60">
                     Information
                 </span>
             </div>
@@ -204,35 +331,49 @@ function AgendaBanner({ agenda, imageUrl }) {
     );
 }
 
-function BannerZone({ banners }) {
-    const count = banners.length;
-    const gridClass = count === 1
-        ? 'grid-cols-1'
-        : count === 2
-            ? 'grid-cols-2'
-            : 'grid-cols-3';
+function BannerSection({ label, banners, renderBanner }) {
+    if (banners.length === 0) return null;
 
     return (
-        <section aria-label="Featured" className="flex flex-col gap-6">
-            <Reveal>
-                <div className="flex items-center gap-3">
-                    <p className="eyebrow">Featured</p>
-                    <span aria-hidden="true" className="h-px flex-1 bg-ink/10" />
-                </div>
-            </Reveal>
+        <section aria-label={label} className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+                <p className="eyebrow">{label}</p>
+                <span aria-hidden="true" className="h-px flex-1 bg-ink/10" />
+            </div>
 
-            <div className={`grid gap-3 sm:gap-4 ${gridClass}`}>
+            <div className="flex flex-col gap-2">
                 {banners.map((banner, i) => (
                     <Reveal key={banner.id} delay={0.05 + i * 0.08}>
-                        {banner.type === 'promo' && banner.promo ? (
-                            <PromoBanner promo={banner.promo} imageUrl={banner.image_url} />
-                        ) : banner.agenda ? (
-                            <AgendaBanner agenda={banner.agenda} imageUrl={banner.image_url} />
-                        ) : null}
+                        {renderBanner(banner)}
                     </Reveal>
                 ))}
             </div>
         </section>
+    );
+}
+
+function BannerZone({ banners }) {
+    const promoBanners = banners.filter((banner) => banner.type === 'promo' && banner.promo);
+    const agendaBanners = banners.filter((banner) => banner.type === 'agenda' && banner.agenda);
+
+    return (
+        <div className="flex flex-col gap-4">
+            <BannerSection
+                label="Promos"
+                banners={promoBanners}
+                renderBanner={(banner) => <PromoBanner promo={banner.promo} imageUrl={banner.image_url} />}
+            />
+
+            {promoBanners.length > 0 && agendaBanners.length > 0 && (
+                <div aria-hidden="true" className="h-px bg-ink/10" />
+            )}
+
+            <BannerSection
+                label="Agenda"
+                banners={agendaBanners}
+                renderBanner={(banner) => <AgendaBanner agenda={banner.agenda} imageUrl={banner.image_url} />}
+            />
+        </div>
     );
 }
 
@@ -242,7 +383,7 @@ export default function Home({ member, banners = [], vendor_ranking = [], popup 
 
     const firstName = (member?.name || '').split(' ')[0];
     const active = member?.membership_status === 'active';
-    const bannerList = (Array.isArray(banners) ? banners : []).slice(0, 3);
+    const bannerList = Array.isArray(banners) ? banners : [];
 
     const [popupOpen, setPopupOpen] = useState(false);
 
@@ -257,7 +398,7 @@ export default function Home({ member, banners = [], vendor_ranking = [], popup 
         <>
             <Head title="Home" />
 
-            <div className="flex flex-col gap-12">
+            <div className="flex flex-col gap-6">
                 <header className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-3">
                         <p className="eyebrow">

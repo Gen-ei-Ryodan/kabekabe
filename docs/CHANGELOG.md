@@ -2,6 +2,12 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Pemisahan section promo dan agenda di Home member
+- Banner Home member kini ditampilkan dalam section **Promos** dan **Agenda** yang terpisah.
+- Popup promo tetap dirender sebagai modal terpisah dan tidak dihitung sebagai banner.
+- Home member menampilkan maksimal 3 promo dan 1 agenda secara terpisah.
+- Card agenda portrait menempatkan tanggal dan informasi di kiri, dengan foto di kanan.
+
 ## 2026-09-03 — Popup promo pembuka Home member
 - Tambah konfigurasi singleton `home_popups` untuk satu promo popup dengan gambar opsional dan status aktif.
 - Admin Home Banners memiliki menu **Opening popup** untuk memilih promo, mengunggah gambar, dan mengaktifkan popup.
