@@ -336,7 +336,7 @@ export default function Home({ member, banners = [], vendor_ranking = [] }) {
                     )}
                 </header>
 
-                <section className="-mx-4 w-full px-2 sm:mx-0 sm:px-0">
+                <section className="flex w-full justify-center">
                     <MemberCard member={member} />
                 </section>
 

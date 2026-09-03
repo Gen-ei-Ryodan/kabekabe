@@ -81,7 +81,7 @@ export default function MemberCard({ member }) {
     const isActive = member.membership_status === 'active';
 
     return (
-        <div ref={wrapRef} className="relative [perspective:1200px]">
+        <div ref={wrapRef} className="relative w-full [perspective:1200px]">
             <div
                 ref={cardRef}
                 className="relative min-h-[18rem] w-full max-w-full overflow-hidden rounded-3xl border border-gold/40 bg-ink shadow-card will-change-transform sm:mx-auto sm:max-w-md"
