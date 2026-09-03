@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
 use App\Models\HomePopup;
 use App\Models\Promo;
@@ -18,14 +17,9 @@ class HomeBannerController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = HomeBanner::query()->with(['promo.partner:id,name', 'agenda']);
+        $query = HomeBanner::query()->where('type', HomeBanner::TYPE_PROMO)->with('promo.partner:id,name');
 
-        $type = $request->string('type')->toString();
         $status = $request->string('status')->toString();
-
-        if (in_array($type, [HomeBanner::TYPE_PROMO, HomeBanner::TYPE_AGENDA], true)) {
-            $query->where('type', $type);
-        }
 
         if ($status === 'active') {
             $query->where('is_active', true);
@@ -37,21 +31,13 @@ class HomeBannerController extends Controller
             ->get()
             ->map(fn (HomeBanner $banner) => [
                 'id' => $banner->id,
-                'type' => $banner->type,
                 'image_url' => $banner->imageUrl(),
-                'label' => $banner->type === HomeBanner::TYPE_PROMO ? 'Promo' : 'Agenda',
-                'target_title' => $banner->type === HomeBanner::TYPE_PROMO
-                    ? $banner->promo?->title
-                    : $banner->agenda?->title,
+                'target_title' => $banner->promo?->title,
                 'promo_id' => $banner->promo_id,
-                'agenda_id' => $banner->agenda_id,
                 'sort_order' => $banner->sort_order,
                 'is_active' => $banner->is_active,
                 'promo' => $banner->promo
                     ? ['id' => $banner->promo->id, 'title' => $banner->promo->title, 'partner' => ['name' => $banner->promo->partner?->name]]
-                    : null,
-                'agenda' => $banner->agenda
-                    ? ['id' => $banner->agenda->id, 'title' => $banner->agenda->title, 'event_date' => $banner->agenda->event_date?->toISOString()]
                     : null,
             ])
             ->all();
@@ -60,9 +46,8 @@ class HomeBannerController extends Controller
 
         return Inertia::render('Admin/Banners/Index', [
             'banners' => $banners,
-            'filters' => ['type' => $type, 'status' => $status],
+            'filters' => ['status' => $status],
             'promos' => $this->promoSelect(),
-            'agendas' => $this->agendaSelect(),
             'drawer' => $drawer,
             'popup' => $this->popupPayload(),
             'popup_promos' => $this->promoSelect(),
@@ -81,7 +66,7 @@ class HomeBannerController extends Controller
 
         if ($mode === 'edit') {
             $banner = HomeBanner::query()
-                ->with(['promo:id,title,partner_id', 'agenda:id,title'])
+                ->with('promo:id,title,partner_id')
                 ->find($request->integer('id'));
 
             if ($banner) {
@@ -97,7 +82,6 @@ class HomeBannerController extends Controller
         return Inertia::render('Admin/Banners/Index', [
             'drawer' => ['mode' => 'create'],
             'promos' => $this->promoSelect(),
-            'agendas' => $this->agendaSelect(),
         ]);
     }
 
@@ -117,10 +101,9 @@ class HomeBannerController extends Controller
         return Inertia::render('Admin/Banners/Index', [
             'drawer' => [
                 'mode' => 'edit',
-                'banner' => $banner->load(['promo:id,title,partner_id', 'agenda:id,title']),
+                'banner' => $banner->load('promo:id,title,partner_id'),
             ],
             'promos' => $this->promoSelect(),
-            'agendas' => $this->agendaSelect(),
         ]);
     }
 
@@ -218,18 +201,15 @@ class HomeBannerController extends Controller
     private function validateBanner(Request $request, ?HomeBanner $banner = null): array
     {
         $validated = $request->validate([
-            'type' => ['required', 'in:promo,agenda'],
-            'promo_id' => ['nullable', 'integer', 'required_if:type,promo', Rule::exists('promos', 'id')],
-            'agenda_id' => ['nullable', 'integer', 'required_if:type,agenda', Rule::exists('community_infos', 'id')->where('is_published', true)],
+            'promo_id' => ['required', 'integer', Rule::exists('promos', 'id')],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['required', 'boolean'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
         ]);
 
-        // Keep only the foreign key matching the banner type.
-        $validated['promo_id'] = $validated['type'] === HomeBanner::TYPE_PROMO ? ($validated['promo_id'] ?? null) : null;
-        $validated['agenda_id'] = $validated['type'] === HomeBanner::TYPE_AGENDA ? ($validated['agenda_id'] ?? null) : null;
+        $validated['type'] = HomeBanner::TYPE_PROMO;
+        $validated['agenda_id'] = null;
 
         unset($validated['image'], $validated['remove_image']);
 
@@ -274,12 +254,4 @@ class HomeBannerController extends Controller
             ->all();
     }
 
-    private function agendaSelect(): array
-    {
-        return CommunityInfo::query()
-            ->published()
-            ->orderByDesc('event_date')
-            ->get(['id', 'title', 'event_date', 'type'])
-            ->all();
-    }
 }

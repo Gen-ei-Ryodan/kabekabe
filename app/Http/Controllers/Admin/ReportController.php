@@ -313,11 +313,14 @@ class ReportController extends Controller
 
     private function birthdays(): array
     {
+        $monthExpr = $this->datePartExpr('birth_date', 'month');
+        $dayExpr = $this->datePartExpr('birth_date', 'day');
+
         $members = User::query()
             ->where('role', User::ROLE_MEMBER)
             ->whereNotNull('birth_date')
-            ->orderByRaw("strftime('%m', birth_date)")
-            ->orderByRaw("strftime('%d', birth_date)")
+            ->orderByRaw($monthExpr)
+            ->orderByRaw($dayExpr)
             ->get(['id', 'name', 'member_code', 'birth_date']);
 
         $grouped = $members->map(fn (User $u) => [
@@ -342,5 +345,14 @@ class ReportController extends Controller
         return DB::connection()->getDriverName() === 'sqlite'
             ? "strftime('%Y-%m', {$column})"
             : "DATE_FORMAT({$column}, '%Y-%m')";
+    }
+
+    private function datePartExpr(string $column, string $part): string
+    {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return "strftime('%" . ($part === 'month' ? 'm' : 'd') . "', {$column})";
+        }
+
+        return ($part === 'month' ? 'MONTH' : 'DAY') . "({$column})";
     }
 }

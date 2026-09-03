@@ -249,6 +249,26 @@ class AdminFlowTest extends TestCase
             );
     }
 
+    public function test_admin_records_event_attendance_from_member_card_qr_only(): void
+    {
+        $admin = $this->admin();
+        $member = User::factory()->member()->create();
+        $info = CommunityInfo::factory()->create(['created_by' => $admin->id]);
+
+        $this->actingAs($admin)->post(route('admin.community.attendance.scan', $info), [
+            'token' => $member->card_token,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('event_attendances', [
+            'event_id' => $info->id,
+            'member_id' => $member->id,
+        ]);
+
+        $this->actingAs($admin)->post(route('admin.community.attendance.scan', $info), [
+            'token' => $member->member_code,
+        ])->assertSessionHas('error', 'Member card not found. Please scan a valid member QR code.');
+    }
+
     public function test_admin_can_create_promo_banner(): void
     {
         $admin = $this->admin();
@@ -289,24 +309,23 @@ class AdminFlowTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_create_agenda_banner_from_published_info(): void
+    public function test_admin_can_create_promo_banner_without_type_field(): void
     {
         $admin = $this->admin();
-        $info = CommunityInfo::factory()->published()->create([
-            'type' => CommunityInfo::TYPE_AGENDA,
+        $promo = Promo::factory()->create([
+            'status' => Promo::STATUS_APPROVED,
+            'is_active' => true,
         ]);
 
         $this->actingAs($admin)->post(route('admin.banners.store'), [
-            'type' => 'agenda',
-            'agenda_id' => $info->id,
+            'promo_id' => $promo->id,
             'sort_order' => 2,
             'is_active' => 1,
         ])->assertRedirect(route('admin.banners.index'));
 
         $this->assertDatabaseHas('home_banners', [
-            'type' => 'agenda',
-            'agenda_id' => $info->id,
-            'promo_id' => null,
+            'type' => 'promo',
+            'promo_id' => $promo->id,
             'sort_order' => 2,
             'is_active' => true,
         ]);

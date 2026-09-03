@@ -1,27 +1,19 @@
 import { useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
-import { formatDate } from '@/Utils/format';
 
-function resolveTargetId(banner, promos, agendas) {
+function resolveTargetId(banner, promos) {
     if (!banner) return '';
 
-    if (banner.type === 'promo') {
-        if (banner.promo_id) return String(banner.promo_id);
-        const match = (promos || []).find((p) => p.title === banner.target_title);
-        return match ? String(match.id) : '';
-    }
-
-    if (banner.agenda_id) return String(banner.agenda_id);
-    const match = (agendas || []).find((a) => a.title === banner.target_title);
+    if (banner.promo_id) return String(banner.promo_id);
+    const match = (promos || []).find((p) => p.title === banner.target_title);
     return match ? String(match.id) : '';
 }
 
-function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
+function BannerForm({ banner, promos, nextSortOrder, onClose }) {
     const editing = Boolean(banner);
 
     const form = useForm({
-        type: banner?.type || 'promo',
-        target_id: resolveTargetId(banner, promos, agendas),
+        target_id: resolveTargetId(banner, promos),
         sort_order: banner?.sort_order ?? nextSortOrder,
         is_active: banner ? Boolean(banner.is_active) : true,
         image: null,
@@ -33,11 +25,11 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
     const imagePreview = newImagePreview || existingImage;
 
     form.transform((data) => ({
-        type: data.type,
+        type: 'promo',
         sort_order: Number(data.sort_order),
         is_active: Boolean(data.is_active),
-        promo_id: data.type === 'promo' ? (data.target_id || null) : null,
-        agenda_id: data.type === 'agenda' ? (data.target_id || null) : null,
+        promo_id: data.target_id || null,
+        agenda_id: null,
         image: data.image,
         remove_image: data.remove_image,
     }));
@@ -51,47 +43,20 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
         }
     };
 
-    const handleTypeChange = (e) => {
-        form.setData((data) => ({ ...data, type: e.target.value, target_id: '' }));
-    };
-
-    const isPromo = form.data.type === 'promo';
-    const options = isPromo ? promos || [] : agendas || [];
-    const optionLabel = (item) =>
-        isPromo
-            ? item.partner_name
-                ? `${item.title} — ${item.partner_name}`
-                : item.title
-            : item.event_date
-              ? `${item.title} · ${formatDate(item.event_date)}`
-              : item.title;
+    const options = promos || [];
+    const optionLabel = (item) => item.partner_name ? `${item.title} — ${item.partner_name}` : item.title;
 
     return (
         <form id="home-banner-form" onSubmit={submit} className="space-y-5">
             <div>
-                <label className="label" htmlFor="banner-type">Banner type</label>
-                <select id="banner-type" className="input" value={form.data.type} onChange={handleTypeChange}>
-                    <option value="promo">Promo</option>
-                    <option value="agenda">Agenda</option>
-                </select>
-                <p className="mt-1.5 text-xs text-slate">
-                    {isPromo
-                        ? 'Promos appear as clickable discount cards with the ink hero header.'
-                        : 'Agendas appear as calm, informational cards with a date badge.'}
-                </p>
-            </div>
-
-            <div>
-                <label className="label" htmlFor="banner-target">
-                    {isPromo ? 'Promo target' : 'Agenda target'}
-                </label>
+                <label className="label" htmlFor="banner-target">Promo target</label>
                 <select
                     id="banner-target"
                     className="input"
                     value={form.data.target_id}
                     onChange={(e) => form.setData('target_id', e.target.value)}
                 >
-                    <option value="">Select a {isPromo ? 'promo' : 'agenda'}…</option>
+                    <option value="">Select a promo…</option>
                     {options.map((item) => (
                         <option key={item.id} value={item.id}>
                             {optionLabel(item)}
@@ -100,7 +65,7 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
                 </select>
                 {options.length === 0 && (
                     <p className="mt-1.5 text-xs text-slate">
-                        No {isPromo ? 'promos' : 'agendas'} available right now.
+                        No promos available right now.
                     </p>
                 )}
                 {form.errors.promo_id && <p className="mt-1 text-xs text-ember">{form.errors.promo_id}</p>}
@@ -172,7 +137,7 @@ function BannerForm({ banner, promos, agendas, nextSortOrder, onClose }) {
     );
 }
 
-export default function HomeBannerDrawer({ drawer, onClose, promos = [], agendas = [], nextSortOrder = 1 }) {
+export default function HomeBannerDrawer({ drawer, onClose, promos = [], nextSortOrder = 1 }) {
     if (!drawer?.mode) return null;
 
     const banner = drawer.banner || drawer.info || null;
@@ -192,7 +157,6 @@ export default function HomeBannerDrawer({ drawer, onClose, promos = [], agendas
                 key={banner?.id ?? 'create'}
                 banner={banner}
                 promos={promos}
-                agendas={agendas}
                 nextSortOrder={nextSortOrder}
                 onClose={onClose}
             />

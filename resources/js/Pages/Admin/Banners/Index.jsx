@@ -5,11 +5,6 @@ import StatusChip from '@/Components/StatusChip';
 import EmptyState from '@/Components/EmptyState';
 import HomeBannerDrawer from '@/Components/Admin/HomeBannerDrawer';
 
-const TYPE_META = {
-    promo: { label: 'Promo', chip: 'border-gold/30 bg-gold/15 text-gold-deep' },
-    agenda: { label: 'Agenda', chip: 'border-sage/25 bg-sage/12 text-sage' },
-};
-
 const MAX_BANNERS = 3;
 
 function PopupSettings({ popup, promos = [] }) {
@@ -66,7 +61,7 @@ function PopupSettings({ popup, promos = [] }) {
     );
 }
 
-export default function BannersIndex({ banners = [], filters = {}, promos = [], agendas = [], drawer = null, popup = null, popup_promos = [] }) {
+export default function BannersIndex({ banners = [], filters = {}, promos = [], drawer = null, popup = null, popup_promos = [] }) {
     const filter = useForm(filters);
     const [tab, setTab] = useState('banners');
 
@@ -141,15 +136,7 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                 {tab === 'popup' ? <PopupSettings popup={popup} promos={popup_promos} /> : <>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-                    <div className="grid flex-1 gap-3 sm:grid-cols-2">
-                        <div>
-                            <label className="label">Type</label>
-                            <select className="input" value={filter.data.type || ''} onChange={(e) => filter.setData('type', e.target.value)}>
-                                <option value="">All</option>
-                                <option value="promo">Promo</option>
-                                <option value="agenda">Agenda</option>
-                            </select>
-                        </div>
+                    <div className="grid flex-1 gap-3">
                         <div>
                             <label className="label">Status</label>
                             <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
@@ -176,7 +163,7 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                 {banners.length === 0 ? (
                     <EmptyState
                         title="No banners yet"
-                        description="Feature a promo or an agenda on the member home."
+                        description="Feature a promo on the member home."
                         action={
                             <button onClick={openCreate} className="btn-gold">
                                 Add banner
@@ -205,9 +192,7 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
 
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <span className={`chip border ${TYPE_META[banner.type]?.chip || ''}`}>
-                                                {TYPE_META[banner.type]?.label || banner.type}
-                                            </span>
+                                            <span className="chip border border-gold/30 bg-gold/15 text-gold-deep">Promo</span>
                                             <StatusChip
                                                 status={banner.is_active ? 'active' : 'inactive'}
                                                 label={banner.is_active ? 'Active' : 'Inactive'}
@@ -217,7 +202,6 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                                         <h3 className="mt-1 truncate font-display text-base font-bold text-ink">
                                             {banner.target_title}
                                         </h3>
-                                        {banner.label && <p className="mt-0.5 truncate text-xs text-slate">{banner.label}</p>}
                                     </div>
                                 </div>
 
@@ -243,7 +227,6 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                 drawer={drawer}
                 onClose={closeDrawer}
                 promos={promos}
-                agendas={agendas}
                 nextSortOrder={banners.length + 1}
             />
         </>

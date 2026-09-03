@@ -221,14 +221,11 @@ class CommunityController extends Controller
 
         $member = User::query()
             ->where('role', User::ROLE_MEMBER)
-            ->where(function ($q) use ($token) {
-                $q->where('card_token', $token)
-                    ->orWhere('member_code', $token);
-            })
+            ->where('card_token', $token)
             ->first();
 
         if (! $member) {
-            return back()->with('error', 'Member not found. Please check the QR code or member code.');
+            return back()->with('error', 'Member card not found. Please scan a valid member QR code.');
         }
 
         if ($this->recordMemberAttendance($info, $member)) {

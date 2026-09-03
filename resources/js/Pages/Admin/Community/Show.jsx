@@ -1,5 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import { formatDate, formatRupiah } from '@/Utils/format';
@@ -7,16 +8,15 @@ import { formatDate, formatRupiah } from '@/Utils/format';
 export default function CommunityShow({ event, members }) {
     const [activeTab, setActiveTab] = useState('attendance');
 
-    const scanForm = useForm({ token: '' });
     const memberForm = useForm({ member_id: '' });
     const nonMemberForm = useForm({ name: '', phone: '', email: '' });
     const paymentForm = useForm({ member_id: '' });
 
-    const handleScan = (e) => {
-        e.preventDefault();
-        scanForm.post(route('admin.community.attendance.scan', event.id), {
+    const handleScan = (decodedText) => {
+        const token = String(decodedText || '').trim().replace(/^https?:\/\/[^/]+\//, '').split('/').pop();
+        if (!token) return;
+        router.post(route('admin.community.attendance.scan', event.id), { token }, {
             preserveScroll: true,
-            onSuccess: () => scanForm.reset('token'),
         });
     };
 
@@ -101,14 +101,13 @@ export default function CommunityShow({ event, members }) {
                 {activeTab === 'attendance' && (
                     <div className="flex flex-col gap-6">
                         <div className="grid gap-4 lg:grid-cols-2">
-                            <form onSubmit={handleScan} className="card-surface p-5">
-                                <h3 className="font-display font-bold">Scan QR / Member Code</h3>
-                                <p className="mt-1 text-xs text-slate">Scan member card token or input member code.</p>
-                                <div className="mt-3 flex gap-2">
-                                    <input type="text" className="input" placeholder="Token / member code" value={scanForm.data.token} onChange={(e) => scanForm.setData('token', e.target.value)} />
-                                    <button type="submit" className="btn-gold text-xs" disabled={scanForm.processing}>Scan</button>
+                            <div className="card-surface p-5">
+                                <h3 className="font-display font-bold">Scan Member Card</h3>
+                                <p className="mt-1 text-xs text-slate">Point the camera at the QR code on the member card.</p>
+                                <div className="mt-3 overflow-hidden rounded-2xl border border-ink/10 bg-ink">
+                                    <Scanner onScan={(result) => { const first = Array.isArray(result) ? result[0] : result; handleScan(first?.rawValue || first?.toString()); }} constraints={{ facingMode: 'environment' }} formats={['qr_code']} styles={{ container: { height: 280 } }} />
                                 </div>
-                            </form>
+                            </div>
 
                             <form onSubmit={handleMemberAttendance} className="card-surface p-5">
                                 <h3 className="font-display font-bold">Manual Member Input</h3>

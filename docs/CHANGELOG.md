@@ -2,6 +2,11 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-03 — Admin banner, attendance scan, dan Reports
+- Featured Home Banners kini khusus promo; field Banner type dihapus dari form dan backend selalu menyimpan tipe promo.
+- Detail Events & Activities menggunakan kamera untuk scan QR kartu member; input member code pada panel scan dihapus dan endpoint hanya menerima token QR.
+- Admin Reports diperbaiki agar Birthday Report kompatibel dengan SQLite dan MySQL, sehingga tidak lagi gagal karena fungsi `strftime` yang spesifik SQLite.
+
 ## 2026-09-03 — Agenda Home otomatis dan filter kategori member
 - Home member mengambil maksimal 3 agenda aktif/published langsung dari Events & Activities, tanpa memerlukan banner agenda manual.
 - Filter kategori di halaman Promo & Partner kini ikut memfilter promo berdasarkan kategori partner.

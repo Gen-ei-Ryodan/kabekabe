@@ -15,7 +15,7 @@
 ## Kartu Digital & QR
 - `card_token` (UUID) dibangkitkan otomatis saat user member dibuat, dan dijamin via `ensureCardToken()`.
 - `member_code` format `MMB-XXXXX`, auto-increment per member.
-- QR kartu berisi `card_token`; vendor juga bisa memasukkan `member_code` manual.
+- QR kartu berisi `card_token`; scan kehadiran admin hanya menerima token QR kartu, bukan `member_code` yang sudah tercatat.
 
 ## Promo
 - Alur: vendor `submit` → status `pending` → admin `approve`/`reject` (wajib alasan) → `approved`.
@@ -50,7 +50,7 @@
 ## Home Banners dan Agenda
 - Home member menampilkan **maksimal 3 banner promo** yang dikurasi admin.
 - Agenda Home diambil otomatis, maksimal 3 event/activity dari Events & Activities yang berstatus published/aktif.
-- Banner dapat bertipe `promo` atau `agenda` untuk kebutuhan administrasi, tetapi agenda Home tidak lagi bergantung pada banner agenda manual.
+- Featured Home Banner selalu berupa promo; agenda Home diambil otomatis dari Events & Activities dan tidak dibuat sebagai banner manual.
 - **Maksimal 3 banner aktif**; admin menambah/edithapus/aktifnonaktif via `admin.banners.*`.
 - Layout member adaptif: 1 banner → 1 kartu; 2 → dua kartu sejajar (kiri-kanan); 3 → dua sejajar + satu lebar di bawah.
 - Banner promo hanya tampil jika targetnya visible (approved + aktif + dalam periode); agenda otomatis hanya tampil jika `is_published`, `published_at <= now()`, dan diurutkan berdasarkan tanggal kegiatan. Target yang tidak valid/dihapus di-filter dari payload member.
