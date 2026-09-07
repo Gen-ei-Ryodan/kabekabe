@@ -81,11 +81,11 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
                     className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper"
                     onChange={(e) => form.setData((data) => ({ ...data, image: e.target.files[0] || null, remove_image: false }))}
                 />
-                <p className="mt-1.5 text-xs text-slate">JPG/PNG/WebP, max 2 MB. Shown as the banner cover on member home.</p>
+                <p className="mt-1.5 text-xs text-slate">JPG/PNG/WebP, max 2 MB. Ideal ratio 4:5 (e.g. 1080×1350px). Shown as the banner cover on member home.</p>
 
                 {imagePreview && (
                     <div className="mt-3 flex items-start gap-3">
-                        <img src={imagePreview} alt="Banner preview" className="h-24 w-full max-w-[240px] rounded-xl border border-ink/10 object-cover" />
+                        <img src={imagePreview} alt="Banner preview" className="h-32 w-full max-w-[256px] rounded-xl border border-ink/10 object-cover" style={{ aspectRatio: '4/5' }} />
                         <button
                             type="button"
                             onClick={() => form.setData((data) => ({ ...data, image: null, remove_image: true }))}

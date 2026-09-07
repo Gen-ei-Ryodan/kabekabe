@@ -10,7 +10,6 @@ export default function CommunityShow({ event, members }) {
 
     const memberForm = useForm({ member_id: '' });
     const nonMemberForm = useForm({ name: '', phone: '', email: '' });
-    const paymentForm = useForm({ member_id: '' });
 
     const handleScan = (decodedText) => {
         const token = String(decodedText || '').trim().replace(/^https?:\/\/[^/]+\//, '').split('/').pop();
@@ -36,13 +35,7 @@ export default function CommunityShow({ event, members }) {
         });
     };
 
-    const handlePayment = (memberId) => {
-        if (!confirm('Create contribution bill for this member?')) return;
-        router.post(route('admin.community.payment.store', event.id), { member_id: memberId }, { preserveScroll: true });
-    };
-
     const attendedMemberIds = event.member_attendees.map((a) => a.member_id);
-    const unpaidMembers = event.member_attendees.filter((a) => !a.billed);
 
     return (
         <>
@@ -82,7 +75,6 @@ export default function CommunityShow({ event, members }) {
                     <div className="flex gap-2">
                         {[
                             { key: 'attendance', label: 'Attendance' },
-                            { key: 'billing', label: 'Member Billing' },
                             { key: 'non_members', label: 'Non-Member Participants' },
                         ].map((tab) => (
                             <button
@@ -173,74 +165,6 @@ export default function CommunityShow({ event, members }) {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
-
-                {activeTab === 'billing' && (
-                    <div className="card-surface p-5">
-                        <h3 className="font-display font-bold">Contribution Billing (Urunan)</h3>
-                        <p className="mt-1 text-xs text-slate">Create contribution bills for member attendees.</p>
-
-                        <table className="mt-4 w-full text-left text-sm">
-                            <thead className="border-b border-ink/10">
-                                <tr>
-                                    <th className="table-head px-2 py-2">Member</th>
-                                    <th className="table-head px-2 py-2">Code</th>
-                                    <th className="table-head px-2 py-2">Status</th>
-                                    <th className="table-head px-2 py-2 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-ink/5">
-                                {event.member_attendees.length === 0 ? (
-                                    <tr><td colSpan={4} className="px-2 py-4 text-center text-sm text-slate">No member attendees yet.</td></tr>
-                                ) : (
-                                    event.member_attendees.map((a) => (
-                                        <tr key={a.id}>
-                                            <td className="px-2 py-2 font-semibold">{a.name}</td>
-                                            <td className="px-2 py-2 font-mono text-xs">{a.member_code}</td>
-                                            <td className="px-2 py-2">
-                                                {a.billed ? (
-                                                    <span className="chip border border-sage/40 bg-sage/15 text-sage">Billed</span>
-                                                ) : (
-                                                    <span className="chip border border-ember/30 bg-ember/15 text-ember">Not billed</span>
-                                                )}
-                                            </td>
-                                            <td className="px-2 py-2 text-right">
-                                                {!a.billed && event.fee > 0 && (
-                                                    <button onClick={() => handlePayment(a.member_id)} className="btn-gold text-xs">Create Bill</button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-
-                        {event.payments.length > 0 && (
-                            <div className="mt-6">
-                                <h4 className="font-display font-bold">Recorded Payments</h4>
-                                <table className="mt-2 w-full text-left text-sm">
-                                    <thead className="border-b border-ink/10">
-                                        <tr>
-                                            <th className="table-head px-2 py-2">Invoice</th>
-                                            <th className="table-head px-2 py-2">Member</th>
-                                            <th className="table-head px-2 py-2 text-right">Amount</th>
-                                            <th className="table-head px-2 py-2">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-ink/5">
-                                        {event.payments.map((p) => (
-                                            <tr key={p.id}>
-                                                <td className="px-2 py-2 font-mono text-xs">{p.invoice_number}</td>
-                                                <td className="px-2 py-2">{p.member_name}</td>
-                                                <td className="px-2 py-2 text-right">{formatRupiah(p.amount)}</td>
-                                                <td className="px-2 py-2"><StatusChip status={p.status} label={p.status} /></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
                     </div>
                 )}
 

@@ -61,6 +61,7 @@ export default function MemberEdit({ member }) {
                                 <option value="katolik">Katolik</option>
                                 <option value="buddha">Buddha</option>
                                 <option value="hindu">Hindu</option>
+                                <option value="konghucu">Konghucu</option>
                                 <option value="lainnya">Lainnya</option>
                             </select>
                             {form.errors.religion && <p className="mt-1 text-xs text-ember">{form.errors.religion}</p>}
