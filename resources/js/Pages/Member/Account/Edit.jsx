@@ -51,6 +51,9 @@ export default function AccountEdit({ account }) {
                                         />
                                     </label>
                                     {errors.avatar && <p className="mt-1 text-xs text-ember">{errors.avatar}</p>}
+                                    <p className="mt-1.5 text-[11px] text-slate-soft">
+                                        Use a clear face photo, 1:1 ratio, min 400×400px. Example: white background, shoulders up.
+                                    </p>
                                 </div>
                             </div>
 
@@ -59,6 +62,12 @@ export default function AccountEdit({ account }) {
                                     <label className="label" htmlFor="name">Full name</label>
                                     <input id="name" type="text" className="input" value={data.name} onChange={(e) => setData('name', e.target.value)} />
                                     {errors.name && <p className="mt-1 text-xs text-ember">{errors.name}</p>}
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                    <label className="label" htmlFor="email">Email</label>
+                                    <input id="email" type="email" className="input bg-ink/5 cursor-not-allowed" value={account.email} readOnly />
+                                    <p className="mt-1 text-[11px] text-slate-soft">Contact admin to change your email.</p>
                                 </div>
 
                                 <div>

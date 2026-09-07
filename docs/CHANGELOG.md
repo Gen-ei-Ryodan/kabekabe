@@ -2,6 +2,14 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-07 — Member search, profile email, login enhancements
+- **Partners/Promos search**: tambah input search di halaman Promo & Partner untuk filter promos berdasarkan judul dan partners berdasarkan nama.
+- **Profile email**: tampilkan email member (read-only) di halaman Account Edit; pesan "Contact admin to change your email."
+- **Photo note**: tambah panduan foto profil: "Use a clear face photo, 1:1 ratio, min 400×400px. Example: white background, shoulders up."
+- **Forgot password**: halaman login menambahkan link "Forgot password?" yang mengarah ke halaman reset password dengan style SENTRA (bglogin.png).
+- **Contact admin**: tambah link "Contact Admin" WhatsApp (+62 811 290 689) di bawah tombol login.
+- Testing: 90 test PASS.
+
 ## 2026-09-03 — Vendor pending transactions
 - Scan member vendor yang belum memiliki transaksi ditampilkan pada section **Pending Transactions**.
 - Vendor dapat membuka kembali form transaksi dari scan pending selama jendela 48 jam masih berlaku.

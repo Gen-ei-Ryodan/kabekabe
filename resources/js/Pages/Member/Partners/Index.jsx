@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
@@ -89,31 +89,35 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
     const [tab, setTab] = useState(
         () => new URLSearchParams(window.location.search).get('tab') === 'partners' ? 'partners' : 'promos',
     );
+    const [search, setSearch] = useState(filters?.search || '');
 
     const rawCategory = filters?.category || 'all';
     const category = rawCategory === '' ? 'all' : rawCategory;
 
+    const applyFilters = useCallback((overrides = {}) => {
+        const params = {
+            ...(category !== 'all' ? { category } : {}),
+            ...(search ? { search } : {}),
+            ...(tab === 'partners' ? { tab } : {}),
+            ...overrides,
+        };
+        // clean undefined
+        Object.keys(params).forEach(k => params[k] === undefined && delete params[k]);
+        router.get(route('member.partners.index'), params, { preserveState: true, replace: true });
+    }, [category, search, tab]);
+
     const switchTab = (next) => {
         setTab(next);
-        router.get(
-            route('member.partners.index'),
-            {
-                ...(category !== 'all' ? { category } : {}),
-                tab: next === 'promos' ? undefined : next,
-            },
-            { preserveState: true, preserveScroll: true, replace: true },
-        );
+        applyFilters({ tab: next === 'promos' ? undefined : next });
     };
 
     const selectCategory = (value) => {
-        router.get(
-            route('member.partners.index'),
-            {
-                category: value === 'all' ? undefined : value,
-                ...(tab === 'partners' ? { tab } : {}),
-            },
-            { preserveState: true, replace: true },
-        );
+        applyFilters({ category: value === 'all' ? undefined : value });
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        applyFilters();
     };
 
     const categoryList = Array.isArray(categories) ? categories : Object.values(categories || {});
@@ -157,6 +161,19 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
                         ))}
                     </div>
                 </header>
+
+                <form onSubmit={handleSearch} className="flex gap-2">
+                    <input
+                        type="text"
+                        placeholder="Search promos or partners..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="input flex-1"
+                    />
+                    <button type="submit" className="btn-ghost border border-ink/15 bg-white/70 px-4 py-2 text-sm font-medium text-ink hover:bg-white">
+                        Search
+                    </button>
+                </form>
 
                 {tab === 'promos' ? (
                     <>

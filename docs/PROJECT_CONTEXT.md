@@ -32,6 +32,10 @@ Platform digital untuk manajemen membership dan komunitas. Member memiliki **kar
 - **Admin Events & Activities:** label UI menggunakan bahasa Inggris; Content type tidak ditampilkan pada form Create/Edit, detail event memuat attendance serta contribution payments, dan kehadiran member dicatat dengan scan QR kartu.
 - **Vendor pending transactions:** hasil scan member yang belum dilengkapi transaksi muncul di daftar Pending Transactions dan dapat diselesaikan manual dalam 48 jam.
 - Setelah scan vendor, form transaksi tidak langsung ditampilkan; form dibuka dari tombol Complete Transaction pada daftar pending.
+- **Member search:** halaman Promo & Partner memiliki input search untuk filter promos (judul) dan partners (nama).
+- **Profile email:** email ditampilkan di halaman Account (read-only); ubah email via admin.
+- **Photo guidelines:** panduan foto profil: wajah jelas, rasio 1:1, min 400×400px, latar putih.
+- **Login enhancements:** link "Forgot password?" dan "Contact Admin" WhatsApp (+62 811 290 689).
 
 ## Akun Demo (password: `password`)
 - Admin: `admin@sentra.test`

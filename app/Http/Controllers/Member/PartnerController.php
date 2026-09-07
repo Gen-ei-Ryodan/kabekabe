@@ -14,12 +14,18 @@ class PartnerController extends Controller
     public function index(Request $request): Response
     {
         $category = $request->string('category')->toString();
+        $search = $request->string('search')->toString();
         $query = Partner::query()->active()->withCount(['promos' => fn ($q) => $q->where('status', 'approved')]);
         $promoQuery = Promo::query()->visibleToMembers();
 
         if ($category !== '' && $category !== 'all') {
             $query->where('category', $category);
             $promoQuery->whereHas('partner', fn ($q) => $q->where('category', $category));
+        }
+
+        if ($search !== '') {
+            $query->where('name', 'like', "%{$search}%");
+            $promoQuery->where('title', 'like', "%{$search}%");
         }
 
         $partners = $query->orderByRaw('COALESCE(sort_number, 999999) ASC')
@@ -30,7 +36,7 @@ class PartnerController extends Controller
         return Inertia::render('Member/Partners/Index', [
             'partners' => $partners,
             'categories' => Partner::query()->active()->distinct()->pluck('category'),
-            'filters' => ['category' => $category],
+            'filters' => ['category' => $category, 'search' => $search],
             'promos' => $promoQuery
                 ->orderByRaw('COALESCE(sort_number, 999999) ASC')
                 ->latest('end_date')

@@ -96,7 +96,7 @@ export default function Login() {
                         </div>
                     </div>
 
-                    {/* Below the card: submit button + register link */}
+                    {/* Below the card: submit button + links */}
                     <div className="mx-auto mt-6 w-full max-w-xs sm:max-w-sm">
                         <PrimaryButton
                             className="w-full justify-center"
@@ -104,6 +104,15 @@ export default function Login() {
                         >
                             {processing ? 'Signing in…' : 'Login'}
                         </PrimaryButton>
+
+                        <div className="mt-3 text-center">
+                            <Link
+                                href={route('password.request')}
+                                className="text-sm text-slate hover:text-ink hover:underline"
+                            >
+                                Forgot password?
+                            </Link>
+                        </div>
 
                         <p className="mt-4 text-center text-sm text-slate">
                             New Member?{' '}
@@ -113,6 +122,18 @@ export default function Login() {
                             >
                                 Register here
                             </Link>
+                        </p>
+
+                        <p className="mt-3 text-center text-xs text-slate-soft">
+                            Need help?{' '}
+                            <a
+                                href="https://wa.me/62811290689"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold text-ember hover:underline"
+                            >
+                                Contact Admin
+                            </a>
                         </p>
                     </div>
                 </form>
