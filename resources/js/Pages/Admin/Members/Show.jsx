@@ -136,6 +136,29 @@ export default function MemberShow({ member, membership, payments, transactions 
                         </div>
                     </div>
 
+                    {(() => {
+                        const partner = transactions[0]?.partner;
+                        if (!partner || (!partner.total_belanja && !partner.diskon1 && !partner.diskon2 && !partner.diskon3)) return null;
+                        return (
+                            <div className="card-surface p-6">
+                                <h2 className="font-display text-lg font-bold">Vendor Info — {partner.name}</h2>
+                                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                    {[
+                                        ['Total Belanja', partner.total_belanja],
+                                        ['Diskon 1', partner.diskon1],
+                                        ['Diskon 2', partner.diskon2],
+                                        ['Diskon 3', partner.diskon3],
+                                    ].filter(([, v]) => v).map(([label, value]) => (
+                                        <div key={label} className="rounded-xl bg-paper p-3">
+                                            <dt className="eyebrow">{label}</dt>
+                                            <dd className="mt-1 text-sm font-medium">{value}</dd>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })()}
+
                     <div className="card-surface p-6">
                         <div className="flex items-center justify-between">
                             <h2 className="font-display text-lg font-bold">Payment History</h2>

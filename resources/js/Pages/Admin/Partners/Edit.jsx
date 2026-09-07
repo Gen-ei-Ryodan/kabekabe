@@ -10,6 +10,10 @@ export default function PartnerEdit({ partner }) {
         phone: partner.phone || '',
         email: partner.email || '',
         logo: null,
+        total_belanja: partner.total_belanja || '',
+        diskon1: partner.diskon1 || '',
+        diskon2: partner.diskon2 || '',
+        diskon3: partner.diskon3 || '',
     });
 
     const submit = (e) => {
@@ -61,6 +65,29 @@ export default function PartnerEdit({ partner }) {
                             <label className="label" htmlFor="logo">Replace logo</label>
                             <input id="logo" type="file" accept="image/*" className="input" onChange={(e) => form.setData('logo', e.target.files[0])} />
                             {form.errors.logo && <p className="mt-1 text-xs text-ember">{form.errors.logo}</p>}
+                        </div>
+                    </div>
+
+                    <div className="border-t border-ink/10 pt-5">
+                        <h3 className="font-display font-bold">Vendor Info</h3>
+                        <p className="mt-1 text-xs text-slate">Manual fields, no auto-calculation.</p>
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label className="label" htmlFor="total_belanja">Total Belanja</label>
+                                <input id="total_belanja" type="text" className="input" value={form.data.total_belanja} onChange={(e) => form.setData('total_belanja', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="diskon1">Diskon 1</label>
+                                <input id="diskon1" type="text" className="input" value={form.data.diskon1} onChange={(e) => form.setData('diskon1', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="diskon2">Diskon 2</label>
+                                <input id="diskon2" type="text" className="input" value={form.data.diskon2} onChange={(e) => form.setData('diskon2', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="diskon3">Diskon 3</label>
+                                <input id="diskon3" type="text" className="input" value={form.data.diskon3} onChange={(e) => form.setData('diskon3', e.target.value)} />
+                            </div>
                         </div>
                     </div>
 

@@ -120,7 +120,7 @@ class MemberController extends Controller
                 if ($mode === 'show') {
                     $drawer['membership'] = $member->membership;
                     $drawer['payments'] = $member->payments()->with('plan:id,name,duration_months')->latest()->limit(10)->get();
-                    $drawer['transactions'] = $member->memberTransactions()->with('partner:id,name')->latest('transacted_at')->limit(10)->get();
+                    $drawer['transactions'] = $member->memberTransactions()->with('partner:id,name,total_belanja,diskon1,diskon2,diskon3')->latest('transacted_at')->limit(10)->get();
                 }
             }
         }
@@ -167,7 +167,7 @@ class MemberController extends Controller
             'member' => $this->memberPayload($member),
             'membership' => $member->membership,
             'payments' => $member->payments()->with('plan:id,name,duration_months')->latest()->limit(10)->get(),
-            'transactions' => $member->memberTransactions()->with('partner:id,name')->latest('transacted_at')->limit(10)->get(),
+            'transactions' => $member->memberTransactions()->with('partner:id,name,total_belanja,diskon1,diskon2,diskon3')->latest('transacted_at')->limit(10)->get(),
         ]);
     }
 

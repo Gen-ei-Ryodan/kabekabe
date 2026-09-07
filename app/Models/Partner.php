@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['user_id', 'name', 'slug', 'category', 'description', 'address', 'phone', 'email', 'logo', 'is_active', 'sort_number'])]
+#[Fillable(['user_id', 'name', 'slug', 'category', 'description', 'address', 'phone', 'email', 'logo', 'is_active', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3'])]
 #[Appends('logo_url')]
 class Partner extends Model
 {

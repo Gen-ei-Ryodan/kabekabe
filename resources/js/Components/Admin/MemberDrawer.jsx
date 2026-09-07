@@ -285,6 +285,29 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
                 </div>
             </section>
 
+            {(() => {
+                const partner = transactions[0]?.partner;
+                if (!partner || (!partner.total_belanja && !partner.diskon1 && !partner.diskon2 && !partner.diskon3)) return null;
+                return (
+                    <section className="rounded-2xl border border-ink/10 p-5">
+                        <h2 className="font-display text-lg font-bold">Vendor Info — {partner.name}</h2>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                            {[
+                                ['Total Belanja', partner.total_belanja],
+                                ['Diskon 1', partner.diskon1],
+                                ['Diskon 2', partner.diskon2],
+                                ['Diskon 3', partner.diskon3],
+                            ].filter(([, v]) => v).map(([label, value]) => (
+                                <div key={label} className="rounded-xl bg-paper p-3">
+                                    <dt className="eyebrow">{label}</dt>
+                                    <dd className="mt-1 text-sm font-medium">{value}</dd>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            })()}
+
             <section className="rounded-2xl border border-ink/10 p-5">
                 <h2 className="font-display text-lg font-bold">Payment History</h2>
                 <div className="mt-3 space-y-3">

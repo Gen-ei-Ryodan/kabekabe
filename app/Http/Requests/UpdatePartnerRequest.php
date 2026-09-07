@@ -25,6 +25,10 @@ class UpdatePartnerRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
             'sort_number' => ['nullable', 'integer', 'min:1'],
+            'total_belanja' => ['nullable', 'string', 'max:255'],
+            'diskon1' => ['nullable', 'string', 'max:255'],
+            'diskon2' => ['nullable', 'string', 'max:255'],
+            'diskon3' => ['nullable', 'string', 'max:255'],
         ];
     }
 }
