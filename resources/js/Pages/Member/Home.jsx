@@ -8,10 +8,10 @@ import Modal from '@/Components/Modal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 function VendorRanking({ vendors }) {
-    const medals = ['🥇', '🥈', '🥉', '4', '5'];
+    const medals = ['🥇', '🥈', '🥉'];
 
     return (
-        <section aria-label="Vendor Ranking" className="flex flex-col gap-5">
+        <section aria-label="Vendor Ranking" className="flex flex-col gap-3">
             <Reveal>
                 <div className="flex items-center gap-3">
                     <p className="eyebrow">Congratulation</p>
@@ -19,32 +19,17 @@ function VendorRanking({ vendors }) {
                 </div>
             </Reveal>
 
-            <div className="space-y-2.5">
-                {vendors.map((v, i) => (
-                    <Reveal key={v.partner_id} delay={i * 0.05}>
-                        <div className="card-surface flex items-center gap-4 p-4">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink font-display text-lg font-bold text-gold-light">
-                                {medals[i] || i + 1}
-                            </span>
-                            {v.logo_url ? (
-                                <img
-                                    src={v.logo_url}
-                                    alt={v.name}
-                                    className="h-10 w-10 shrink-0 rounded-xl object-cover"
-                                />
-                            ) : (
-                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-gold-light">
-                                    {v.name?.charAt(0) || '?'}
-                                </span>
-                            )}
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate font-display font-bold text-ink">{v.name || '—'}</p>
-                                <p className="font-mono text-[11px] text-slate">{v.total} transactions</p>
-                            </div>
+            <Reveal delay={0.05}>
+                <div className="card-surface divide-y divide-ink/5 p-4">
+                    {vendors.map((v, i) => (
+                        <div key={v.partner_id} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
+                            <span className="shrink-0 text-lg">{medals[i] || `${i + 1}.`}</span>
+                            <p className="truncate font-display text-sm font-bold text-ink">{v.name || '—'}</p>
+                            <span className="ml-auto shrink-0 font-mono text-[10px] text-slate">{v.total}</span>
                         </div>
-                    </Reveal>
-                ))}
-            </div>
+                    ))}
+                </div>
+            </Reveal>
         </section>
     );
 }
