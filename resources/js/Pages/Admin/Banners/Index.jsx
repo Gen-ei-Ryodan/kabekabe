@@ -50,7 +50,7 @@ function PopupSettings({ popup, promos = [] }) {
                 <div>
                     <label className="label" htmlFor="popup-image">Popup image (optional)</label>
                     <input id="popup-image" type="file" accept=".jpg,.jpeg,.png,.webp" className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper" onChange={(e) => form.setData((data) => ({ ...data, image: e.target.files[0] || null, remove_image: false }))} />
-                    <p className="mt-1.5 text-xs text-slate">JPG/PNG/WebP, max 2 MB. A wide image works best.</p>
+                    <p className="mt-1.5 text-xs text-slate">JPG/PNG/WebP, max 2 MB and 2000×2000px. Portrait or landscape is fine.</p>
                     {preview && <div className="mt-3 flex items-start gap-3"><img src={preview} alt="Popup preview" className="h-28 w-full max-w-sm rounded-xl border border-ink/10 object-cover" /><button type="button" onClick={() => form.setData((data) => ({ ...data, image: null, remove_image: true }))} className="btn-ghost text-xs">Remove</button></div>}
                     {form.errors.image && <p className="mt-1 text-xs text-ember">{form.errors.image}</p>}
                 </div>

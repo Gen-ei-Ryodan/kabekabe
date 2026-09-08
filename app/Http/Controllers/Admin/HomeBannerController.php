@@ -155,7 +155,7 @@ class HomeBannerController extends Controller
         $validated = $request->validate([
             'promo_id' => ['required', 'integer', Rule::exists('promos', 'id')],
             'is_active' => ['required', 'boolean'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=2000,max_height=2000'],
             'remove_image' => ['nullable', 'boolean'],
         ]);
 
