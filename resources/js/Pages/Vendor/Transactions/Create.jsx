@@ -69,10 +69,8 @@ export default function TransactionCreate({ member, is_completing = false }) {
 
     const submit = (e) => {
         e.preventDefault();
-        form.post(route('vendor.transactions.store'), {
-            preserveScroll: true,
-            transform: (data) => ({ ...data, member_code: member.member_code, scan_id: member.scan_id }),
-        });
+        form.transform((data) => ({ ...data, member_code: member.member_code, scan_id: member.scan_id }))
+            .post(route('vendor.transactions.store'), { preserveScroll: true });
     };
 
     const updateDiscount = (index, field, value) => {
