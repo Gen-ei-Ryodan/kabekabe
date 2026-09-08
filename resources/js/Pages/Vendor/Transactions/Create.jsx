@@ -248,9 +248,21 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                     ))}
                                     {errors.discounts && <p className="text-xs text-ember">{errors.discounts}</p>}
                                     <div className="grid gap-4 sm:grid-cols-3">
-                                        <div><label className="label" htmlFor="discount_percent">Total diskon (%) manual</label><input id="discount_percent" type="number" min="0" className="input" value={form.data.discount_percent} onChange={(e) => form.setData('discount_percent', e.target.value)} /></div>
-                                        <div><label className="label" htmlFor="discount_amount">Total diskon (Rp) manual</label><input id="discount_amount" type="number" min="0" className="input" value={form.data.discount_amount} onChange={(e) => form.setData('discount_amount', e.target.value)} /></div>
-                                        <div><label className="label" htmlFor="net_amount">Net sales (Rp) manual</label><input id="net_amount" type="number" min="0" className="input" value={form.data.net_amount} onChange={(e) => form.setData('net_amount', e.target.value)} /></div>
+                                        <div>
+                                            <label className="label" htmlFor="discount_percent">Total diskon (%) manual</label>
+                                            <input id="discount_percent" type="number" min="0" className="input" value={form.data.discount_percent} onChange={(e) => form.setData('discount_percent', e.target.value)} />
+                                            {errors.discount_percent && <p className="mt-1 text-xs text-ember">{errors.discount_percent}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="label" htmlFor="discount_amount">Total diskon (Rp) manual <span className="text-ember">*</span></label>
+                                            <input id="discount_amount" type="number" min="0" required className="input" value={form.data.discount_amount} onChange={(e) => form.setData('discount_amount', e.target.value)} />
+                                            {errors.discount_amount && <p className="mt-1 text-xs text-ember">{errors.discount_amount}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="label" htmlFor="net_amount">Net sales (Rp) manual <span className="text-ember">*</span></label>
+                                            <input id="net_amount" type="number" min="0" required className="input" value={form.data.net_amount} onChange={(e) => form.setData('net_amount', e.target.value)} />
+                                            {errors.net_amount && <p className="mt-1 text-xs text-ember">{errors.net_amount}</p>}
+                                        </div>
                                     </div>
                                 </div>
 
