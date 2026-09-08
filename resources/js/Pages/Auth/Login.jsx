@@ -24,7 +24,7 @@ export default function Login() {
         <>
             <Head title="Login" />
 
-            <div className="flex min-h-screen flex-col items-center bg-paper px-4 py-8 sm:justify-center sm:py-12">
+            <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8 sm:py-12">
                 <form
                     onSubmit={submit}
                     className="relative w-full max-w-3xl"
