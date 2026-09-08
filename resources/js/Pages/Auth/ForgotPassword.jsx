@@ -20,16 +20,19 @@ export default function ForgotPassword({ status }) {
         <>
             <Head title="Forgot Password" />
 
-            <div className="flex min-h-screen flex-col items-center bg-paper px-4 py-8 sm:justify-center sm:py-12">
+            <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8 sm:py-12">
                 <form onSubmit={submit} className="relative w-full max-w-3xl">
                     <div className="login-card relative overflow-hidden rounded-[28px] shadow-card">
-                        <img
-                            src="/bglogin.png"
-                            alt=""
-                            aria-hidden="true"
-                            className="block h-auto w-full select-none"
-                            draggable="false"
-                        />
+                        <picture>
+                            <source media="(max-width: 639px)" srcSet="/bgmobile.jpeg" />
+                            <img
+                                src="/bglogin.png"
+                                alt=""
+                                aria-hidden="true"
+                                className="block h-auto w-full select-none"
+                                draggable="false"
+                            />
+                        </picture>
 
                         <div className="absolute inset-0 p-6 sm:p-10 md:p-12">
                             <div className="absolute bottom-6 right-6 w-full max-w-xs space-y-4 sm:bottom-10 sm:right-10 sm:max-w-sm md:bottom-12 md:right-12">
@@ -58,24 +61,22 @@ export default function ForgotPassword({ status }) {
                                     />
                                     <InputError message={errors.email} className="mt-1 text-xs text-ember" />
                                 </div>
+
+                                <PrimaryButton className="w-full justify-center" disabled={processing}>
+                                    {processing ? 'Sending…' : 'Send Reset Link'}
+                                </PrimaryButton>
+
+                                <p className="text-center text-sm text-white/90">
+                                    Remember your password?{' '}
+                                    <Link
+                                        href={route('login')}
+                                        className="font-semibold text-white hover:underline"
+                                    >
+                                        Back to Login
+                                    </Link>
+                                </p>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="mx-auto mt-6 w-full max-w-xs sm:max-w-sm">
-                        <PrimaryButton className="w-full justify-center" disabled={processing}>
-                            {processing ? 'Sending…' : 'Send Reset Link'}
-                        </PrimaryButton>
-
-                        <p className="mt-4 text-center text-sm text-slate">
-                            Remember your password?{' '}
-                            <Link
-                                href={route('login')}
-                                className="font-semibold text-ink hover:text-gold-deep hover:underline"
-                            >
-                                Back to Login
-                            </Link>
-                        </p>
                     </div>
                 </form>
             </div>

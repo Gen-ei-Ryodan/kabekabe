@@ -87,6 +87,44 @@ export default function Login() {
                                         className="mt-1 text-xs text-ember"
                                     />
                                 </div>
+
+                                <PrimaryButton
+                                    className="w-full justify-center"
+                                    disabled={processing}
+                                >
+                                    {processing ? 'Signing in…' : 'Login'}
+                                </PrimaryButton>
+
+                                <div className="text-center">
+                                    <Link
+                                        href={route('password.request')}
+                                        className="text-sm font-bold text-white hover:text-white/80 hover:underline"
+                                    >
+                                        Forgot password?
+                                    </Link>
+                                </div>
+
+                                <p className="text-center text-sm text-white/90">
+                                    New Member?{' '}
+                                    <Link
+                                        href={route('register')}
+                                        className="font-semibold text-white hover:underline"
+                                    >
+                                        Register here
+                                    </Link>
+                                </p>
+
+                                <p className="text-center text-xs text-white/80">
+                                    Need help?{' '}
+                                    <a
+                                        href="https://wa.me/62811290689"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-semibold text-white hover:underline"
+                                    >
+                                        Contact Admin
+                                    </a>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -150,51 +188,49 @@ export default function Login() {
                                             className="mt-1 text-xs text-ember"
                                         />
                                     </div>
+
+                                    <PrimaryButton
+                                        className="w-full justify-center"
+                                        disabled={processing}
+                                    >
+                                        {processing ? 'Signing in…' : 'Login'}
+                                    </PrimaryButton>
+
+                                    <div className="text-center">
+                                        <Link
+                                            href={route('password.request')}
+                                            className="text-sm font-bold text-white hover:text-white/80 hover:underline"
+                                        >
+                                            Forgot password?
+                                        </Link>
+                                    </div>
+
+                                    <p className="text-center text-sm text-white/90">
+                                        New Member?{' '}
+                                        <Link
+                                            href={route('register')}
+                                            className="font-semibold text-white hover:underline"
+                                        >
+                                            Register here
+                                        </Link>
+                                    </p>
+
+                                    <p className="text-center text-xs text-white/80">
+                                        Need help?{' '}
+                                        <a
+                                            href="https://wa.me/62811290689"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="font-semibold text-white hover:underline"
+                                        >
+                                            Contact Admin
+                                        </a>
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Submit button + links */}
-                    <div className="mx-auto mt-6 w-full max-w-xs sm:max-w-sm">
-                        <PrimaryButton
-                            className="w-full justify-center"
-                            disabled={processing}
-                        >
-                            {processing ? 'Signing in…' : 'Login'}
-                        </PrimaryButton>
-
-                        <div className="mt-3 text-center">
-                            <Link
-                                href={route('password.request')}
-                                className="text-sm text-slate hover:text-ink hover:underline"
-                            >
-                                Forgot password?
-                            </Link>
-                        </div>
-
-                        <p className="mt-4 text-center text-sm text-slate">
-                            New Member?{' '}
-                            <Link
-                                href={route('register')}
-                                className="font-semibold text-ink hover:text-gold-deep hover:underline"
-                            >
-                                Register here
-                            </Link>
-                        </p>
-
-                        <p className="mt-3 text-center text-xs text-slate-soft">
-                            Need help?{' '}
-                            <a
-                                href="https://wa.me/62811290689"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-semibold text-ember hover:underline"
-                            >
-                                Contact Admin
-                            </a>
-                        </p>
-                    </div>
                 </form>
             </div>
         </>
