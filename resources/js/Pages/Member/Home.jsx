@@ -118,7 +118,7 @@ function PromoBanner({ promo, imageUrl }) {
                 </div>
             </div>
             {imageUrl && (
-                <div className="h-full w-24 shrink-0 overflow-hidden sm:w-32">
+                <div className="my-auto h-20 w-24 shrink-0 overflow-hidden sm:h-24 sm:w-32">
                     <img
                         src={imageUrl}
                         alt=""
