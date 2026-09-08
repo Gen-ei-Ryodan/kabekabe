@@ -124,6 +124,7 @@ class HomeBannerController extends Controller
 
         if ($activate && ! $banner->is_active) {
             $active = HomeBanner::query()
+                ->where('type', HomeBanner::TYPE_PROMO)
                 ->where('is_active', true)
                 ->where('id', '!=', $banner->id)
                 ->count();
@@ -225,7 +226,9 @@ class HomeBannerController extends Controller
         }
 
         if ($request->boolean('is_active')) {
-            $active = HomeBanner::query()->where('is_active', true);
+            $active = HomeBanner::query()
+                ->where('type', HomeBanner::TYPE_PROMO)
+                ->where('is_active', true);
 
             if ($banner !== null) {
                 $active->where('id', '!=', $banner->id);
