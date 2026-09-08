@@ -52,7 +52,7 @@ export default function AccountEdit({ account }) {
                                     </label>
                                     {errors.avatar && <p className="mt-1 text-xs text-ember">{errors.avatar}</p>}
                                     <p className="mt-1.5 text-[11px] text-slate-soft">
-                                        Use a clear face photo, 1:1 ratio, min 400×400px. Example: white background, shoulders up.
+                                        Choose a clear photo of your face so we can easily recognize you. A 1:1 image, at least 400×400px, works best.
                                     </p>
                                 </div>
                             </div>
