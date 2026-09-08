@@ -41,9 +41,9 @@ function PromoPopup({ open, onClose, popup }) {
     return (
         <Modal show={open} maxWidth="md" closeable={true} onClose={onClose}>
             <div className="overflow-hidden rounded-xl">
-                <div className="relative h-56 bg-ink sm:h-72">
+                <div className="relative flex min-h-56 max-h-[70vh] items-center justify-center overflow-hidden bg-ink sm:min-h-72">
                     {popup.image_url ? (
-                        <img src={popup.image_url} alt="" className="h-full w-full object-cover" />
+                        <img src={popup.image_url} alt="" className="block max-h-[70vh] max-w-full object-contain" />
                     ) : (
                         <div className="flex h-full items-center justify-center">
                             <span className="font-display text-6xl font-bold text-gold">🎉</span>
