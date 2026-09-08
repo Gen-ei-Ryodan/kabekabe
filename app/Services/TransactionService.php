@@ -22,7 +22,7 @@ class TransactionService
      *
      * @param  array{member: User, promo: Promo|null, total: int, note: ?string, proof: mixed}  $payload
      */
-    public function record(Partner $partner, User $member, ?Promo $promo, int $total, ?string $note = null, mixed $proofPath = null, ?string $transactionNumber = null, ?MemberScan $scan = null): Transaction
+    public function record(Partner $partner, User $member, ?Promo $promo, int $total, ?string $note = null, mixed $proofPath = null, ?string $transactionNumber = null, ?MemberScan $scan = null, ?string $promoName = null, array $discounts = [], ?int $discountPercent = null, int $discountAmount = 0, int $netAmount = 0): Transaction
     {
         if (! $this->memberships->isActive($member)) {
             throw new \DomainException('Member is inactive and cannot use benefits.');
@@ -52,24 +52,18 @@ class TransactionService
             throw new \DomainException('Promo is not registered with this partner.');
         }
 
-        $discountPercent = null;
-        $discountAmount = 0;
-
-        if ($promo !== null && $total >= $promo->min_purchase) {
-            $discountPercent = $promo->discount_type === Promo::TYPE_PERCENT ? $promo->discount_value : null;
-            $discountAmount = $promo->discountAmountFor($total);
-        }
-
-        $transaction = DB::transaction(function () use ($partner, $member, $promo, $total, $discountPercent, $discountAmount, $note, $proofPath, $transactionNumber, $activeScan) {
+        $transaction = DB::transaction(function () use ($partner, $member, $promo, $promoName, $discounts, $total, $discountPercent, $discountAmount, $netAmount, $note, $proofPath, $transactionNumber, $activeScan) {
             return $partner->transactions()->create([
                 'transaction_number' => $transactionNumber ?: $this->nextTransactionNumber(),
                 'member_id' => $member->id,
                 'member_scan_id' => $activeScan->id,
                 'promo_id' => $promo?->id,
+                'promo_name' => $promoName,
                 'total_amount' => $total,
                 'discount_percent' => $discountPercent,
                 'discount_amount' => $discountAmount,
-                'net_amount' => $total - $discountAmount,
+                'discounts' => $discounts,
+                'net_amount' => $netAmount,
                 'note' => $note,
                 'proof_path' => $proofPath,
                 'transacted_at' => now(),

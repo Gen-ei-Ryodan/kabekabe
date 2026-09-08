@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'transaction_number', 'partner_id', 'member_id', 'member_scan_id', 'promo_id', 'total_amount',
-    'discount_percent', 'discount_amount', 'net_amount', 'note', 'proof_path', 'transacted_at',
+    'transaction_number', 'partner_id', 'member_id', 'member_scan_id', 'promo_id', 'promo_name', 'total_amount',
+    'discount_percent', 'discount_amount', 'discounts', 'net_amount', 'note', 'proof_path', 'transacted_at',
 ])]
 class Transaction extends Model
 {
@@ -22,6 +22,7 @@ class Transaction extends Model
     {
         return [
             'transacted_at' => 'datetime',
+            'discounts' => 'array',
         ];
     }
 

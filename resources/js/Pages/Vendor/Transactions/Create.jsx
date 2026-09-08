@@ -5,7 +5,7 @@ import VendorLayout from '@/Layouts/VendorLayout';
 import StatusChip from '@/Components/StatusChip';
 import Avatar from '@/Components/Avatar';
 
-export default function TransactionCreate({ promos, member, is_completing = false }) {
+export default function TransactionCreate({ member, is_completing = false }) {
     const { errors } = usePage().props;
 
     const [manualQuery, setManualQuery] = useState('');
@@ -13,23 +13,17 @@ export default function TransactionCreate({ promos, member, is_completing = fals
 
     const form = useForm({
         transaction_number: '',
-        promo_id: '',
+        promo_name: '',
         total: '',
+        discount_percent: '',
+        discount_amount: '',
+        net_amount: '',
+        discounts: [{ description: '', amount: '' }],
         note: '',
         proof: null,
     });
 
     const verified = member?.found && member.active;
-
-    const selectedPromo = promos.find((p) => String(p.id) === String(form.data.promo_id)) || null;
-
-    const preview = selectedPromo && form.data.total
-        ? selectedPromo.discount_type === 'percent'
-            ? Math.round(Number(form.data.total) * selectedPromo.discount_value / 100)
-            : Math.min(selectedPromo.discount_value, Number(form.data.total))
-        : 0;
-
-    const net = form.data.total ? Number(form.data.total) - preview : 0;
 
     const checkMember = (value) => {
         const token = String(value || '').trim();
@@ -79,6 +73,11 @@ export default function TransactionCreate({ promos, member, is_completing = fals
             preserveScroll: true,
             transform: (data) => ({ ...data, member_code: member.member_code, scan_id: member.scan_id }),
         });
+    };
+
+    const updateDiscount = (index, field, value) => {
+        const discounts = form.data.discounts.map((discount, i) => i === index ? { ...discount, [field]: value } : discount);
+        form.setData('discounts', discounts);
     };
 
     return (
@@ -221,16 +220,9 @@ export default function TransactionCreate({ promos, member, is_completing = fals
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="promo_id">Promo used</label>
-                                    <select id="promo_id" className="input" value={form.data.promo_id} onChange={(e) => form.setData('promo_id', e.target.value)}>
-                                        <option value="">No promo</option>
-                                        {promos.map((promo) => (
-                                            <option key={promo.id} value={promo.id}>
-                                                {promo.title}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.promo_id && <p className="mt-1 text-xs text-ember">{errors.promo_id}</p>}
+                                    <label className="label" htmlFor="promo_name">Promo / benefit (manual)</label>
+                                    <input id="promo_name" type="text" className="input" value={form.data.promo_name} onChange={(e) => form.setData('promo_name', e.target.value)} placeholder="Tulis nama promo atau benefit" />
+                                    {errors.promo_name && <p className="mt-1 text-xs text-ember">{errors.promo_name}</p>}
                                 </div>
 
                                 <div>
@@ -239,21 +231,28 @@ export default function TransactionCreate({ promos, member, is_completing = fals
                                     {errors.total && <p className="mt-1 text-xs text-ember">{errors.total}</p>}
                                 </div>
 
-                                {selectedPromo && (
-                                    <div className="rounded-xl border border-gold/30 bg-gold/10 p-4">
-                                        <p className="eyebrow">Summary</p>
-                                        <div className="mt-2 space-y-1 text-sm">
-                                            <div className="flex justify-between"><span>Total purchase</span><span className="font-semibold">Rp{Number(form.data.total || 0).toLocaleString('id-ID')}</span></div>
-                                            <div className="flex justify-between text-sage">
-                                                <span>Discount ({selectedPromo.discount_type === 'percent' ? `${selectedPromo.discount_value}%` : 'nominal'})</span>
-                                                <span>-Rp{preview.toLocaleString('id-ID')}</span>
-                                            </div>
-                                            <div className="flex justify-between border-t border-gold/20 pt-1 font-bold">
-                                                <span>Net sales</span><span>Rp{net.toLocaleString('id-ID')}</span>
-                                            </div>
+                                <div className="space-y-4 rounded-xl border border-gold/30 bg-gold/10 p-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="eyebrow">Diskon manual</p>
+                                            <p className="mt-1 text-xs text-slate">Isi semua angka secara manual. Sistem tidak menghitung otomatis.</p>
                                         </div>
+                                        <button type="button" className="btn-ghost shrink-0 text-xs" onClick={() => form.setData('discounts', [...form.data.discounts, { description: '', amount: '' }])}>++ Tambah</button>
                                     </div>
-                                )}
+                                    {form.data.discounts.map((discount, index) => (
+                                        <div key={index} className="grid gap-3 sm:grid-cols-[1fr_10rem_auto]">
+                                            <input type="text" className="input" value={discount.description} onChange={(e) => updateDiscount(index, 'description', e.target.value)} placeholder={`Diskon ${index + 1}`} />
+                                            <input type="number" min="0" className="input" value={discount.amount} onChange={(e) => updateDiscount(index, 'amount', e.target.value)} placeholder="Nominal Rp" />
+                                            {form.data.discounts.length > 1 && <button type="button" className="btn-ghost" onClick={() => form.setData('discounts', form.data.discounts.filter((_, i) => i !== index))}>Hapus</button>}
+                                        </div>
+                                    ))}
+                                    {errors.discounts && <p className="text-xs text-ember">{errors.discounts}</p>}
+                                    <div className="grid gap-4 sm:grid-cols-3">
+                                        <div><label className="label" htmlFor="discount_percent">Total diskon (%) manual</label><input id="discount_percent" type="number" min="0" className="input" value={form.data.discount_percent} onChange={(e) => form.setData('discount_percent', e.target.value)} /></div>
+                                        <div><label className="label" htmlFor="discount_amount">Total diskon (Rp) manual</label><input id="discount_amount" type="number" min="0" className="input" value={form.data.discount_amount} onChange={(e) => form.setData('discount_amount', e.target.value)} /></div>
+                                        <div><label className="label" htmlFor="net_amount">Net sales (Rp) manual</label><input id="net_amount" type="number" min="0" className="input" value={form.data.net_amount} onChange={(e) => form.setData('net_amount', e.target.value)} /></div>
+                                    </div>
+                                </div>
 
                                 <div>
                                     <label className="label" htmlFor="note">Notes (optional)</label>

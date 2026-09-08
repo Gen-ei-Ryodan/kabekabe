@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\MemberScan;
-use App\Models\Promo;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\TransactionService;
@@ -71,14 +70,6 @@ class TransactionController extends Controller
 
         abort_if($partner === null, 403);
 
-        $promos = Promo::query()
-            ->where('partner_id', $partner->id)
-            ->where('status', Promo::STATUS_APPROVED)
-            ->where('is_active', true)
-            ->where('start_date', '<=', now()->toDateString())
-            ->where('end_date', '>=', now()->toDateString())
-            ->get();
-
         $scan = $request->string('scan')->toString() ?: $request->string('member_code')->toString();
 
         $member = $this->resolveScannedMember($scan);
@@ -100,7 +91,6 @@ class TransactionController extends Controller
         }
 
         return Inertia::render('Vendor/Transactions/Create', [
-            'promos' => $promos,
             'member' => $member,
             'is_completing' => $request->filled('scan_id'),
         ]);
@@ -181,10 +171,6 @@ class TransactionController extends Controller
             ? MemberScan::query()->whereKey($request->integer('scan_id'))->firstOrFail()
             : null;
 
-        $promo = $request->filled('promo_id')
-            ? Promo::query()->where('partner_id', $partner->id)->findOrFail($request->integer('promo_id'))
-            : null;
-
         $proofPath = null;
 
         if ($request->hasFile('proof')) {
@@ -195,12 +181,17 @@ class TransactionController extends Controller
             $this->transactions->record(
                 $partner,
                 $member,
-                $promo,
+                null,
                 $request->integer('total'),
                 $request->input('note'),
                 $proofPath,
                 $request->input('transaction_number'),
                 $scan,
+                $request->input('promo_name'),
+                $request->input('discounts', []),
+                $request->input('discount_percent'),
+                $request->integer('discount_amount'),
+                $request->integer('net_amount'),
             );
         } catch (\DomainException $e) {
             if ($proofPath) {
