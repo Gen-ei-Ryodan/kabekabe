@@ -21,7 +21,7 @@ class HomeController extends Controller
         $user->ensureCardToken();
         $user->ensureMemberCode();
 
-        $vendorRanking = Transaction::query()
+        $vendorRankingByCount = Transaction::query()
             ->select('partner_id', DB::raw('COUNT(*) as total'))
             ->groupBy('partner_id')
             ->orderBy('total', 'desc')
@@ -32,7 +32,21 @@ class HomeController extends Controller
                 'partner_id' => $t->partner_id,
                 'name' => $t->partner?->name,
                 'logo_url' => $t->partner?->logo_url,
-                'total' => $t->total,
+                'total' => (int) $t->total,
+            ]);
+
+        $vendorRankingByAmount = Transaction::query()
+            ->select('partner_id', DB::raw('SUM(total_amount) as total_amount'))
+            ->groupBy('partner_id')
+            ->orderBy('total_amount', 'desc')
+            ->limit(5)
+            ->with('partner:id,name,logo')
+            ->get()
+            ->map(fn (Transaction $t) => [
+                'partner_id' => $t->partner_id,
+                'name' => $t->partner?->name,
+                'logo_url' => $t->partner?->logo_url,
+                'total_amount' => (int) $t->total_amount,
             ]);
 
         return Inertia::render('Member/Home', [
@@ -50,7 +64,9 @@ class HomeController extends Controller
                 'expires_at_full' => $user->membership?->expires_at?->toISOString(),
                 'is_expiring_soon' => $user->membership?->isExpiringSoon(),
             ],
-            'vendor_ranking' => $vendorRanking,
+            'vendor_ranking' => $vendorRankingByCount,
+            'vendor_ranking_by_count' => $vendorRankingByCount,
+            'vendor_ranking_by_amount' => $vendorRankingByAmount,
             'banners' => HomeBanner::query()
                 ->active()
                 ->where('type', HomeBanner::TYPE_PROMO)

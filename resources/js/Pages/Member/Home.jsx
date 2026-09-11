@@ -7,27 +7,72 @@ import Reveal from '@/Components/Reveal';
 import Modal from '@/Components/Modal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
-function VendorRanking({ vendors }) {
+function RankingCard({ title, subtitle, items, valueKey, formatValue, emptyText }) {
     const medals = ['🥇', '🥈', '🥉'];
+
+    return (
+        <div className="card-surface flex flex-col p-4 sm:p-5">
+            <div className="flex items-center justify-between border-b border-ink/5 pb-3">
+                <div>
+                    <h4 className="font-display text-sm font-bold text-ink sm:text-base">{title}</h4>
+                    {subtitle && <p className="font-mono text-[10px] uppercase tracking-wider text-slate">{subtitle}</p>}
+                </div>
+            </div>
+
+            <div className="divide-y divide-ink/5 pt-1">
+                {items && items.length > 0 ? (
+                    items.map((v, i) => (
+                        <div key={v.partner_id || i} className="flex items-center gap-3 py-2.5 first:pt-2 last:pb-0">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center font-display text-base">
+                                {medals[i] || `${i + 1}.`}
+                            </span>
+                            <p className="truncate font-display text-sm font-bold text-ink" title={v.name}>
+                                {v.name || '—'}
+                            </p>
+                            <span className="ml-auto shrink-0 font-mono text-xs font-semibold text-ink">
+                                {formatValue ? formatValue(v[valueKey]) : v[valueKey]}
+                            </span>
+                        </div>
+                    ))
+                ) : (
+                    <p className="py-4 text-center text-xs italic text-slate">{emptyText || 'Belum ada data'}</p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function VendorRanking({ byCount = [], byAmount = [] }) {
+    const hasData = (byCount && byCount.length > 0) || (byAmount && byAmount.length > 0);
+    if (!hasData) return null;
 
     return (
         <section aria-label="Vendor Ranking" className="flex flex-col gap-3">
             <Reveal>
                 <div className="flex items-center gap-3">
-                    <p className="eyebrow">Congratulation</p>
+                    <p className="eyebrow">Top Vendor Ranking</p>
                     <span aria-hidden="true" className="h-px flex-1 bg-ink/10" />
                 </div>
             </Reveal>
 
             <Reveal delay={0.05}>
-                <div className="card-surface divide-y divide-ink/5 p-4">
-                    {vendors.map((v, i) => (
-                        <div key={v.partner_id} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
-                            <span className="shrink-0 text-lg">{medals[i] || `${i + 1}.`}</span>
-                            <p className="truncate font-display text-sm font-bold text-ink">{v.name || '—'}</p>
-                            <span className="ml-auto shrink-0 font-mono text-[10px] text-slate">{v.total}</span>
-                        </div>
-                    ))}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <RankingCard
+                        title="Jumlah Transaksi"
+                        subtitle="Berdasarkan Frekuensi"
+                        items={byCount}
+                        valueKey="total"
+                        formatValue={(val) => `${val} transaksi`}
+                        emptyText="Belum ada transaksi"
+                    />
+                    <RankingCard
+                        title="Rupiah Pembelanjaan"
+                        subtitle="Berdasarkan Nominal"
+                        items={byAmount}
+                        valueKey="total_amount"
+                        formatValue={(val) => formatRupiah(val)}
+                        emptyText="Belum ada pembelanjaan"
+                    />
                 </div>
             </Reveal>
         </section>
@@ -290,12 +335,23 @@ function BannerZone({ banners, agendas }) {
     );
 }
 
-export default function Home({ member, banners = [], agendas = [], vendor_ranking = [], popup = null }) {
+export default function Home({
+    member,
+    banners = [],
+    agendas = [],
+    vendor_ranking = [],
+    vendor_ranking_by_count = [],
+    vendor_ranking_by_amount = [],
+    popup = null,
+}) {
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
     const firstName = (member?.name || '').split(' ')[0];
     const bannerList = Array.isArray(banners) ? banners : [];
+
+    const countRanking = vendor_ranking_by_count?.length > 0 ? vendor_ranking_by_count : vendor_ranking;
+    const amountRanking = vendor_ranking_by_amount || [];
 
     const [popupOpen, setPopupOpen] = useState(false);
 
@@ -322,9 +378,7 @@ export default function Home({ member, banners = [], agendas = [], vendor_rankin
                     <MemberCard member={member} />
                 </section>
 
-                {vendor_ranking.length > 0 && (
-                    <VendorRanking vendors={vendor_ranking} />
-                )}
+                <VendorRanking byCount={countRanking} byAmount={amountRanking} />
 
                 {(bannerList.length > 0 || agendas.length > 0) && <BannerZone banners={bannerList} agendas={agendas} />}
             </div>
