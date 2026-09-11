@@ -11,31 +11,39 @@ function RankingCard({ title, subtitle, items, valueKey, formatValue, emptyText 
     const medals = ['🥇', '🥈', '🥉'];
 
     return (
-        <div className="card-surface flex flex-col p-4 sm:p-5">
-            <div className="flex items-center justify-between border-b border-ink/5 pb-3">
-                <div>
-                    <h4 className="font-display text-sm font-bold text-ink sm:text-base">{title}</h4>
-                    {subtitle && <p className="font-mono text-[10px] uppercase tracking-wider text-slate">{subtitle}</p>}
-                </div>
+        <div className="card-surface flex flex-col p-2.5 sm:p-4">
+            <div className="flex flex-col border-b border-ink/5 pb-2 sm:pb-3">
+                <h4 className="truncate font-display text-xs font-bold leading-tight text-ink sm:text-base" title={title}>
+                    {title}
+                </h4>
+                {subtitle && (
+                    <p className="mt-0.5 truncate font-mono text-[8px] uppercase tracking-wider text-slate sm:text-[10px]">
+                        {subtitle}
+                    </p>
+                )}
             </div>
 
             <div className="divide-y divide-ink/5 pt-1">
                 {items && items.length > 0 ? (
                     items.map((v, i) => (
-                        <div key={v.partner_id || i} className="flex items-center gap-3 py-2.5 first:pt-2 last:pb-0">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center font-display text-base">
+                        <div key={v.partner_id || i} className="flex items-center gap-1.5 py-1.5 first:pt-1.5 last:pb-0 sm:gap-3 sm:py-2.5">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs sm:h-7 sm:w-7 sm:text-base">
                                 {medals[i] || `${i + 1}.`}
                             </span>
-                            <p className="truncate font-display text-sm font-bold text-ink" title={v.name}>
+                            <p className="min-w-0 flex-1 truncate font-display text-[11px] font-bold text-ink sm:text-sm" title={v.name}>
                                 {v.name || '—'}
                             </p>
-                            <span className="ml-auto shrink-0 font-mono text-xs font-semibold text-ink">
-                                {formatValue ? formatValue(v[valueKey]) : v[valueKey]}
-                            </span>
+                            <div className="shrink-0">
+                                {formatValue ? formatValue(v[valueKey]) : (
+                                    <span className="font-mono text-[10px] font-semibold text-ink sm:text-xs">
+                                        {v[valueKey]}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     ))
                 ) : (
-                    <p className="py-4 text-center text-xs italic text-slate">{emptyText || 'Belum ada data'}</p>
+                    <p className="py-3 text-center text-[10px] italic text-slate sm:text-xs">{emptyText || 'Belum ada data'}</p>
                 )}
             </div>
         </div>
@@ -47,31 +55,39 @@ function VendorRanking({ byCount = [], byAmount = [] }) {
     if (!hasData) return null;
 
     return (
-        <section aria-label="Vendor Ranking" className="flex flex-col gap-3">
+        <section aria-label="Vendor Ranking" className="flex flex-col gap-2.5 sm:gap-3">
             <Reveal>
-                <div className="flex items-center gap-3">
-                    <p className="eyebrow">Top Vendor Ranking</p>
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <p className="eyebrow text-[9px] sm:text-xs">Top Vendor Ranking</p>
                     <span aria-hidden="true" className="h-px flex-1 bg-ink/10" />
                 </div>
             </Reveal>
 
             <Reveal delay={0.05}>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <RankingCard
                         title="Jumlah Transaksi"
                         subtitle="Berdasarkan Frekuensi"
                         items={byCount}
                         valueKey="total"
-                        formatValue={(val) => `${val} transaksi`}
+                        formatValue={(val) => (
+                            <span className="rounded bg-gold/10 px-1 py-0.5 font-mono text-[10px] font-semibold text-gold-dark sm:px-2 sm:text-xs">
+                                {val} <span className="text-[8px] font-normal text-slate sm:text-[10px]">trx</span>
+                            </span>
+                        )}
                         emptyText="Belum ada transaksi"
                     />
                     <RankingCard
-                        title="Rupiah Pembelanjaan"
+                        title="Rupiah Belanja"
                         subtitle="Berdasarkan Nominal"
                         items={byAmount}
                         valueKey="total_amount"
-                        formatValue={(val) => formatRupiah(val)}
-                        emptyText="Belum ada pembelanjaan"
+                        formatValue={(val) => (
+                            <span className="font-mono text-[10px] font-semibold text-ink sm:text-xs">
+                                {formatRupiah(val)}
+                            </span>
+                        )}
+                        emptyText="Belum ada belanja"
                     />
                 </div>
             </Reveal>
