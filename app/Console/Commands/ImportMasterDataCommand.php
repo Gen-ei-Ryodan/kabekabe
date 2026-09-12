@@ -66,22 +66,23 @@ class ImportMasterDataCommand extends Command
 
                 $rowCount++;
                 $email = strtolower($rawEmail);
-                $nickname = isset($row[4]) ? trim($row[4]) : null;
-                $gender = isset($row[5]) ? trim($row[5]) : null;
+                $name = Str::limit($name, 255, '');
+                $nickname = isset($row[4]) && trim($row[4]) !== '' ? Str::limit(trim($row[4]), 100, '') : null;
+                $gender = isset($row[5]) && trim($row[5]) !== '' ? Str::limit(trim($row[5]), 50, '') : null;
                 $birthDateRaw = isset($row[6]) ? trim($row[6]) : '';
                 $birthDate = $this->parseBirthDate($birthDateRaw);
-                $birthPlace = isset($row[10]) ? trim($row[10]) : null;
-                $maritalStatus = isset($row[12]) ? trim($row[12]) : null;
-                $placeOfWorship = isset($row[13]) ? trim($row[13]) : null;
-                $religion = isset($row[14]) ? trim($row[14]) : null;
+                $birthPlace = isset($row[10]) && trim($row[10]) !== '' ? Str::limit(trim($row[10]), 100, '') : null;
+                $maritalStatus = isset($row[12]) && trim($row[12]) !== '' ? Str::limit(trim($row[12]), 50, '') : null;
+                $placeOfWorship = isset($row[13]) && trim($row[13]) !== '' ? trim($row[13]) : null;
+                $religion = isset($row[14]) && trim($row[14]) !== '' ? Str::limit(trim($row[14]), 100, '') : null;
 
-                $phone = isset($row[15]) ? trim($row[15]) : null;
-                $whatsapp = isset($row[16]) ? trim($row[16]) : ($phone ?: null);
-                $address = isset($row[18]) ? trim($row[18]) : null;
-                $district = isset($row[19]) ? trim($row[19]) : null;
-                $city = isset($row[20]) ? trim($row[20]) : null;
+                $phone = isset($row[15]) && trim($row[15]) !== '' ? Str::limit(trim($row[15]), 30, '') : null;
+                $whatsapp = isset($row[16]) && trim($row[16]) !== '' ? Str::limit(trim($row[16]), 30, '') : ($phone ?: null);
+                $address = isset($row[18]) && trim($row[18]) !== '' ? trim($row[18]) : null;
+                $district = isset($row[19]) && trim($row[19]) !== '' ? Str::limit(trim($row[19]), 100, '') : null;
+                $city = isset($row[20]) && trim($row[20]) !== '' ? Str::limit(trim($row[20]), 100, '') : null;
 
-                $company = isset($row[30]) ? trim($row[30]) : null;
+                $company = isset($row[30]) && trim($row[30]) !== '' ? trim($row[30]) : null;
                 $businessFieldsRaw = isset($row[32]) ? trim($row[32]) : '';
                 $businessFields = $this->parseArrayField($businessFieldsRaw);
 
