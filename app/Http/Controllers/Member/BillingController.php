@@ -29,7 +29,7 @@ class BillingController extends Controller
                     'price' => number_format($membership->plan->price, 0, ',', '.'),
                 ] : null,
             ],
-            'admin_fee' => (int) config('services.doku.admin_fee', 4500),
+            'admin_fee' => (int) config('services.doku.admin_fee', 0),
             'plans' => \App\Models\MembershipPlan::where('is_active', true)
                 ->orderBy('duration_months')
                 ->get()

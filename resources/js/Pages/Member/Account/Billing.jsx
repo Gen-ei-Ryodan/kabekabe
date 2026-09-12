@@ -21,7 +21,7 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
     const planPrice = selectedPlan
         ? (selectedPlan.price_raw ?? parseInt(String(selectedPlan.price).replace(/\D/g, ''), 10))
         : 100000;
-    const gatewayFee = Number(admin_fee) || 4500;
+    const gatewayFee = admin_fee !== undefined && admin_fee !== null ? Number(admin_fee) : 0;
     const totalBill = planPrice + gatewayFee;
 
     // Clean up polling interval
@@ -345,24 +345,43 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                                 </div>
                             </div>
 
-                            {/* Rincian Biaya Transparan (Pass-Through Fee) */}
+                            {/* Rincian Biaya Transparan */}
                             <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between text-slate-600">
                                         <span>Biaya Membership ({selectedPlan?.name || '-'})</span>
                                         <span className="font-medium text-slate-900">Rp{planPrice.toLocaleString('id-ID')}</span>
                                     </div>
-                                    <div className="flex justify-between text-slate-600">
-                                        <span>Biaya Layanan Gateway</span>
-                                        <span className="font-medium text-slate-900">Rp{gatewayFee.toLocaleString('id-ID')}</span>
-                                    </div>
-                                    <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
-                                        <span>Total Tagihan</span>
-                                        <span className="font-mono text-lg text-gold">Rp{totalBill.toLocaleString('id-ID')}</span>
-                                    </div>
+                                    {gatewayFee > 0 ? (
+                                        <>
+                                            <div className="flex justify-between text-slate-600">
+                                                <span>Biaya Layanan Gateway</span>
+                                                <span className="font-medium text-slate-900">Rp{gatewayFee.toLocaleString('id-ID')}</span>
+                                            </div>
+                                            <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
+                                                <span>Total Tagihan</span>
+                                                <span className="font-mono text-lg text-gold">Rp{totalBill.toLocaleString('id-ID')}</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between text-slate-600">
+                                                <span>Biaya Admin / Channel</span>
+                                                <span className="font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-xs">
+                                                    Ditanggung Pembeli (DOKU Checkout)
+                                                </span>
+                                            </div>
+                                            <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
+                                                <span>Total Tagihan Pokok</span>
+                                                <span className="font-mono text-lg text-gold">Rp{planPrice.toLocaleString('id-ID')}</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                                 <p className="mt-2 text-[11px] text-slate-400 italic">
-                                    *Biaya layanan gateway dibebankan ke pembeli untuk memproses transaksi secara instan & otomatis.
+                                    {gatewayFee > 0
+                                        ? '*Biaya layanan gateway dibebankan ke pembeli untuk memproses transaksi secara instan & otomatis.'
+                                        : '*Biaya transaksi/admin channel pembayaran akan dihitung dan ditambahkan otomatis pada halaman DOKU Checkout sesuai metode pembayaran pilihan Anda.'}
                                 </p>
                             </div>
 

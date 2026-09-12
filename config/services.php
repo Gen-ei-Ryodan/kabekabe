@@ -46,7 +46,7 @@ return [
         'checkout_js_url' => env('DOKU_ENVIRONMENT') === 'production'
             ? 'https://jokul.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js'
             : 'https://sandbox.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js',
-        'admin_fee' => (int) env('DOKU_ADMIN_FEE', 4500),
+        'admin_fee' => (int) env('DOKU_ADMIN_FEE', 0),
     ],
 
 ];
