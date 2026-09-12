@@ -5,7 +5,7 @@ import Reveal from '@/Components/Reveal';
 import StatusChip from '@/Components/StatusChip';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-export default function Billing({ membership, plans }) {
+export default function Billing({ membership, plans, admin_fee = 4500 }) {
     const isActive = membership.status === 'active';
     const [selectedPlanId, setSelectedPlanId] = useState(plans[0]?.id || null);
     const [paymentChannel, setPaymentChannel] = useState('all'); // 'all' for DOKU Checkout, or 'bca', 'mandiri', 'bri'
@@ -15,6 +15,14 @@ export default function Billing({ membership, plans }) {
     const [vaDetails, setVaDetails] = useState(null);
     const [copied, setCopied] = useState(false);
     const pollingRef = useRef(null);
+
+    // Selected plan calculations
+    const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[0];
+    const planPrice = selectedPlan
+        ? (selectedPlan.price_raw ?? parseInt(String(selectedPlan.price).replace(/\D/g, ''), 10))
+        : 100000;
+    const gatewayFee = Number(admin_fee) || 4500;
+    const totalBill = planPrice + gatewayFee;
 
     // Clean up polling interval
     useEffect(() => {
@@ -149,7 +157,7 @@ export default function Billing({ membership, plans }) {
                                     </div>
                                     <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
                                         <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Durasi</p>
-                                        <p className="mt-1 font-display text-lg font-bold text-slate-900">{membership.plan.duration_months} Bulan</p>
+                                        <p className="mt-1 font-display text-lg font-bold text-slate-900">{membership.plan.duration_months} Bulan ({membership.plan.duration_months * 30} Hari)</p>
                                     </div>
                                     <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
                                         <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Biaya Langganan</p>
@@ -186,6 +194,16 @@ export default function Billing({ membership, plans }) {
                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                     Instant Verification
                                 </span>
+                            </div>
+
+                            {/* Info Non-Reset Waktu */}
+                            <div className="mt-4 rounded-xl border border-amber-200/80 bg-amber-50/60 p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
+                                <svg className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <span className="font-semibold">Aturan Masa Aktif (30 Hari per Bulan):</span> Jika kartu Anda masih aktif, perpanjangan akan otomatis menambah hari dari tanggal kedaluwarsa sebelumnya. Sisa hari aktif Anda <strong>tidak akan hangus</strong>.
+                                </div>
                             </div>
 
                             {/* Error Alert */}
@@ -262,7 +280,7 @@ export default function Billing({ membership, plans }) {
                                 </div>
                             )}
 
-                            {/* Pilihan Paket Membership */}
+                            {/* 1. Pilihan Paket Membership */}
                             <div className="mt-6">
                                 <label className="mb-3 block text-sm font-semibold text-slate-800">
                                     1. Pilih Durasi Langganan:
@@ -295,7 +313,7 @@ export default function Billing({ membership, plans }) {
                                 </div>
                             </div>
 
-                            {/* Pilihan Metode Bayar */}
+                            {/* 2. Pilihan Metode Bayar */}
                             <div className="mt-6">
                                 <label className="mb-3 block text-sm font-semibold text-slate-800">
                                     2. Pilih Metode Pembayaran:
@@ -327,6 +345,27 @@ export default function Billing({ membership, plans }) {
                                 </div>
                             </div>
 
+                            {/* Rincian Biaya Transparan (Pass-Through Fee) */}
+                            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between text-slate-600">
+                                        <span>Biaya Membership ({selectedPlan?.name || '-'})</span>
+                                        <span className="font-medium text-slate-900">Rp{planPrice.toLocaleString('id-ID')}</span>
+                                    </div>
+                                    <div className="flex justify-between text-slate-600">
+                                        <span>Biaya Layanan Gateway</span>
+                                        <span className="font-medium text-slate-900">Rp{gatewayFee.toLocaleString('id-ID')}</span>
+                                    </div>
+                                    <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
+                                        <span>Total Tagihan</span>
+                                        <span className="font-mono text-lg text-gold">Rp{totalBill.toLocaleString('id-ID')}</span>
+                                    </div>
+                                </div>
+                                <p className="mt-2 text-[11px] text-slate-400 italic">
+                                    *Biaya layanan gateway dibebankan ke pembeli untuk memproses transaksi secara instan & otomatis.
+                                </p>
+                            </div>
+
                             {/* Tombol Eksekusi Bayar */}
                             <div className="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <div className="text-xs text-slate-500">
@@ -351,7 +390,7 @@ export default function Billing({ membership, plans }) {
                                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                             </svg>
-                                            Bayar Sekarang via DOKU
+                                            Bayar Rp{totalBill.toLocaleString('id-ID')} via DOKU
                                         </span>
                                     )}
                                 </PrimaryButton>

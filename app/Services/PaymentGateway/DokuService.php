@@ -39,6 +39,27 @@ class DokuService
         $customerPhone = $this->formatPhoneNumber($payment->member?->phone);
         $planName = $payment->plan?->name ?? "Paket {$payment->period_months} Bulan";
 
+        $planPrice = (int) ($payment->plan?->price ?? $payment->amount);
+        $adminFee = max(0, (int) $payment->amount - $planPrice);
+
+        $lineItems = [
+            [
+                'id' => 'PLAN-' . ($payment->plan_id ?? 'SUB'),
+                'name' => 'Langganan Membership KBKB - ' . $planName,
+                'quantity' => 1,
+                'price' => $planPrice,
+            ],
+        ];
+
+        if ($adminFee > 0) {
+            $lineItems[] = [
+                'id' => 'FEE-ADMIN',
+                'name' => 'Biaya Layanan Gateway Pembayaran',
+                'quantity' => 1,
+                'price' => $adminFee,
+            ];
+        }
+
         $body = [
             'order' => [
                 'amount' => (int) $payment->amount,
@@ -46,14 +67,7 @@ class DokuService
                 'currency' => 'IDR',
                 'callback_url' => route('member.billing.index'),
                 'auto_redirect' => true,
-                'line_items' => [
-                    [
-                        'id' => 'PLAN-' . ($payment->plan_id ?? 'SUB'),
-                        'name' => 'Langganan Membership KBKB - ' . $planName,
-                        'quantity' => 1,
-                        'price' => (int) $payment->amount,
-                    ],
-                ],
+                'line_items' => $lineItems,
             ],
             'payment' => [
                 'payment_due_date' => 60, // menit
@@ -312,5 +326,13 @@ class DokuService
         }
 
         return $digits;
+    }
+
+    /**
+     * Get configured payment gateway admin fee to pass through to customer.
+     */
+    public function getAdminFee(): int
+    {
+        return (int) config('services.doku.admin_fee', 4500);
     }
 }
