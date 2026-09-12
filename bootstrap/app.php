@@ -24,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('web', \App\Http\Middleware\SecurityHeaders::class);
 
+        $middleware->validateCsrfTokens(except: [
+            'api/doku/*',
+        ]);
+
         $middleware->trustProxies(at: ['*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -30,7 +30,7 @@ class PaymentService
         return $payment;
     }
 
-    public function approve(Payment $payment, User $admin, ?string $notes = null): Payment
+    public function approve(Payment $payment, ?User $admin = null, ?string $notes = null): Payment
     {
         return DB::transaction(function () use ($payment, $admin, $notes) {
             $member = $payment->member;
@@ -43,7 +43,7 @@ class PaymentService
 
             $payment->forceFill([
                 'status' => Payment::STATUS_APPROVED,
-                'approved_by' => $admin->id,
+                'approved_by' => $admin?->id,
                 'approved_at' => now(),
                 'notes' => $notes,
                 'previous_expires_at' => $previous,

@@ -15,6 +15,7 @@
         @routes
         @viteReactRefresh
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
+        <script src="{{ config('services.doku.checkout_js_url', 'https://sandbox.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js') }}"></script>
         @inertiaHead
     </head>
     <body class="font-sans antialiased bg-paper text-ink selection:bg-gold/25">

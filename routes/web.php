@@ -60,6 +60,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/account', [AccountController::class, 'update'])->name('account.update');
 
         Route::get('/billing', [\App\Http\Controllers\Member\BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/doku/checkout', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkout'])->name('billing.doku.checkout');
+        Route::get('/billing/doku/{payment}/status', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkStatus'])->name('billing.doku.status');
     });
 
     // ---------- VENDOR ----------
@@ -163,5 +165,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports', AdminReportController::class)->name('reports.index');
     });
 });
+
+// ---------- DOKU WEBHOOK ----------
+Route::post('/api/doku/notifications', [\App\Http\Controllers\Member\DokuPaymentController::class, 'notification'])->name('doku.notification');
 
 require __DIR__.'/auth.php';

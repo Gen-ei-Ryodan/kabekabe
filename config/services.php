@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    'doku' => [
+        'client_id' => env('DOKU_CLIENT_ID'),
+        'secret_key' => env('DOKU_SECRET_KEY'),
+        'api_key' => env('DOKU_API_KEY'),
+        'environment' => env('DOKU_ENVIRONMENT', 'sandbox'),
+        'base_url' => env('DOKU_ENVIRONMENT') === 'production'
+            ? 'https://api.doku.com'
+            : 'https://api-sandbox.doku.com',
+        'checkout_js_url' => env('DOKU_ENVIRONMENT') === 'production'
+            ? 'https://jokul.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js'
+            : 'https://sandbox.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js',
+    ],
+
 ];
