@@ -100,11 +100,18 @@ class PartnerController extends Controller
             'name' => $validated['name'],
             'slug' => Partner::slugFor($validated['name']),
             'category' => $validated['category'],
+            'industry' => $validated['industry'] ?? null,
+            'pic_name' => $validated['pic_name'] ?? $validated['vendor_name'],
+            'pic_phone' => $validated['pic_phone'] ?? null,
             'description' => $validated['description'] ?? null,
             'address' => $validated['address'] ?? null,
+            'district' => $validated['district'] ?? null,
+            'city' => $validated['city'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
             'logo' => $request->hasFile('logo') ? $request->file('logo')->store('partner-logos', 'public') : null,
+            'joined_at' => $validated['joined_at'] ?? now(),
+            'expires_at' => $validated['expires_at'] ?? now()->addYear(),
             'is_active' => true,
         ]);
 
@@ -151,7 +158,8 @@ class PartnerController extends Controller
         $partner->forceFill([
             'status' => Partner::STATUS_ACTIVE,
             'is_active' => true,
-            'expires_at' => $partner->expires_at ?? now()->addDays(30),
+            'joined_at' => $partner->joined_at ?? now(),
+            'expires_at' => $partner->expires_at ?? now()->addYear(),
         ])->save();
 
         if ($partner->user) {

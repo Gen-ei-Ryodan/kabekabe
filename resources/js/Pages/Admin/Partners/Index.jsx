@@ -29,6 +29,17 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
         router.get(route('admin.partners.index'), { ...filters }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
 
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '-';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch {
+            return dateStr;
+        }
+    };
+
     return (
         <>
             <Head title="Promo & Partner" />
@@ -83,7 +94,9 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                 <tr>
                                     <th className="table-head px-4 py-3">Partner</th>
                                     <th className="table-head px-4 py-3">Category</th>
-                                    <th className="table-head px-4 py-3">Vendor</th>
+                                    <th className="table-head px-4 py-3">PIC / Kontak</th>
+                                    <th className="table-head px-4 py-3">Tgl Bergabung</th>
+                                    <th className="table-head px-4 py-3">Tgl Berakhir</th>
                                     <th className="table-head px-4 py-3">Status</th>
                                     <th className="table-head px-4 py-3 text-right">Actions</th>
                                 </tr>
@@ -109,8 +122,19 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-slate">{partner.category}</td>
-                                        <td className="px-4 py-3 text-slate">{partner.user?.email || '-'}</td>
+                                        <td className="px-4 py-3 text-slate">
+                                            <p className="font-medium text-ink">{partner.category}</p>
+                                            {partner.industry && <p className="text-[11px] text-slate">{partner.industry}</p>}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate">
+                                            <p className="font-medium text-ink">{partner.pic_name || partner.user?.name || '-'}</p>
+                                            <p className="font-mono text-[11px]">{partner.user?.email || partner.email || '-'}</p>
+                                            {(partner.pic_phone || partner.phone) && (
+                                                <p className="font-mono text-[10px] text-slate">{partner.pic_phone || partner.phone}</p>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 font-mono text-xs text-slate">{formatDate(partner.joined_at)}</td>
+                                        <td className="px-4 py-3 font-mono text-xs text-slate">{formatDate(partner.expires_at)}</td>
                                         <td className="px-4 py-3">
                                             <StatusChip status={partner.is_active ? 'active' : 'inactive'} label={partner.is_active ? 'Active' : 'Inactive'} pulse={partner.is_active} />
                                         </td>

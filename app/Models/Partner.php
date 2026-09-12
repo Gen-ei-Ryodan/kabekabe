@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['user_id', 'name', 'slug', 'category', 'description', 'address', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3'])]
+#[Fillable(['user_id', 'name', 'slug', 'category', 'description', 'address', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'pic_name', 'pic_phone', 'district', 'city', 'industry', 'joined_at'])]
 #[Appends('logo_url')]
 class Partner extends Model
 {
@@ -25,6 +25,7 @@ class Partner extends Model
         return [
             'is_active' => 'boolean',
             'expires_at' => 'datetime',
+            'joined_at' => 'datetime',
         ];
     }
 
