@@ -146,6 +146,35 @@ class PartnerController extends Controller
         return back()->with('success', $partner->is_active ? 'Partner activated.' : 'Partner deactivated.');
     }
 
+    public function approve(Partner $partner): RedirectResponse
+    {
+        $partner->forceFill([
+            'status' => Partner::STATUS_ACTIVE,
+            'is_active' => true,
+            'expires_at' => $partner->expires_at ?? now()->addDays(30),
+        ])->save();
+
+        if ($partner->user) {
+            $partner->user->forceFill(['approval_status' => \App\Models\User::APPROVAL_APPROVED])->save();
+        }
+
+        return back()->with('success', "Pendaftaran partner {$partner->name} berhasil disetujui.");
+    }
+
+    public function reject(Partner $partner): RedirectResponse
+    {
+        $partner->forceFill([
+            'status' => Partner::STATUS_INACTIVE,
+            'is_active' => false,
+        ])->save();
+
+        if ($partner->user) {
+            $partner->user->forceFill(['approval_status' => \App\Models\User::APPROVAL_REJECTED])->save();
+        }
+
+        return back()->with('success', "Pendaftaran partner {$partner->name} ditolak.");
+    }
+
     public function destroy(Partner $partner): RedirectResponse
     {
         $name = $partner->name;

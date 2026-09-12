@@ -12,6 +12,26 @@ class StoreTransactionRequest extends FormRequest
         return $this->user()->isVendor() && $this->user()->partner !== null;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $total = (int) $this->input('total', 0);
+        $discountAmount = (int) $this->input('discount_amount', 0);
+        $netAmount = $this->has('net_amount') ? (int) $this->input('net_amount') : max(0, $total - $discountAmount);
+        $discounts = $this->input('discounts');
+
+        if (empty($discounts)) {
+            $discounts = [
+                ['description' => 'Diskon', 'amount' => $discountAmount],
+            ];
+        }
+
+        $this->merge([
+            'discount_amount' => $discountAmount,
+            'net_amount' => $netAmount,
+            'discounts' => $discounts,
+        ]);
+    }
+
     public function rules(): array
     {
         return [

@@ -38,7 +38,8 @@ class PaymentService
 
             $previous = $membership->expires_at;
 
-            $newExpiry = $this->nextExpiry($membership->expires_at, $payment->period_months);
+            $paidAt = $payment->paid_at ? Carbon::parse($payment->paid_at) : Carbon::now();
+            $newExpiry = $this->nextExpiry($membership->expires_at, $payment->period_months, $paidAt);
 
             $payment->forceFill([
                 'status' => Payment::STATUS_APPROVED,
@@ -51,16 +52,19 @@ class PaymentService
 
             $membership->forceFill([
                 'status' => \App\Models\Membership::STATUS_ACTIVE,
-                'started_at' => $membership->started_at ?? now(),
+                'started_at' => $membership->started_at ?? $paidAt,
                 'expires_at' => $newExpiry,
             ])->save();
 
             $member->setRelation('membership', $membership->fresh());
 
+            // Terapkan bundling promo Partner jika berlaku
+            $this->memberships->applyPartnerBundlingAndPromos($member, $payment->period_months, $newExpiry);
+
             $this->notifications->send(
                 $member,
-                'Payment Approved',
-                "Your membership has been extended until {$newExpiry->format('d M Y')}. Enjoy your member benefits.",
+                'Pembayaran Disetujui',
+                "Membership Anda telah diperpanjang hingga {$newExpiry->translatedFormat('d F Y')}. Nikmati berbagai keuntungan member.",
                 'membership',
                 '/member/history',
             );
@@ -80,8 +84,8 @@ class PaymentService
 
         $this->notifications->send(
             $payment->member,
-            'Payment Rejected',
-            "Payment {$payment->invoice_number} was rejected. " . ($reason ?: 'Please contact admin for more information.'),
+            'Pembayaran Ditolak',
+            "Pembayaran {$payment->invoice_number} ditolak. " . ($reason ?: 'Silakan hubungi admin untuk informasi lebih lanjut.'),
             'membership',
             '/member/history',
         );
@@ -102,10 +106,14 @@ class PaymentService
         return 'INV-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
     }
 
-    private function nextExpiry(?Carbon $currentExpiry, int $months): Carbon
+    private function nextExpiry(?Carbon $currentExpiry, int $months, ?Carbon $paymentDate = null): Carbon
     {
-        $base = $currentExpiry && $currentExpiry->isFuture() ? $currentExpiry : Carbon::now();
+        $now = $paymentDate ?? Carbon::now();
 
-        return (clone $base)->addMonths($months);
+        if ($currentExpiry && $currentExpiry->isFuture()) {
+            return (clone $currentExpiry)->addDays($months * 30)->addDay();
+        }
+
+        return (clone $now)->addDays($months * 30);
     }
 }

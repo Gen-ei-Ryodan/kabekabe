@@ -10,6 +10,7 @@ export default function MemberCard({ member }) {
     const cardRef = useRef(null);
     const sheenRef = useRef(null);
     const [photoOpen, setPhotoOpen] = useState(false);
+    const [qrOpen, setQrOpen] = useState(false);
 
     useEffect(() => {
         const wrap = wrapRef.current;
@@ -132,11 +133,24 @@ export default function MemberCard({ member }) {
 
                     {/* bottom area: QR left, info right */}
                     <div className="relative mt-auto flex items-end gap-4 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-8">
-                        {/* QR */}
+                        {/* QR - Klik untuk perbesar */}
                         <div className="card-line flex flex-col gap-1.5 sm:gap-2">
-                            <QrCode value={member.card_token} size={72} className="rounded-lg bg-white p-1 shadow-md" />
+                            <button
+                                type="button"
+                                onClick={() => setQrOpen(true)}
+                                className="group relative cursor-pointer overflow-hidden rounded-lg bg-white p-1 shadow-md transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold"
+                                aria-label="Perbesar QR Code"
+                                title="Klik untuk memperbesar QR Code"
+                            >
+                                <QrCode value={member.card_token} size={72} className="rounded" />
+                                <span className="absolute inset-0 flex items-center justify-center rounded bg-ink/10 opacity-0 transition-opacity group-hover:opacity-100">
+                                    <svg className="h-5 w-5 text-ink drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                    </svg>
+                                </span>
+                            </button>
                             <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">
-                                Scan here
+                                Scan QR
                             </div>
                         </div>
 
@@ -169,13 +183,13 @@ export default function MemberCard({ member }) {
 
                             <div className="flex items-end justify-between gap-3">
                                 <div>
-                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Joined</div>
+                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Bergabung</div>
                                     <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
                                         {member.joined_at}
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Valid until</div>
+                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Berlaku Hingga</div>
                                     <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
                                         {member.expires_at ? formatDateEn(member.expires_at) : '—'}
                                     </div>
@@ -183,7 +197,7 @@ export default function MemberCard({ member }) {
                             </div>
                         </div>
                     </div>
-            </div>
+                </div>
 
                 {/* Non-active overlay */}
                 {!isActive && (
@@ -199,7 +213,7 @@ export default function MemberCard({ member }) {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                         </svg>
                         <div className="absolute rounded-2xl border border-ember/50 bg-ember/90 px-5 py-2.5 text-center shadow-lg">
-                            <p className="font-display text-sm font-bold text-white">Membership Inactive</p>
+                            <p className="font-display text-sm font-bold text-white">Membership Tidak Aktif</p>
                         </div>
                     </div>
                 )}
@@ -226,6 +240,34 @@ export default function MemberCard({ member }) {
                             </span>
                         </div>
                     )}
+                </div>
+            </Modal>
+
+            {/* QR lightbox */}
+            <Modal
+                show={qrOpen}
+                maxWidth="sm"
+                closeable={true}
+                onClose={() => setQrOpen(false)}
+            >
+                <div className="flex flex-col items-center justify-center rounded-2xl bg-paper p-6 text-center shadow-2xl">
+                    <h3 className="font-display text-lg font-bold text-ink">QR Digital Member Card</h3>
+                    <p className="mt-1 text-xs text-slate">Tunjukkan QR Code ini kepada kasir/vendor saat bertransaksi.</p>
+
+                    <div className="my-6 rounded-2xl border border-ink/10 bg-white p-5 shadow-inner">
+                        <QrCode value={member.card_token} size={220} className="mx-auto" />
+                    </div>
+
+                    <p className="font-display text-base font-bold text-ink">{member.name}</p>
+                    <p className="mt-0.5 font-mono text-sm font-semibold tracking-wider text-gold-deep">{member.member_code}</p>
+
+                    <button
+                        type="button"
+                        onClick={() => setQrOpen(false)}
+                        className="mt-6 w-full rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-paper shadow transition-colors hover:bg-ink/90"
+                    >
+                        Tutup
+                    </button>
                 </div>
             </Modal>
         </div>

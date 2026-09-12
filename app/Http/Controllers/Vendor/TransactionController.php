@@ -64,11 +64,17 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
         $partner = auth()->user()->partner;
 
         abort_if($partner === null, 403);
+
+        if (! $partner->isActive()) {
+            return redirect()
+                ->route('vendor.transactions.index')
+                ->with('error', 'Status Partner Anda Tidak Aktif atau masa berlaku telah habis. Anda tidak dapat menerima transaksi.');
+        }
 
         $scan = $request->string('scan')->toString() ?: $request->string('member_code')->toString();
 
@@ -165,7 +171,16 @@ class TransactionController extends Controller
 
         abort_if($partner === null, 403);
 
+        if (! $partner->isActive()) {
+            return back()->withErrors(['member_code' => 'Status Partner Anda Tidak Aktif atau masa berlaku telah habis. Tidak dapat menerima transaksi.']);
+        }
+
         $member = User::query()->where('member_code', $request->input('member_code'))->firstOrFail();
+
+        $promo = null;
+        if ($request->filled('promo_id')) {
+            $promo = \App\Models\Promo::query()->where('partner_id', $partner->id)->whereKey($request->integer('promo_id'))->firstOrFail();
+        }
 
         $scan = $request->filled('scan_id')
             ? MemberScan::query()->whereKey($request->integer('scan_id'))->firstOrFail()
@@ -177,21 +192,34 @@ class TransactionController extends Controller
             $proofPath = $request->file('proof')->store('transaction-proofs', 'public');
         }
 
+        $total = $request->integer('total');
+        $discountAmount = $request->integer('discount_amount');
+        if ($promo && $discountAmount === 0) {
+            $discountAmount = $promo->discount_type === 'percent'
+                ? (int) round(($total * $promo->discount_value) / 100)
+                : (int) $promo->discount_value;
+            $netAmount = max(0, $total - $discountAmount);
+        } else {
+            $netAmount = $request->has('net_amount') && $request->integer('net_amount') > 0
+                ? $request->integer('net_amount')
+                : max(0, $total - $discountAmount);
+        }
+
         try {
             $this->transactions->record(
                 $partner,
                 $member,
-                null,
-                $request->integer('total'),
+                $promo,
+                $total,
                 $request->input('note'),
                 $proofPath,
                 $request->input('transaction_number'),
                 $scan,
-                $request->input('promo_name'),
+                $request->input('promo_name') ?: ($promo?->title),
                 $request->input('discounts', []),
                 $request->input('discount_percent'),
-                $request->integer('discount_amount'),
-                $request->integer('net_amount'),
+                $discountAmount,
+                $netAmount,
             );
         } catch (\DomainException $e) {
             if ($proofPath) {

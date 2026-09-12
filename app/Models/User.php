@@ -14,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'password', 'role', 'phone', 'whatsapp', 'company', 'avatar', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'city'])]
+#[Fillable(['name', 'email', 'password', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'city', 'address'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -26,6 +26,10 @@ class User extends Authenticatable
     public const ROLE_VENDOR = 'vendor';
 
     public const ROLES = [self::ROLE_MEMBER, self::ROLE_ADMIN, self::ROLE_VENDOR];
+
+    public const APPROVAL_PENDING = 'pending';
+    public const APPROVAL_APPROVED = 'approved';
+    public const APPROVAL_REJECTED = 'rejected';
 
     /**
      * Get the attributes that should be cast.
@@ -39,6 +43,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'notification_settings' => 'array',
             'birth_date' => 'date',
+            'must_change_password' => 'boolean',
         ];
     }
 
@@ -127,6 +132,21 @@ class User extends Authenticatable
     public function isMember(): bool
     {
         return $this->role === self::ROLE_MEMBER;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approval_status === self::APPROVAL_APPROVED;
+    }
+
+    public function isPendingApproval(): bool
+    {
+        return $this->approval_status === self::APPROVAL_PENDING;
+    }
+
+    public function needsPasswordChange(): bool
+    {
+        return (bool) $this->must_change_password;
     }
 
     public function homeRoute(): string

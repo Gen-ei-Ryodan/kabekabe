@@ -22,14 +22,14 @@ export default function Login() {
 
     return (
         <>
-            <Head title="Login" />
+            <Head title="Masuk - KBKB" />
 
             <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8 sm:py-12">
                 <form
                     onSubmit={submit}
                     className="relative w-full max-w-3xl"
                 >
-                    {/* Mobile: keep the form inside the portrait image card. */}
+                    {/* Mobile: form inside portrait image card */}
                     <div className="flex flex-col items-center sm:hidden">
                         <div className="login-card relative overflow-hidden rounded-[28px] shadow-card">
                             <img
@@ -44,7 +44,7 @@ export default function Login() {
                                 <div>
                                     <InputLabel
                                         htmlFor="email-mobile"
-                                        value="Email"
+                                        value="Alamat Email"
                                         className="text-white/90"
                                     />
                                     <TextInput
@@ -92,7 +92,7 @@ export default function Login() {
                                     className="w-full justify-center"
                                     disabled={processing}
                                 >
-                                    {processing ? 'Signing in…' : 'Login'}
+                                    {processing ? 'Memproses Masuk…' : 'Masuk'}
                                 </PrimaryButton>
 
                                 <div className="text-center">
@@ -100,36 +100,36 @@ export default function Login() {
                                         href={route('password.request')}
                                         className="text-sm font-bold text-white hover:text-white/80 hover:underline"
                                     >
-                                        Forgot password?
+                                        Lupa password?
                                     </Link>
                                 </div>
 
                                 <p className="text-center text-sm text-white/90">
-                                    New Member?{' '}
+                                    Belum punya akun?{' '}
                                     <Link
                                         href={route('register')}
                                         className="font-semibold text-white hover:underline"
                                     >
-                                        Register here
+                                        Daftar di sini
                                     </Link>
                                 </p>
 
                                 <p className="text-center text-xs text-white/80">
-                                    Need help?{' '}
+                                    Butuh bantuan?{' '}
                                     <a
                                         href="https://wa.me/62811290689"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="font-semibold text-white hover:underline"
                                     >
-                                        Contact Admin
+                                        Hubungi Admin (WhatsApp)
                                     </a>
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Desktop: original card layout with overlaid inputs */}
+                    {/* Desktop layout */}
                     <div className="hidden sm:block">
                         <div className="login-card relative overflow-hidden rounded-[28px] shadow-card">
                             <img
@@ -145,7 +145,7 @@ export default function Login() {
                                     <div>
                                         <InputLabel
                                             htmlFor="email-desktop"
-                                            value="Email"
+                                            value="Alamat Email"
                                             className="text-white/90"
                                         />
                                         <TextInput
@@ -193,7 +193,7 @@ export default function Login() {
                                         className="w-full justify-center"
                                         disabled={processing}
                                     >
-                                        {processing ? 'Signing in…' : 'Login'}
+                                        {processing ? 'Memproses Masuk…' : 'Masuk'}
                                     </PrimaryButton>
 
                                     <div className="text-center">
@@ -201,29 +201,29 @@ export default function Login() {
                                             href={route('password.request')}
                                             className="text-sm font-bold text-white hover:text-white/80 hover:underline"
                                         >
-                                            Forgot password?
+                                            Lupa password?
                                         </Link>
                                     </div>
 
                                     <p className="text-center text-sm text-white/90">
-                                        New Member?{' '}
+                                        Belum punya akun?{' '}
                                         <Link
                                             href={route('register')}
                                             className="font-semibold text-white hover:underline"
                                         >
-                                            Register here
+                                            Daftar di sini
                                         </Link>
                                     </p>
 
                                     <p className="text-center text-xs text-white/80">
-                                        Need help?{' '}
+                                        Butuh bantuan?{' '}
                                         <a
                                             href="https://wa.me/62811290689"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="font-semibold text-white hover:underline"
                                         >
-                                            Contact Admin
+                                            Hubungi Admin (WhatsApp)
                                         </a>
                                     </p>
                                 </div>

@@ -251,7 +251,7 @@ class MemberFlowTest extends TestCase
         $member->load('membership');
 
         $this->assertTrue($member->hasActiveMembership());
-        $this->assertGreaterThanOrEqual(now()->addMonths(3)->subMinute(), $member->membership->expires_at);
+        $this->assertGreaterThanOrEqual(now()->addDays(90)->subMinute(), $member->membership->expires_at);
     }
 
     public function test_admin_approval_extends_membership(): void
@@ -280,7 +280,7 @@ class MemberFlowTest extends TestCase
         $member->load('membership');
 
         $this->assertTrue($member->hasActiveMembership());
-        $this->assertGreaterThanOrEqual(now()->addMonths(3)->subMinute(), $member->membership->expires_at);
+        $this->assertGreaterThanOrEqual(now()->addDays(90)->subMinute(), $member->membership->expires_at);
     }
 
     public function test_history_lists_member_transactions_and_total_benefit(): void

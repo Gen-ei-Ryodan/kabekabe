@@ -11,16 +11,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['user_id', 'name', 'slug', 'category', 'description', 'address', 'phone', 'email', 'logo', 'is_active', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3'])]
+#[Fillable(['user_id', 'name', 'slug', 'category', 'description', 'address', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3'])]
 #[Appends('logo_url')]
 class Partner extends Model
 {
     use HasFactory;
 
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_INACTIVE = 'inactive';
+
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'expires_at' => 'datetime',
         ];
     }
 
@@ -53,9 +57,22 @@ class Partner extends Model
         return $this->logoUrl();
     }
 
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE
+            && $this->is_active
+            && ($this->expires_at === null || $this->expires_at->isFuture());
+    }
+
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', self::STATUS_ACTIVE);
+            })
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
     }
 
     public static function slugFor(string $name): string

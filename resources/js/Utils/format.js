@@ -9,7 +9,11 @@ export function formatRupiah(value, withSymbol = true) {
     return withSymbol ? `Rp${formatted}` : formatted;
 }
 
-export function formatDate(value, withTime = false) {
+/**
+ * Format tanggal dalam Bahasa Indonesia.
+ * Cukup tampilkan Hari/Tanggal, tidak perlu menampilkan jam.
+ */
+export function formatDate(value, withDay = false) {
     if (!value) return '-';
 
     const date = new Date(value);
@@ -17,10 +21,25 @@ export function formatDate(value, withTime = false) {
     if (Number.isNaN(date.getTime())) return '-';
 
     return new Intl.DateTimeFormat('id-ID', {
-        day: '2-digit',
+        ...(withDay ? { weekday: 'short' } : {}),
+        day: 'numeric',
         month: 'short',
         year: 'numeric',
-        ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+    }).format(date);
+}
+
+export function formatDayDate(value) {
+    if (!value) return '-';
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return new Intl.DateTimeFormat('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
     }).format(date);
 }
 
@@ -35,14 +54,7 @@ export function formatMonth(value) {
 }
 
 export function formatDateEn(value) {
-    if (!value) return '-';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '-';
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-    }).format(date);
+    return formatDate(value);
 }
 
 export function daysUntil(value) {

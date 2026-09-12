@@ -3,14 +3,15 @@ import { useState } from 'react';
 import AppLogo from '@/Components/AppLogo';
 import FlashMessages from '@/Components/FlashMessages';
 import ScrollHint from '@/Components/ScrollHint';
+import WhatsAppSupport from '@/Components/WhatsAppSupport';
 
 const NAV = [
-    { name: 'Home', route: 'member.home' },
-    { name: 'History', route: 'member.history.index' },
+    { name: 'Beranda', route: 'member.home' },
+    { name: 'Riwayat', route: 'member.history.index' },
     { name: 'Partner', route: 'member.partners.index' },
-    { name: 'Notification', route: 'member.notifications.index', badge: true },
-    { name: 'Billing', route: 'member.billing.index' },
-    { name: 'Profile', route: 'member.account.edit' },
+    { name: 'Notifikasi', route: 'member.notifications.index', badge: true },
+    { name: 'Tagihan', route: 'member.billing.index' },
+    { name: 'Profil', route: 'member.account.edit' },
 ];
 
 export default function MemberLayout({ children }) {
@@ -54,7 +55,7 @@ export default function MemberLayout({ children }) {
                             onClick={logout}
                             className="hidden rounded-full px-3 py-2 text-sm font-medium text-slate hover:bg-ember/10 hover:text-ember md:block"
                         >
-                            Logout
+                            Keluar
                         </button>
 
                         <button
@@ -88,7 +89,7 @@ export default function MemberLayout({ children }) {
                                 onClick={logout}
                                 className="rounded-xl px-4 py-3 text-left text-sm font-medium text-ember hover:bg-ember/10"
                             >
-                                Logout
+                                Keluar
                             </button>
                         </div>
                     </nav>
@@ -98,11 +99,12 @@ export default function MemberLayout({ children }) {
             <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">{children}</main>
 
             <ScrollHint />
+            <WhatsAppSupport />
 
             <footer className="border-t border-ink/10 py-8">
                 <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-center sm:px-6">
                     <AppLogo className="h-6 w-auto" />
-                    <p className="text-xs text-slate">One card. One community.</p>
+                    <p className="text-xs text-slate">Satu kartu. Satu komunitas.</p>
                 </div>
             </footer>
         </div>

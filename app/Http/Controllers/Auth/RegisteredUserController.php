@@ -29,24 +29,52 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): Response|RedirectResponse
     {
         $request->validate([
+            'role' => 'required|in:member,partner',
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+            'partner_category' => 'required_if:role,partner|nullable|string|max:100',
         ]);
+
+        $generatedPassword = 'KBKB' . random_int(1000, 9999);
+        $role = $request->role === 'partner' ? User::ROLE_VENDOR : User::ROLE_MEMBER;
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'whatsapp' => $request->phone,
+            'address' => $request->address,
+            'password' => Hash::make($generatedPassword),
+            'role' => $role,
+            'approval_status' => User::APPROVAL_PENDING,
+            'must_change_password' => true,
         ]);
+
+        if ($role === User::ROLE_VENDOR) {
+            $user->partner()->create([
+                'name' => $request->name,
+                'slug' => \App\Models\Partner::slugFor($request->name),
+                'category' => $request->partner_category ?: 'Umum',
+                'address' => $request->address,
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'is_active' => false,
+                'status' => \App\Models\Partner::STATUS_INACTIVE,
+            ]);
+        }
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route($request->user()->homeRoute()));
+        return Inertia::render('Auth/RegisterSuccess', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $request->role,
+            'generatedPassword' => $generatedPassword,
+        ]);
     }
 }

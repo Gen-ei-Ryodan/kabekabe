@@ -55,6 +55,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
+    Route::get('first-change-password', [\App\Http\Controllers\Auth\InitialPasswordController::class, 'create'])
+        ->name('password.change-initial');
+
+    Route::post('first-change-password', [\App\Http\Controllers\Auth\InitialPasswordController::class, 'store'])
+        ->name('password.change-initial.update');
+
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])

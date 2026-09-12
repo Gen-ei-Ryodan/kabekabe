@@ -2,13 +2,15 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppLogo from '@/Components/AppLogo';
 import FlashMessages from '@/Components/FlashMessages';
+import WhatsAppSupport from '@/Components/WhatsAppSupport';
 
 const NAV = [
     { name: 'Dashboard', route: 'vendor.dashboard', icon: '▦' },
-    { name: 'Verify Members', route: 'vendor.verify', icon: '▣' },
+    { name: 'Verifikasi Member', route: 'vendor.verify', icon: '▣' },
     { name: 'Promo', route: 'vendor.promos.index', icon: '◈' },
-    { name: 'Transactions', route: 'vendor.transactions.index', icon: '⤹' },
-    { name: 'Reports', route: 'vendor.reports.index', icon: '⌁' },
+    { name: 'Transaksi', route: 'vendor.transactions.index', icon: '⤹' },
+    { name: 'Laporan', route: 'vendor.reports.index', icon: '⌁' },
+    { name: 'Billing', route: 'vendor.billing.index', icon: '💳' },
 ];
 
 export default function VendorLayout({ children }) {
@@ -53,14 +55,14 @@ export default function VendorLayout({ children }) {
                         </span>
                         <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-paper">{user?.name}</p>
-                            <p className="font-mono text-[10px] uppercase tracking-wider text-paper/50">Vendor Partner</p>
+                            <p className="font-mono text-[10px] uppercase tracking-wider text-paper/50">Partner Merchant</p>
                         </div>
                     </div>
                     <button
                         onClick={() => router.post(route('logout'))}
                         className="mt-3 w-full rounded-xl px-4 py-2.5 text-sm font-medium text-paper/60 hover:bg-ember/20 hover:text-ember"
                     >
-                        Logout
+                        Keluar
                     </button>
                 </div>
             </aside>
@@ -96,13 +98,15 @@ export default function VendorLayout({ children }) {
                             onClick={() => router.post(route('logout'))}
                             className="rounded-xl px-4 py-3 text-left text-sm font-medium text-ember hover:bg-ember/20"
                         >
-                            Logout
+                            Keluar
                         </button>
                     </div>
                 </nav>
             )}
 
             <main className="px-4 py-8 sm:px-6 lg:ml-64 lg:px-10">{children}</main>
+
+            <WhatsAppSupport />
         </div>
     );
 }

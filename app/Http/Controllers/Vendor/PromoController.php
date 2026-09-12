@@ -38,8 +38,18 @@ class PromoController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): Response|\Illuminate\Http\RedirectResponse
     {
+        $partner = auth()->user()->partner;
+
+        abort_if($partner === null, 403);
+
+        if (! $partner->isActive()) {
+            return redirect()
+                ->route('vendor.promos.index')
+                ->with('error', 'Status Partner Anda Tidak Aktif atau masa berlaku telah habis. Anda tidak dapat membuat promo baru.');
+        }
+
         return Inertia::render('Vendor/Promos/Create');
     }
 
@@ -48,6 +58,12 @@ class PromoController extends Controller
         $partner = $request->user()->partner;
 
         abort_if($partner === null, 403);
+
+        if (! $partner->isActive()) {
+            return redirect()
+                ->route('vendor.promos.index')
+                ->with('error', 'Status Partner Anda Tidak Aktif atau masa berlaku telah habis. Anda tidak dapat membuat promo.');
+        }
 
         $promo = $partner->promos()->create($request->validated());
 

@@ -257,6 +257,30 @@ class MemberController extends Controller
             ->with('success', "Member {$name} deleted.");
     }
 
+    public function approve(User $member): RedirectResponse
+    {
+        abort_unless($member->isMember(), 404);
+
+        $member->forceFill([
+            'approval_status' => User::APPROVAL_APPROVED,
+        ])->save();
+
+        $this->memberships->ensureMembership($member);
+
+        return back()->with('success', "Pendaftaran member {$member->name} berhasil disetujui.");
+    }
+
+    public function reject(User $member): RedirectResponse
+    {
+        abort_unless($member->isMember(), 404);
+
+        $member->forceFill([
+            'approval_status' => User::APPROVAL_REJECTED,
+        ])->save();
+
+        return back()->with('success', "Pendaftaran member {$member->name} ditolak.");
+    }
+
     private function memberPayload(User $m): array
     {
         return [
@@ -271,9 +295,10 @@ class MemberController extends Controller
             'whatsapp' => $m->whatsapp,
             'company' => $m->company,
             'avatar_url' => $m->avatarUrl(),
-            'created_at' => $m->created_at?->format('d M Y'),
+            'created_at' => $m->created_at?->translatedFormat('d M Y'),
+            'approval_status' => $m->approval_status ?? 'approved',
             'membership_status' => $m->hasActiveMembership() ? 'active' : 'inactive',
-            'expires_at' => $m->membership?->expires_at?->format('d M Y'),
+            'expires_at' => $m->membership?->expires_at?->translatedFormat('d M Y'),
         ];
     }
 }

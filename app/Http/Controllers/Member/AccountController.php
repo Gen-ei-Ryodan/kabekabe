@@ -19,6 +19,8 @@ class AccountController extends Controller
             'account' => [
                 'name' => $user->name,
                 'email' => $user->email,
+                'religion' => $user->religion,
+                'address' => $user->address,
                 'phone' => $user->phone,
                 'whatsapp' => $user->whatsapp,
                 'company' => $user->company,
@@ -33,7 +35,7 @@ class AccountController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
-        if ($request->boolean('password') && $request->has('current_password')) {
+        if ($request->filled('password') && $request->has('current_password')) {
             $user->update(['password' => $request->input('password')]);
         }
 
@@ -47,11 +49,14 @@ class AccountController extends Controller
 
         $user->update([
             'name' => $validated['name'],
+            'email' => $validated['email'],
+            'religion' => $validated['religion'] ?? null,
+            'address' => $validated['address'] ?? null,
             'whatsapp' => $validated['whatsapp'] ?? null,
             'company' => $validated['company'] ?? null,
             'avatar' => $validated['avatar'] ?? $user->avatar,
         ]);
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', 'Profil berhasil diperbarui.');
     }
 }

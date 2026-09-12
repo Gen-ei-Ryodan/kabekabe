@@ -81,6 +81,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/transactions', [VendorTransactionController::class, 'store'])->name('transactions.store');
 
         Route::get('/reports', VendorReportController::class)->name('reports.index');
+
+        Route::get('/billing', [\App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
     });
 
     // ---------- ADMIN ----------
@@ -95,6 +97,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/members/{member}', [AdminMemberController::class, 'show'])->name('members.show');
         Route::get('/members/{member}/edit', [AdminMemberController::class, 'edit'])->name('members.edit');
         Route::put('/members/{member}', [AdminMemberController::class, 'update'])->name('members.update');
+        Route::put('/members/{member}/approve', [AdminMemberController::class, 'approve'])->name('members.approve');
+        Route::put('/members/{member}/reject', [AdminMemberController::class, 'reject'])->name('members.reject');
         Route::put('/members/{member}/status', [AdminMemberController::class, 'toggleStatus'])->name('members.toggle');
         Route::delete('/members/{member}', [AdminMemberController::class, 'destroy'])->name('members.destroy');
 
@@ -103,6 +107,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/partners', [AdminPartnerController::class, 'store'])->name('partners.store');
         Route::get('/partners/{partner}/edit', [AdminPartnerController::class, 'edit'])->name('partners.edit');
         Route::put('/partners/{partner}', [AdminPartnerController::class, 'update'])->name('partners.update');
+        Route::put('/partners/{partner}/approve', [AdminPartnerController::class, 'approve'])->name('partners.approve');
+        Route::put('/partners/{partner}/reject', [AdminPartnerController::class, 'reject'])->name('partners.reject');
         Route::put('/partners/{partner}/toggle', [AdminPartnerController::class, 'toggle'])->name('partners.toggle');
         Route::delete('/partners/{partner}', [AdminPartnerController::class, 'destroy'])->name('partners.destroy');
 

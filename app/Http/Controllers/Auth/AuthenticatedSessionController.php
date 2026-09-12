@@ -31,9 +31,35 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = $request->user();
+
+        if ($user->approval_status === \App\Models\User::APPROVAL_PENDING) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Pendaftaran akun Anda masih menunggu persetujuan (approval) oleh Admin.',
+            ]);
+        }
+
+        if ($user->approval_status === \App\Models\User::APPROVAL_REJECTED) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Pendaftaran akun Anda telah ditolak oleh Admin.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
-        return redirect()->intended(route($request->user()->homeRoute()));
+        if ($user->must_change_password) {
+            return redirect()->route('password.change-initial');
+        }
+
+        return redirect()->intended(route($user->homeRoute()));
     }
 
     /**
