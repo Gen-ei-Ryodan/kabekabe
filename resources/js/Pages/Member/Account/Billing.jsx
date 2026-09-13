@@ -285,7 +285,7 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                                 <label className="mb-3 block text-sm font-semibold text-slate-800">
                                     1. Pilih Durasi Langganan:
                                 </label>
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="grid gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                                     {plans.map((plan) => {
                                         const isSelected = selectedPlanId === plan.id;
                                         return (
@@ -293,20 +293,19 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                                                 key={plan.id}
                                                 type="button"
                                                 onClick={() => setSelectedPlanId(plan.id)}
-                                                className={`relative flex flex-col items-start rounded-xl border p-4 text-left transition-all ${
+                                                className={`relative flex flex-col items-start rounded-xl border p-3.5 text-left transition-all ${
                                                     isSelected
-                                                        ? 'border-gold bg-gold/5 ring-2 ring-gold/20'
+                                                        ? 'border-gold bg-gold/5 ring-2 ring-gold/20 shadow-sm'
                                                         : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
                                                 }`}
                                             >
-                                                <div className="flex w-full items-center justify-between">
-                                                    <span className="font-display font-bold text-slate-900">{plan.name}</span>
-                                                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                                                <div className="flex w-full items-center justify-between gap-1">
+                                                    <span className="font-display text-sm font-bold text-slate-900">{plan.duration_months} Bulan</span>
+                                                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                                                         {plan.duration_months * 30} Hari
                                                     </span>
                                                 </div>
-                                                <p className="mt-1 text-xs text-slate-500">Durasi {plan.duration_months} Bulan</p>
-                                                <p className="mt-3 font-mono text-lg font-bold text-gold">Rp{plan.price}</p>
+                                                <p className="mt-2.5 font-mono text-base font-bold text-gold">Rp{plan.price}</p>
                                             </button>
                                         );
                                     })}

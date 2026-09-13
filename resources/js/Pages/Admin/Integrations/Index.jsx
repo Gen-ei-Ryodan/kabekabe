@@ -8,7 +8,7 @@ function ResultBox({ result }) {
     if (result.type === 'faspay') {
         return (
             <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4 text-sm">
-                <p className="eyebrow">Faspay Invoice (Dummy)</p>
+                <p className="eyebrow">Faspay Invoice (Simulasi)</p>
                 <pre className="mt-2 overflow-x-auto rounded-lg bg-ink p-3 font-mono text-xs text-paper">
 {JSON.stringify(result.invoice, null, 2)}
                 </pre>
@@ -19,11 +19,11 @@ function ResultBox({ result }) {
     if (result.type === 'wa_blast') {
         return (
             <div className="rounded-2xl border border-sage/30 bg-sage/5 p-4 text-sm">
-                <p className="eyebrow">WA Blast Result (Stub)</p>
+                <p className="eyebrow">Hasil WA Blast (Simulasi)</p>
                 <p className="mt-2 text-xs">
-                    <span className="font-bold">{result.result.queued}</span> queued
+                    <span className="font-bold">{result.result.queued}</span> antre
                     {' · '}
-                    <span className="font-bold text-ember">{result.result.failed}</span> failed
+                    <span className="font-bold text-ember">{result.result.failed}</span> gagal
                     {' · '}
                     <span className="font-bold">{result.result.total}</span> total
                 </p>
@@ -60,14 +60,14 @@ export default function IntegrationIndex({ faspay, wa_blast }) {
 
     return (
         <>
-            <Head title="Integrations" />
+            <Head title="Integrasi" />
 
             <div className="flex flex-col gap-8">
                 <header>
-                    <p className="eyebrow">System</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Integrasi & Otomatisasi</h1>
+                    <p className="eyebrow">Sistem</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Integrasi & Otomasi</h1>
                     <p className="mt-2 max-w-xl text-sm text-slate">
-                        Payment gateway (Faspay) dan WA Blast untuk otomasi notifikasi. UI tersedia, integrasi penuh menyusul.
+                        Payment gateway dan WA Blast untuk otomasi notifikasi dan transaksi sistem.
                     </p>
                 </header>
 
@@ -81,7 +81,7 @@ export default function IntegrationIndex({ faspay, wa_blast }) {
 
                         <form onSubmit={submitFaspay} className="mt-5 space-y-3">
                             <div>
-                                <label className="label">Mode / Channel</label>
+                                <label className="label">Mode / Saluran</label>
                                 <select className="input" value={faspayForm.data.channel} onChange={(e) => faspayForm.setData('channel', e.target.value)}>
                                     {Object.entries(faspay.modes).map(([key, label]) => (
                                         <option key={key} value={key}>{label}</option>
@@ -89,11 +89,11 @@ export default function IntegrationIndex({ faspay, wa_blast }) {
                                 </select>
                             </div>
                             <div>
-                                <label className="label">Amount (Rp)</label>
+                                <label className="label">Nominal (Rp)</label>
                                 <input type="number" min="1" className="input" value={faspayForm.data.amount} onChange={(e) => faspayForm.setData('amount', e.target.value)} />
                             </div>
                             <button type="submit" className="btn-gold" disabled={faspayForm.processing}>
-                                {faspayForm.processing ? 'Testing…' : 'Test Invoice (Dummy)'}
+                                {faspayForm.processing ? 'Menguji…' : 'Uji Coba Invoice (Simulasi)'}
                             </button>
                         </form>
                     </div>
@@ -105,20 +105,20 @@ export default function IntegrationIndex({ faspay, wa_blast }) {
 
                         <form onSubmit={submitWa} className="mt-5 space-y-3">
                             <div>
-                                <label className="label">Audience</label>
+                                <label className="label">Target Audiens</label>
                                 <select className="input" value={waForm.data.audience} onChange={(e) => waForm.setData('audience', e.target.value)}>
-                                    <option value="all_members">All Members</option>
-                                    <option value="active_members">Active Members</option>
-                                    <option value="expired_members">Expired Members</option>
-                                    <option value="all_admins">All Admins</option>
+                                    <option value="all_members">Semua Member</option>
+                                    <option value="active_members">Member Aktif</option>
+                                    <option value="expired_members">Member Kadaluarsa</option>
+                                    <option value="all_admins">Semua Admin</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="label">Message</label>
+                                <label className="label">Pesan</label>
                                 <textarea rows={3} className="input" value={waForm.data.message} onChange={(e) => waForm.setData('message', e.target.value)} />
                             </div>
                             <button type="submit" className="btn-gold" disabled={waForm.processing}>
-                                {waForm.processing ? 'Sending…' : 'Send Broadcast (Stub)'}
+                                {waForm.processing ? 'Mengirim…' : 'Kirim Siaran (Simulasi)'}
                             </button>
                         </form>
                     </div>

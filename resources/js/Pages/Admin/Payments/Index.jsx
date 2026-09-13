@@ -9,10 +9,10 @@ import ImportDrawer from '@/Components/Admin/ImportDrawer';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 const STATUS_LABELS = {
-    pending: 'Pending',
-    approved: 'Approved',
-    rejected: 'Rejected',
-    expired: 'Expired',
+    pending: 'Menunggu',
+    approved: 'Disetujui',
+    rejected: 'Ditolak',
+    expired: 'Kadaluarsa',
 };
 
 export default function PaymentIndex({ payments, filters, drawer }) {
@@ -38,19 +38,19 @@ export default function PaymentIndex({ payments, filters, drawer }) {
 
     return (
         <>
-            <Head title="Payments" />
+            <Head title="Pembayaran" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <p className="eyebrow">Payment Management</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Payments</h1>
-                        <p className="mt-2 text-sm text-slate">Review offline payments and approve them to extend membership.</p>
+                        <p className="eyebrow">Manajemen Pembayaran</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Pembayaran</h1>
+                        <p className="mt-2 text-sm text-slate">Tinjau transaksi pembayaran member dan setujui untuk memperpanjang keanggotaan.</p>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setImportOpen(true)} className="btn-ghost">Import</button>
+                        <button onClick={() => setImportOpen(true)} className="btn-ghost">Impor</button>
                         <Link href={route('admin.payments.create')} className="btn-gold">
-                            Record Payment
+                            Catat Pembayaran
                         </Link>
                     </div>
                 </header>
@@ -58,31 +58,31 @@ export default function PaymentIndex({ payments, filters, drawer }) {
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
                     <div className="grid flex-1 gap-3 sm:grid-cols-2">
                         <div>
-                            <label className="label">Search</label>
-                            <input type="text" className="input" placeholder="Invoice / member / code" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                            <label className="label">Cari</label>
+                            <input type="text" className="input" placeholder="Invoice / member / kode" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
                         </div>
                         <div>
                             <label className="label">Status</label>
                             <select className="input" value={filter.data.status || 'pending'} onChange={(e) => filter.setData('status', e.target.value)}>
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                                <option value="expired">Expired</option>
+                                <option value="pending">Menunggu</option>
+                                <option value="approved">Disetujui</option>
+                                <option value="rejected">Ditolak</option>
+                                <option value="expired">Kadaluarsa</option>
                             </select>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button type="submit" className="btn-ink text-xs">Apply</button>
-                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Atur Ulang</button>
                     </div>
                 </form>
 
                 {payments.data.length === 0 ? (
-                    <EmptyState title="No payments" description="There are no payments with this status." />
+                    <EmptyState title="Tidak ada pembayaran" description="Belum ada data pembayaran dengan status ini." />
                 ) : (
                     <div className="space-y-3">
                         {payments.data.map((payment) => (
-                            <button onClick={() => openShow(payment.id)} className="card-surface flex w-full items-center justify-between gap-4 p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-card">
+                            <button key={payment.id} onClick={() => openShow(payment.id)} className="card-surface flex w-full items-center justify-between gap-4 p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-card">
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="font-mono text-xs text-slate">#{payment.invoice_number}</span>
@@ -106,9 +106,9 @@ export default function PaymentIndex({ payments, filters, drawer }) {
             <PaymentDrawer drawer={drawer} onClose={closeDrawer} />
             {importOpen && (
                 <ImportDrawer
-                    title="Import Payments"
-                    subtitle="Bulk-record approved payments from a spreadsheet. Membership is extended automatically."
-                    columns={['Member Code*', 'Plan', 'Period Months', 'Amount', 'Paid At']}
+                    title="Impor Pembayaran"
+                    subtitle="Catat massal pembayaran yang disetujui dari spreadsheet. Keanggotaan diperpanjang otomatis."
+                    columns={['Kode Member*', 'Paket', 'Durasi Bulan', 'Nominal', 'Tanggal Bayar']}
                     templateHref={route('admin.payments.import.template')}
                     uploadRoute={route('admin.payments.import')}
                     onClose={() => setImportOpen(false)}

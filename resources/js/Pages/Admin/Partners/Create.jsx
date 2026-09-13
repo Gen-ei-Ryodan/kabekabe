@@ -23,43 +23,43 @@ export default function PartnerCreate() {
 
     return (
         <>
-            <Head title="Add Partner" />
+            <Head title="Tambah Partner" />
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Partner Management</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Add Partner</h1>
-                    <p className="mt-2 text-sm text-slate">The partner automatically receives a vendor account to manage promos & transactions.</p>
+                    <p className="eyebrow">Manajemen Partner</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Tambah Partner</h1>
+                    <p className="mt-2 text-sm text-slate">Partner akan otomatis dibuatkan akun vendor untuk kelola promo & transaksi.</p>
                 </header>
 
                 <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
                     <section className="space-y-4">
-                        <h2 className="font-display text-lg font-bold">Partner Details</h2>
+                        <h2 className="font-display text-lg font-bold">Rincian Partner</h2>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="label" htmlFor="name">Partner name</label>
+                                <label className="label" htmlFor="name">Nama Partner / Usaha</label>
                                 <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                                 {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
                             </div>
                             <div>
-                                <label className="label" htmlFor="category">Category</label>
-                                <input id="category" type="text" className="input" value={form.data.category} onChange={(e) => form.setData('category', e.target.value)} placeholder="Restaurant, Retail, Healthcare…" />
+                                <label className="label" htmlFor="category">Kategori</label>
+                                <input id="category" type="text" className="input" value={form.data.category} onChange={(e) => form.setData('category', e.target.value)} placeholder="Restoran, Retail, Kesehatan…" />
                                 {form.errors.category && <p className="mt-1 text-xs text-ember">{form.errors.category}</p>}
                             </div>
                             <div>
-                                <label className="label" htmlFor="phone">Phone no.</label>
+                                <label className="label" htmlFor="phone">No. Telp Perusahaan</label>
                                 <input id="phone" type="text" className="input" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
                             </div>
                             <div>
-                                <label className="label" htmlFor="email">Contact email</label>
+                                <label className="label" htmlFor="email">Email Kontak</label>
                                 <input id="email" type="email" className="input" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
                             </div>
                             <div className="sm:col-span-2">
-                                <label className="label" htmlFor="address">Address</label>
+                                <label className="label" htmlFor="address">Alamat</label>
                                 <input id="address" type="text" className="input" value={form.data.address} onChange={(e) => form.setData('address', e.target.value)} />
                             </div>
                             <div className="sm:col-span-2">
-                                <label className="label" htmlFor="description">Description</label>
+                                <label className="label" htmlFor="description">Deskripsi</label>
                                 <textarea id="description" rows={3} className="input" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
                                 {form.errors.description && <p className="mt-1 text-xs text-ember">{form.errors.description}</p>}
                             </div>
@@ -72,34 +72,34 @@ export default function PartnerCreate() {
                     </section>
 
                     <section className="space-y-4 border-t border-ink/10 pt-6">
-                        <h2 className="font-display text-lg font-bold">Vendor Account</h2>
+                        <h2 className="font-display text-lg font-bold">Akun Vendor</h2>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="label" htmlFor="vendor_name">Person in charge</label>
+                                <label className="label" htmlFor="vendor_name">Nama Penanggung Jawab / PIC</label>
                                 <input id="vendor_name" type="text" className="input" value={form.data.vendor_name} onChange={(e) => form.setData('vendor_name', e.target.value)} />
                                 {form.errors.vendor_name && <p className="mt-1 text-xs text-ember">{form.errors.vendor_name}</p>}
                             </div>
                             <div>
-                                <label className="label" htmlFor="vendor_email">Login email</label>
+                                <label className="label" htmlFor="vendor_email">Email Login</label>
                                 <input id="vendor_email" type="email" className="input" value={form.data.vendor_email} onChange={(e) => form.setData('vendor_email', e.target.value)} />
                                 {form.errors.vendor_email && <p className="mt-1 text-xs text-ember">{form.errors.vendor_email}</p>}
                             </div>
                             <div>
-                                <label className="label" htmlFor="vendor_password">Password</label>
+                                <label className="label" htmlFor="vendor_password">Kata Sandi</label>
                                 <input id="vendor_password" type="password" className="input" value={form.data.vendor_password} onChange={(e) => form.setData('vendor_password', e.target.value)} />
                                 {form.errors.vendor_password && <p className="mt-1 text-xs text-ember">{form.errors.vendor_password}</p>}
                             </div>
                             <div>
-                                <label className="label" htmlFor="vendor_password_confirmation">Confirm password</label>
+                                <label className="label" htmlFor="vendor_password_confirmation">Konfirmasi Kata Sandi</label>
                                 <input id="vendor_password_confirmation" type="password" className="input" value={form.data.vendor_password_confirmation} onChange={(e) => form.setData('vendor_password_confirmation', e.target.value)} />
                             </div>
                         </div>
                     </section>
 
                     <div className="flex justify-end gap-3">
-                        <a href={route('admin.partners.index')} className="btn-ghost">Cancel</a>
+                        <a href={route('admin.partners.index')} className="btn-ghost">Batal</a>
                         <button type="submit" className="btn-gold" disabled={form.processing}>
-                            {form.processing ? 'Saving…' : 'Add Partner'}
+                            {form.processing ? 'Menyimpan…' : 'Tambah Partner'}
                         </button>
                     </div>
                 </form>

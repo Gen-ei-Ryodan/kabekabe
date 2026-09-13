@@ -80,22 +80,22 @@ export default function TransactionCreate({ member, is_completing = false }) {
 
     return (
         <>
-            <Head title="Record Transaction" />
+            <Head title="Catat Transaksi" />
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Transactions</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Record Benefit Transaction</h1>
+                    <p className="eyebrow">Transaksi</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Catat Transaksi Benefit</h1>
                     <p className="mt-2 text-sm text-slate">
-                        Scan the member's card first. Transactions can only be recorded for members with an active membership.
+                        Pindai kartu member terlebih dahulu. Transaksi hanya dapat dicatat untuk member dengan status keanggotaan aktif.
                     </p>
                 </header>
 
                 {!member && (
                     <div className="mt-8 grid gap-6 md:grid-cols-2">
                         <section className="card-surface p-6">
-                            <h2 className="font-display text-lg font-bold">Step 1 — Scan QR Card</h2>
-                            <p className="mt-1 text-sm text-slate">Point the camera at the QR code on the member's digital card.</p>
+                            <h2 className="font-display text-lg font-bold">Langkah 1 — Pindai QR Kartu</h2>
+                            <p className="mt-1 text-sm text-slate">Arahkan kamera ke kode QR pada kartu digital member.</p>
 
                             <div className="mt-4 overflow-hidden rounded-2xl border border-ink/10 bg-ink">
                                 <Scanner
@@ -108,11 +108,11 @@ export default function TransactionCreate({ member, is_completing = false }) {
                         </section>
 
                         <section className="card-surface p-6">
-                            <h2 className="font-display text-lg font-bold">Or enter the Member ID</h2>
-                            <p className="mt-1 text-sm text-slate">Type the Member ID shown on the member's card.</p>
+                            <h2 className="font-display text-lg font-bold">Atau Masukkan ID Member</h2>
+                            <p className="mt-1 text-sm text-slate">Ketik ID Member yang tertera pada kartu member.</p>
 
                             <form onSubmit={submitManual} className="mt-4">
-                                <label className="label" htmlFor="scan-query">Member ID / Card token</label>
+                                <label className="label" htmlFor="scan-query">ID Member / Token Kartu</label>
                                 <input
                                     id="scan-query"
                                     type="text"
@@ -122,7 +122,7 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                     placeholder="MMB-00001"
                                 />
                                 <button type="submit" className="btn-gold mt-4 w-full">
-                                    Check Membership
+                                    Periksa Keanggotaan
                                 </button>
                             </form>
                         </section>
@@ -132,10 +132,10 @@ export default function TransactionCreate({ member, is_completing = false }) {
                 {member && member.found === false && (
                     <div className="card-surface mt-8 p-10 text-center">
                         <span className="text-4xl">&#9888;</span>
-                        <h2 className="mt-4 font-display text-xl font-bold">Card not found</h2>
-                        <p className="mt-2 text-sm text-slate">The scanned token or Member ID is not registered on this platform.</p>
+                        <h2 className="mt-4 font-display text-xl font-bold">Kartu tidak ditemukan</h2>
+                        <p className="mt-2 text-sm text-slate">Token atau ID Member yang dipindai tidak terdaftar di sistem.</p>
                         <button onClick={resetScan} className="btn-ghost mt-6">
-                            Scan again
+                            Pindai Ulang
                         </button>
                     </div>
                 )}
@@ -158,19 +158,19 @@ export default function TransactionCreate({ member, is_completing = false }) {
                             </div>
                             <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6">
                                 <p className="text-xs text-slate">
-                                    Valid until <span className="font-mono font-semibold text-ink">{member.expires_at || '-'}</span>
+                                    Berlaku hingga <span className="font-mono font-semibold text-ink">{member.expires_at || '-'}</span>
                                 </p>
                                 {member.scan && (
                                     <p className="text-xs text-slate">
-                                        Scanned at <span className="font-mono font-semibold text-ink">{member.scan.scanned_at}</span>
+                                        Dipindai pada <span className="font-mono font-semibold text-ink">{member.scan.scanned_at}</span>
                                         {' · '}
                                         <span className={member.within_window ? 'font-mono font-semibold text-sage-deep' : 'font-mono font-semibold text-ember'}>
-                                            {member.within_window ? `${member.scan.hours_left}h left` : 'Input window expired'}
+                                            {member.within_window ? `Sisa ${member.scan.hours_left} jam` : 'Batas waktu input berakhir'}
                                         </span>
                                     </p>
                                 )}
                                 <button onClick={resetScan} className="text-xs font-semibold text-gold-deep underline-offset-2 hover:underline">
-                                    Scan a different card
+                                    Pindai kartu lain
                                 </button>
                             </div>
                         </div>
@@ -178,53 +178,53 @@ export default function TransactionCreate({ member, is_completing = false }) {
                         {verified && member.within_window === false && (
                             <div className="rounded-2xl border border-ember/30 bg-ember/10 p-6 text-center">
                                 <span className="text-3xl">⛔</span>
-                                <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Input window expired</h3>
+                                <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Batas Waktu Input Berakhir</h3>
                                 <p className="mt-2 max-w-sm text-sm text-slate">
-                                    More than 48 hours have passed since the card scan. Please scan again or contact admin to edit.
+                                    Lebih dari 48 jam telah berlalu sejak kartu dipindai. Silakan pindai ulang atau hubungi admin untuk bantuan.
                                 </p>
                             </div>
                         )}
 
                         {verified && member.within_window !== false && !is_completing ? (
                             <div className="card-surface p-6 text-center sm:p-8">
-                                <p className="eyebrow">Scan saved</p>
-                                <h3 className="mt-2 font-display text-xl font-bold">Ready for transaction input later</h3>
+                                <p className="eyebrow">Pindaian Tersimpan</p>
+                                <h3 className="mt-2 font-display text-xl font-bold">Siap untuk input transaksi nanti</h3>
                                 <p className="mx-auto mt-2 max-w-md text-sm text-slate">
-                                    The member scan has been saved. Open Pending Transactions when you are ready to enter the purchase details, within 48 hours.
+                                    Pindaian kartu member telah disimpan. Buka Transaksi Tertunda saat Anda siap memasukkan rincian transaksi, dalam kurun 48 jam.
                                 </p>
                                 <div className="mt-5 flex flex-wrap justify-center gap-3">
-                                    <button type="button" onClick={() => router.get(route('vendor.transactions.index'))} className="btn-gold">Open Pending Transactions</button>
-                                    <button type="button" onClick={resetScan} className="btn-ghost">Scan a different card</button>
+                                    <button type="button" onClick={() => router.get(route('vendor.transactions.index'))} className="btn-gold">Buka Transaksi Tertunda</button>
+                                    <button type="button" onClick={resetScan} className="btn-ghost">Pindai Kartu Lain</button>
                                 </div>
                             </div>
                         ) : verified && member.within_window !== false ? (
                             <form onSubmit={submit} className="card-surface space-y-6 p-6 sm:p-8">
                                 <div className="rounded-xl border border-sage/30 bg-sage/10 px-4 py-3 text-sm font-semibold text-sage-deep">
-                                    <span className="font-semibold">&#10003; Member scan saved</span>
-                                    <span className="mt-1 block font-normal">Complete this now or return from Pending Transactions within 48 hours.</span>
+                                    <span className="font-semibold">&#10003; Pindaian member tersimpan</span>
+                                    <span className="mt-1 block font-normal">Selesaikan sekarang atau lanjutkan melalui Transaksi Tertunda dalam kurun 48 jam.</span>
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="transaction_number">Transaction / receipt number (optional)</label>
-                                    <input id="transaction_number" type="text" className="input font-mono" value={form.data.transaction_number} onChange={(e) => form.setData('transaction_number', e.target.value)} placeholder="POS receipt number — auto-generated if empty" />
+                                    <label className="label" htmlFor="transaction_number">Nomor transaksi / struk (opsional)</label>
+                                    <input id="transaction_number" type="text" className="input font-mono" value={form.data.transaction_number} onChange={(e) => form.setData('transaction_number', e.target.value)} placeholder="Nomor struk kasir — dibuat otomatis jika kosong" />
                                     {errors.transaction_number && <p className="mt-1 text-xs text-ember">{errors.transaction_number}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="member_code">Member ID</label>
+                                    <label className="label" htmlFor="member_code">ID Member</label>
                                     <input id="member_code" type="text" readOnly className="input cursor-not-allowed bg-ink/5 font-mono text-slate" value={member.member_code} />
-                                    <p className="mt-1 text-xs text-slate">Verified via card scan.</p>
+                                    <p className="mt-1 text-xs text-slate">Terverifikasi melalui pindaian kartu.</p>
                                     {errors.member_code && <p className="mt-1 text-xs text-ember">{errors.member_code}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="promo_name">Promo / benefit (manual)</label>
+                                    <label className="label" htmlFor="promo_name">Promo / Benefit (manual)</label>
                                     <input id="promo_name" type="text" className="input" value={form.data.promo_name} onChange={(e) => form.setData('promo_name', e.target.value)} placeholder="Tulis nama promo atau benefit" />
                                     {errors.promo_name && <p className="mt-1 text-xs text-ember">{errors.promo_name}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="total">Total purchase (Rp)</label>
+                                    <label className="label" htmlFor="total">Total Belanja (Rp)</label>
                                     <input id="total" type="number" min="1" className="input" value={form.data.total} onChange={(e) => form.setData('total', e.target.value)} />
                                     {errors.total && <p className="mt-1 text-xs text-ember">{errors.total}</p>}
                                 </div>
@@ -232,10 +232,10 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                 <div className="space-y-4 rounded-xl border border-gold/30 bg-gold/10 p-4">
                                     <div className="flex items-center justify-between gap-3">
                                         <div>
-                                            <p className="eyebrow">Diskon manual</p>
-                                            <p className="mt-1 text-xs text-slate">Isi semua angka secara manual. Sistem tidak menghitung otomatis.</p>
+                                            <p className="eyebrow">Diskon Manual</p>
+                                            <p className="mt-1 text-xs text-slate">Isi semua nominal secara manual. Sistem tidak menghitung otomatis.</p>
                                         </div>
-                                        <button type="button" className="btn-ghost shrink-0 text-xs" onClick={() => form.setData('discounts', [...form.data.discounts, { description: '', amount: '' }])}>++ Tambah</button>
+                                        <button type="button" className="btn-ghost shrink-0 text-xs" onClick={() => form.setData('discounts', [...form.data.discounts, { description: '', amount: '' }])}>+ Tambah Diskon</button>
                                     </div>
                                     {form.data.discounts.map((discount, index) => (
                                         <div key={index} className="grid gap-3 sm:grid-cols-[1fr_10rem_auto]">
@@ -257,7 +257,7 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                             {errors.discount_amount && <p className="mt-1 text-xs text-ember">{errors.discount_amount}</p>}
                                         </div>
                                         <div>
-                                            <label className="label" htmlFor="net_amount">Net sales (Rp) manual <span className="text-ember">*</span></label>
+                                            <label className="label" htmlFor="net_amount">Penjualan bersih (Rp) manual <span className="text-ember">*</span></label>
                                             <input id="net_amount" type="number" min="0" className="input" value={form.data.net_amount} onChange={(e) => form.setData('net_amount', e.target.value)} />
                                             {errors.net_amount && <p className="mt-1 text-xs text-ember">{errors.net_amount}</p>}
                                         </div>
@@ -265,30 +265,30 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="note">Notes (optional)</label>
+                                    <label className="label" htmlFor="note">Catatan (opsional)</label>
                                     <textarea id="note" rows={2} className="input" value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} />
                                     {errors.note && <p className="mt-1 text-xs text-ember">{errors.note}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="proof">Receipt photo (optional)</label>
+                                    <label className="label" htmlFor="proof">Foto struk (opsional)</label>
                                     <input id="proof" type="file" accept="image/*" className="input" onChange={(e) => form.setData('proof', e.target.files[0])} />
                                     {errors.proof && <p className="mt-1 text-xs text-ember">{errors.proof}</p>}
                                 </div>
 
                                 <div className="flex justify-end gap-3">
-                                    <button type="button" onClick={() => router.get(route('vendor.transactions.index'))} className="btn-ghost">Cancel</button>
+                                    <button type="button" onClick={() => router.get(route('vendor.transactions.index'))} className="btn-ghost">Batal</button>
                                     <button type="submit" className="btn-gold" disabled={form.processing}>
-                                        {form.processing ? 'Saving…' : 'Save Transaction'}
+                                        {form.processing ? 'Menyimpan…' : 'Simpan Transaksi'}
                                     </button>
                                 </div>
                             </form>
                         ) : (
                             <div className="flex flex-col items-center rounded-2xl border border-ember/30 bg-ember/10 p-8 text-center">
                                 <span className="text-3xl">&#9940;</span>
-                                <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Membership INACTIVE</h3>
+                                <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Keanggotaan TIDAK AKTIF</h3>
                                 <p className="mt-2 max-w-sm text-sm text-slate">
-                                    This member cannot use benefits or promos, so no transaction can be recorded. Ask them to renew their membership first.
+                                    Member ini tidak dapat menggunakan benefit atau promo, sehingga transaksi tidak dapat dicatat. Minta member untuk memperpanjang keanggotaannya terlebih dahulu.
                                 </p>
                             </div>
                         )}

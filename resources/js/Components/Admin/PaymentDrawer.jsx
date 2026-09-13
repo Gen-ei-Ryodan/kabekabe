@@ -41,7 +41,7 @@ export default function PaymentDrawer({ drawer, onClose }) {
                     </div>
                     <StatusChip
                         status={payment.status}
-                        label={payment.status === 'pending' ? 'Pending' : payment.status === 'approved' ? 'Approved' : 'Rejected'}
+                        label={payment.status === 'pending' ? 'Menunggu' : payment.status === 'approved' ? 'Disetujui' : 'Ditolak'}
                         pulse={isPending}
                     />
                 </div>

@@ -4,25 +4,25 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 const TABS = [
-    { key: 'transaction', label: 'Transaction Report' },
-    { key: 'member_stats', label: 'Member Statistics' },
-    { key: 'birthday', label: 'Birthday Report' },
+    { key: 'transaction', label: 'Laporan Transaksi' },
+    { key: 'member_stats', label: 'Statistik Member' },
+    { key: 'birthday', label: 'Laporan Ulang Tahun' },
 ];
 
 const MONTH_OPTIONS = [
-    { value: '', label: 'All months' },
-    { value: '1', label: 'January' },
-    { value: '2', label: 'February' },
-    { value: '3', label: 'March' },
+    { value: '', label: 'Semua bulan' },
+    { value: '1', label: 'Januari' },
+    { value: '2', label: 'Februari' },
+    { value: '3', label: 'Maret' },
     { value: '4', label: 'April' },
-    { value: '5', label: 'May' },
-    { value: '6', label: 'June' },
-    { value: '7', label: 'July' },
-    { value: '8', label: 'August' },
+    { value: '5', label: 'Mei' },
+    { value: '6', label: 'Juni' },
+    { value: '7', label: 'Juli' },
+    { value: '8', label: 'Agustus' },
     { value: '9', label: 'September' },
-    { value: '10', label: 'October' },
+    { value: '10', label: 'Oktober' },
     { value: '11', label: 'November' },
-    { value: '12', label: 'December' },
+    { value: '12', label: 'Desember' },
 ];
 
 function StatBox({ label, value, tone = 'ink' }) {
@@ -68,22 +68,22 @@ function EmptyRow({ colSpan, message }) {
 function TransactionDetails({ transactions }) {
     return (
         <section className="card-surface overflow-x-auto p-6">
-            <SectionTitle>Transaction Details</SectionTitle>
+            <SectionTitle>Rincian Transaksi</SectionTitle>
             <table className="mt-4 w-full text-left text-sm">
                 <thead className="border-b border-ink/10">
                     <tr>
-                        <th className="table-head px-2 py-2">Date</th>
-                        <th className="table-head px-2 py-2">No. Transaction</th>
+                        <th className="table-head px-2 py-2">Tanggal</th>
+                        <th className="table-head px-2 py-2">No. Transaksi</th>
                         <th className="table-head px-2 py-2">Member</th>
                         <th className="table-head px-2 py-2">Partner</th>
                         <th className="table-head px-2 py-2 text-right">Total</th>
-                        <th className="table-head px-2 py-2 text-right">Discount</th>
-                        <th className="table-head px-2 py-2 text-right">Net</th>
+                        <th className="table-head px-2 py-2 text-right">Diskon</th>
+                        <th className="table-head px-2 py-2 text-right">Bersih</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-ink/5">
                     {transactions.length === 0 ? (
-                        <EmptyRow colSpan={7} message="No transactions for this period." />
+                        <EmptyRow colSpan={7} message="Tidak ada transaksi untuk periode ini." />
                     ) : (
                         transactions.map((t) => (
                             <tr key={t.id}>
@@ -113,7 +113,7 @@ function VendorReport({ data, partnerFilter }) {
     }, [data, partnerFilter]);
 
     if (filtered.length === 0) {
-        return <p className="text-sm text-slate">No vendor transaction data for this filter.</p>;
+        return <p className="text-sm text-slate">Tidak ada data transaksi vendor untuk filter ini.</p>;
     }
 
     return (
@@ -125,14 +125,14 @@ function VendorReport({ data, partnerFilter }) {
                         <thead className="border-b border-ink/10">
                             <tr>
                                 <th className="table-head px-2 py-2">Vendor</th>
-                                <th className="table-head px-2 py-2 text-right">Transactions</th>
-                                <th className="table-head px-2 py-2 text-right">Net Discount</th>
-                                <th className="table-head px-2 py-2 text-right">Net Sales</th>
+                                <th className="table-head px-2 py-2 text-right">Transaksi</th>
+                                <th className="table-head px-2 py-2 text-right">Diskon Bersih</th>
+                                <th className="table-head px-2 py-2 text-right">Penjualan Bersih</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink/5">
                             {month.rows.length === 0 ? (
-                                <EmptyRow colSpan={4} message="No data for this month." />
+                                <EmptyRow colSpan={4} message="Tidak ada data untuk bulan ini." />
                             ) : (
                                 month.rows.map((row, i) => (
                                     <tr key={i}>
@@ -161,7 +161,7 @@ function MemberReport({ data, memberFilter }) {
     }, [data, memberFilter]);
 
     if (filtered.length === 0) {
-        return <p className="text-sm text-slate">No member transaction data for this filter.</p>;
+        return <p className="text-sm text-slate">Tidak ada data transaksi member untuk filter ini.</p>;
     }
 
     return (
@@ -173,15 +173,15 @@ function MemberReport({ data, memberFilter }) {
                         <thead className="border-b border-ink/10">
                             <tr>
                                 <th className="table-head px-2 py-2">Member</th>
-                                <th className="table-head px-2 py-2">Member Code</th>
-                                <th className="table-head px-2 py-2 text-right">Transactions</th>
-                                <th className="table-head px-2 py-2 text-right">Total Discount</th>
-                                <th className="table-head px-2 py-2 text-right">Net Sales</th>
+                                <th className="table-head px-2 py-2">Kode Member</th>
+                                <th className="table-head px-2 py-2 text-right">Transaksi</th>
+                                <th className="table-head px-2 py-2 text-right">Total Diskon</th>
+                                <th className="table-head px-2 py-2 text-right">Penjualan Bersih</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink/5">
                             {month.rows.length === 0 ? (
-                                <EmptyRow colSpan={5} message="No data for this month." />
+                                <EmptyRow colSpan={5} message="Tidak ada data untuk bulan ini." />
                             ) : (
                                 month.rows.map((row, i) => (
                                     <tr key={i}>
@@ -213,7 +213,7 @@ function MemberStatisticsTable({ data, genderFilter, religionFilter }) {
     }, [rows, genderFilter, religionFilter]);
 
     if (!months || months.length === 0) {
-        return <p className="text-sm text-slate">No data available.</p>;
+        return <p className="text-sm text-slate">Tidak ada data statistik tersedia.</p>;
     }
 
     return (
@@ -222,7 +222,7 @@ function MemberStatisticsTable({ data, genderFilter, religionFilter }) {
             <table className="mt-4 w-full min-w-[48rem] text-left text-sm">
                 <thead className="border-b border-ink/10">
                     <tr>
-                        <th className="table-head sticky left-0 bg-paper px-3 py-2">Metric</th>
+                        <th className="table-head sticky left-0 bg-paper px-3 py-2">Metrik</th>
                         {month_labels.map((label, i) => (
                             <th key={months[i]} className="table-head px-3 py-2 text-right">
                                 {label}
@@ -233,7 +233,7 @@ function MemberStatisticsTable({ data, genderFilter, religionFilter }) {
                 <tbody className="divide-y divide-ink/5">
                     {visibleRows.length === 0 ? (
                         <tr>
-                            <td colSpan={months.length + 1} className="px-3 py-4 text-center text-sm text-slate">No rows match the selected filters.</td>
+                            <td colSpan={months.length + 1} className="px-3 py-4 text-center text-sm text-slate">Tidak ada baris yang sesuai dengan filter yang dipilih.</td>
                         </tr>
                     ) : (
                         visibleRows.map((row) => (
@@ -260,7 +260,7 @@ function BirthdayReport({ birthdays, monthFilter }) {
     }, [birthdays, monthFilter]);
 
     if (filtered.length === 0) {
-        return <p className="text-sm text-slate">No birthday data available for this filter.</p>;
+        return <p className="text-sm text-slate">Tidak ada data ulang tahun untuk filter ini.</p>;
     }
 
     return (
@@ -271,10 +271,10 @@ function BirthdayReport({ birthdays, monthFilter }) {
                     <table className="w-full text-left text-sm">
                         <thead className="border-b border-ink/10">
                             <tr>
-                                <th className="table-head px-2 py-2">Date</th>
+                                <th className="table-head px-2 py-2">Tanggal</th>
                                 <th className="table-head px-2 py-2">Member</th>
-                                <th className="table-head px-2 py-2">Member Code</th>
-                                <th className="table-head px-2 py-2 text-right">Age</th>
+                                <th className="table-head px-2 py-2">Kode Member</th>
+                                <th className="table-head px-2 py-2 text-right">Usia</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-ink/5">
@@ -322,33 +322,33 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
 
     return (
         <>
-            <Head title="Reports" />
+            <Head title="Laporan" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="eyebrow">Reporting</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Reports</h1>
+                        <p className="eyebrow">Pelaporan</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Laporan & Statistik</h1>
                     </div>
 
                     <form onSubmit={applyFilter} className="flex flex-wrap items-end gap-2">
                         <div>
-                            <label className="label">From</label>
+                            <label className="label">Dari</label>
                             <input type="date" className="input" value={filter.data.from} onChange={(e) => filter.setData('from', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">To</label>
+                            <label className="label">Sampai</label>
                             <input type="date" className="input" value={filter.data.to} onChange={(e) => filter.setData('to', e.target.value)} />
                         </div>
-                        <button type="submit" className="btn-ink text-xs">Apply</button>
+                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
                     </form>
                 </header>
 
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatBox label="Total Transactions" value={summary.total_transactions} />
-                    <StatBox label="Total Purchase" value={formatRupiah(summary.total_amount)} />
-                    <StatBox label="Total Discount" value={formatRupiah(summary.discount_amount)} tone="ember" />
-                    <StatBox label="Net Sales" value={formatRupiah(summary.net_amount)} tone="gold" />
+                    <StatBox label="Total Transaksi" value={summary.total_transactions} />
+                    <StatBox label="Total Belanja" value={formatRupiah(summary.total_amount)} />
+                    <StatBox label="Total Diskon" value={formatRupiah(summary.discount_amount)} tone="ember" />
+                    <StatBox label="Penjualan Bersih" value={formatRupiah(summary.net_amount)} tone="gold" />
                 </section>
 
                 <div className="border-b border-ink/10">
@@ -369,25 +369,25 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
                         <div className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
                             <div className="grid flex-1 gap-3 sm:grid-cols-2">
                                 <div>
-                                    <label className="label">Filter by Vendor</label>
+                                    <label className="label">Filter Vendor</label>
                                     <select className="input" value={transactionPartner} onChange={(e) => setTransactionPartner(e.target.value)}>
-                                        <option value="">All vendors</option>
+                                        <option value="">Semua vendor</option>
                                         {partners.map((name) => (
                                             <option key={name} value={name}>{name}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="label">Filter by Member</label>
+                                    <label className="label">Filter Member</label>
                                     <select className="input" value={transactionMember} onChange={(e) => setTransactionMember(e.target.value)}>
-                                        <option value="">All members</option>
+                                        <option value="">Semua member</option>
                                         {members.map((name) => (
                                             <option key={name} value={name}>{name}</option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
-                            <button type="button" onClick={() => { setTransactionPartner(''); setTransactionMember(''); }} className="btn-ghost text-xs">Reset</button>
+                            <button type="button" onClick={() => { setTransactionPartner(''); setTransactionMember(''); }} className="btn-ghost text-xs">Atur Ulang</button>
                         </div>
 
                         <section className="card-surface p-6">
@@ -413,17 +413,17 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
                         <div className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
                             <div className="grid flex-1 gap-3 sm:grid-cols-2">
                                 <div>
-                                    <label className="label">Filter Gender Row</label>
+                                    <label className="label">Filter Jenis Kelamin</label>
                                     <select className="input" value={statsGender} onChange={(e) => setStatsGender(e.target.value)}>
-                                        <option value="">All gender rows</option>
+                                        <option value="">Semua jenis kelamin</option>
                                         <option value="male">Pria</option>
                                         <option value="female">Wanita</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="label">Filter Religion Row</label>
+                                    <label className="label">Filter Agama</label>
                                     <select className="input" value={statsReligion} onChange={(e) => setStatsReligion(e.target.value)}>
-                                        <option value="">All religion rows</option>
+                                        <option value="">Semua agama</option>
                                         <option value="katolik">Katolik</option>
                                         <option value="kristen">Kristen</option>
                                         <option value="buddha">Buddha</option>
@@ -433,7 +433,7 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
                                     </select>
                                 </div>
                             </div>
-                            <button type="button" onClick={() => { setStatsGender(''); setStatsReligion(''); }} className="btn-ghost text-xs">Reset</button>
+                            <button type="button" onClick={() => { setStatsGender(''); setStatsReligion(''); }} className="btn-ghost text-xs">Atur Ulang</button>
                         </div>
                         <MemberStatisticsTable data={member_stats} genderFilter={statsGender} religionFilter={statsReligion} />
                     </div>
@@ -443,16 +443,16 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
                     <section className="card-surface p-6">
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
                             <div className="sm:w-64">
-                                <label className="label">Filter by Month</label>
+                                <label className="label">Filter Bulan</label>
                                 <select className="input" value={birthdayMonth} onChange={(e) => setBirthdayMonth(e.target.value)}>
                                     {MONTH_OPTIONS.map((opt) => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
                             </div>
-                            <button type="button" onClick={() => setBirthdayMonth('')} className="btn-ghost text-xs">Reset</button>
+                            <button type="button" onClick={() => setBirthdayMonth('')} className="btn-ghost text-xs">Atur Ulang</button>
                         </div>
-                        <SectionTitle>Laporan HUT</SectionTitle>
+                        <SectionTitle>Laporan Ulang Tahun (HUT)</SectionTitle>
                         <div className="mt-4">
                             <BirthdayReport birthdays={birthdays} monthFilter={birthdayMonth} />
                         </div>

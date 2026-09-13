@@ -8,9 +8,9 @@ import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 const TABS = [
-    { key: 'payments', label: 'Payments' },
-    { key: 'usage', label: 'Usage' },
-    { key: 'attendance', label: 'Attendance' },
+    { key: 'payments', label: 'Pembayaran' },
+    { key: 'usage', label: 'Riwayat Belanja' },
+    { key: 'attendance', label: 'Kehadiran' },
 ];
 
 export default function HistoryIndex({ payments, transactions, total_benefit, total_payment_made, attendances, membership }) {
@@ -37,13 +37,13 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
 
     return (
         <>
-            <Head title="History" />
+            <Head title="Riwayat" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <h1 className="font-display text-3xl font-bold tracking-tight">History</h1>
-                        <p className="mt-2 text-sm text-slate">Payments and benefits used across partner stores.</p>
+                        <h1 className="font-display text-3xl font-bold tracking-tight">Riwayat</h1>
+                        <p className="mt-2 text-sm text-slate">Riwayat pembayaran iuran dan penggunaan benefit promo di mitra/partner.</p>
                     </div>
                     <div className="inline-flex w-fit rounded-full border border-ink/10 bg-white/70 p-1">
                         {TABS.map((t) => (
@@ -65,14 +65,14 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         <Reveal>
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="card-surface flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 sm:px-6">
-                                    <span className="text-sm text-slate">Current status:</span>
-                                    <StatusChip status={membership?.status} label={membership?.status_label} pulse />
+                                    <span className="text-sm text-slate">Status saat ini:</span>
+                                    <StatusChip status={membership?.status} label={membership?.status_label === 'ACTIVE' ? 'AKTIF' : (membership?.status_label === 'INACTIVE' ? 'TIDAK AKTIF' : membership?.status_label)} pulse />
                                     {membership?.expires_at && (
-                                        <span className="text-sm text-slate">Valid until {formatDate(membership.expires_at)}</span>
+                                        <span className="text-sm text-slate">Berlaku hingga {formatDate(membership.expires_at)}</span>
                                     )}
                                 </div>
                                 <div className="rounded-2xl border border-gold/30 bg-gold/10 px-5 py-3">
-                                    <p className="eyebrow">Total Payment Made</p>
+                                    <p className="eyebrow">Total Pembayaran</p>
                                     <p className="font-display text-2xl font-bold text-gold-deep">
                                         {formatRupiah(total_payment_made || 0)}
                                     </p>
@@ -81,7 +81,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         </Reveal>
 
                         {paymentList.length === 0 ? (
-                            <EmptyState title="No payments yet" description="Your membership payments will appear here." />
+                            <EmptyState title="Belum ada pembayaran" description="Riwayat pembayaran keanggotaan Anda akan muncul di sini." />
                         ) : (
                             <div className="space-y-3">
                                 {paymentList.map((payment, i) => (
@@ -121,10 +121,10 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         <Reveal>
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="max-w-lg text-sm text-slate">
-                                    Benefits received from partner transactions.
+                                    Benefit yang didapatkan dari transaksi belanja di mitra/partner.
                                 </p>
                                 <div className="rounded-2xl border border-gold/30 bg-gold/10 px-5 py-3">
-                                    <p className="eyebrow">Total benefits received</p>
+                                    <p className="eyebrow">Total benefit diterima</p>
                                     <p className="font-display text-2xl font-bold text-gold-deep">
                                         {formatRupiah(total_benefit)}
                                     </p>
@@ -134,8 +134,8 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
 
                         {transactionList.length === 0 ? (
                             <EmptyState
-                                title="No transactions yet"
-                                description="Visit a partner and show your digital card to start enjoying benefits."
+                                title="Belum ada transaksi"
+                                description="Kunjungi mitra/partner dan tunjukkan kartu digital Anda untuk menikmati promo."
                             />
                         ) : (
                             <div className="space-y-3">
@@ -167,19 +167,19 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
 
                                             <div className="grid grid-cols-3 gap-x-3 gap-y-2 text-left min-w-0 sm:min-w-[280px] sm:gap-4 sm:text-right">
                                                 <div className="min-w-0">
-                                                    <p className="eyebrow">Total Spend</p>
+                                                    <p className="eyebrow">Total Belanja</p>
                                                     <p className="mt-0.5 text-xs font-semibold sm:text-sm">
                                                         {formatRupiah(transaction.total_amount)}
                                                     </p>
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="eyebrow">Discount</p>
+                                                    <p className="eyebrow">Diskon</p>
                                                     <p className="mt-0.5 text-xs font-semibold text-sage sm:text-sm">
                                                         -{formatRupiah(transaction.discount_amount)}
                                                     </p>
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="eyebrow">Net</p>
+                                                    <p className="eyebrow">Total Bayar</p>
                                                     <p className="mt-0.5 text-xs font-bold text-ink sm:text-sm">
                                                         {formatRupiah(transaction.net_amount)}
                                                     </p>
@@ -197,18 +197,18 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                     <>
                         <Reveal>
                             <div className="flex flex-col gap-2">
-                                <p className="eyebrow">Event Attendance</p>
+                                <p className="eyebrow">Kehadiran Acara</p>
                                 <h2 className="font-display text-2xl font-bold tracking-tight">Kehadiran Acara</h2>
                                 <p className="text-sm text-slate">
-                                    History absensi event/kegiatan yang Anda hadiri.
+                                    Riwayat absensi acara atau kegiatan komunitas yang Anda hadiri.
                                 </p>
                             </div>
                         </Reveal>
 
                         {attendanceList.length === 0 ? (
                             <EmptyState
-                                title="Belum ada attendance"
-                                description="Scan QR member Anda di event untuk mulai tercatat."
+                                title="Belum ada data kehadiran"
+                                description="Pindai QR kartu member Anda di lokasi acara untuk tercatat."
                             />
                         ) : (
                             <div className="space-y-3">

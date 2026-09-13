@@ -5,11 +5,11 @@ import EmptyState from '@/Components/EmptyState';
 import { formatDate } from '@/Utils/format';
 
 const TYPE_LABEL = {
-    membership: 'Membership',
+    membership: 'Keanggotaan',
     promo: 'Promo',
-    community: 'Community',
-    transaction: 'Transaction',
-    system: 'System',
+    community: 'Komunitas',
+    transaction: 'Transaksi',
+    system: 'Sistem',
 };
 
 export default function NotificationIndex({ notifications }) {
@@ -19,20 +19,20 @@ export default function NotificationIndex({ notifications }) {
 
     return (
         <>
-            <Head title="Notifications" />
+            <Head title="Notifikasi" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                     <div>
-                        <h1 className="font-display text-3xl font-bold tracking-tight">Notification</h1>
+                        <h1 className="font-display text-3xl font-bold tracking-tight">Notifikasi</h1>
                     </div>
                     <button onClick={() => router.post(route('member.notifications.read-all'), {}, { preserveScroll: true })} className="btn-ghost text-xs">
-                        Mark all as read
+                        Tandai semua telah dibaca
                     </button>
                 </header>
 
                 {notifications.data.length === 0 ? (
-                    <EmptyState title="No notifications" description="Notifications about membership, promos, and community will appear here." />
+                    <EmptyState title="Tidak ada notifikasi" description="Notifikasi mengenai keanggotaan, promo, dan kegiatan komunitas akan muncul di sini." />
                 ) : (
                     <div className="space-y-2">
                         {notifications.data.map((notification) => (

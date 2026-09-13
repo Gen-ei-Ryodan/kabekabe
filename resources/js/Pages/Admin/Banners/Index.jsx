@@ -32,30 +32,30 @@ function PopupSettings({ popup, promos = [] }) {
             <div className="mb-7 flex items-start gap-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-xl text-gold-light">↗</div>
                 <div>
-                    <p className="eyebrow">Opening moment</p>
-                    <h2 className="mt-1 font-display text-xl font-bold text-ink">Home opening popup</h2>
-                    <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate">Show one focused promo in a centered modal three seconds after a member opens Home.</p>
+                    <p className="eyebrow">Momen Pembuka</p>
+                    <h2 className="mt-1 font-display text-xl font-bold text-ink">Popup Pembuka Beranda</h2>
+                    <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate">Tampilkan satu promo fokus dalam jendela popup saat member membuka halaman beranda.</p>
                 </div>
             </div>
             <form onSubmit={submit} className="space-y-5">
                 <div>
-                    <label className="label" htmlFor="popup-promo">Promo target</label>
+                    <label className="label" htmlFor="popup-promo">Target Promo</label>
                     <select id="popup-promo" className="input" value={form.data.promo_id} onChange={(e) => form.setData('promo_id', e.target.value)}>
-                        <option value="">Select an active promo…</option>
+                        <option value="">Pilih promo aktif…</option>
                         {promos.map((promo) => <option key={promo.id} value={promo.id}>{promo.title} {promo.partner?.name ? `— ${promo.partner.name}` : ''}</option>)}
                     </select>
-                    {promos.length === 0 && <p className="mt-1.5 text-xs text-slate">No visible promos are available right now.</p>}
+                    {promos.length === 0 && <p className="mt-1.5 text-xs text-slate">Belum ada promo aktif yang tersedia saat ini.</p>}
                     {form.errors.promo_id && <p className="mt-1 text-xs text-ember">{form.errors.promo_id}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="popup-image">Popup image (optional)</label>
+                    <label className="label" htmlFor="popup-image">Gambar Popup (opsional)</label>
                     <input id="popup-image" type="file" accept=".jpg,.jpeg,.png,.webp" className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper" onChange={(e) => form.setData((data) => ({ ...data, image: e.target.files[0] || null, remove_image: false }))} />
-                    <p className="mt-1.5 text-xs text-slate">JPG/PNG/WebP, max 2 MB and 2000×2000px. Portrait or landscape is fine.</p>
-                    {preview && <div className="mt-3 flex items-start gap-3"><img src={preview} alt="Popup preview" className="h-28 w-full max-w-sm rounded-xl border border-ink/10 object-cover" /><button type="button" onClick={() => form.setData((data) => ({ ...data, image: null, remove_image: true }))} className="btn-ghost text-xs">Remove</button></div>}
+                    <p className="mt-1.5 text-xs text-slate">Format JPG/PNG/WebP, maksimal 2 MB.</p>
+                    {preview && <div className="mt-3 flex items-start gap-3"><img src={preview} alt="Pratinjau Popup" className="h-28 w-full max-w-sm rounded-xl border border-ink/10 object-cover" /><button type="button" onClick={() => form.setData((data) => ({ ...data, image: null, remove_image: true }))} className="btn-ghost text-xs">Hapus</button></div>}
                     {form.errors.image && <p className="mt-1 text-xs text-ember">{form.errors.image}</p>}
                 </div>
-                <label className="flex items-center gap-3"><input type="checkbox" checked={form.data.is_active} onChange={(e) => form.setData('is_active', e.target.checked)} className="h-4 w-4 accent-gold" /><span className="text-sm">Show popup on member Home</span></label>
-                <div className="flex items-center justify-between gap-3 border-t border-ink/10 pt-5"><p className="text-xs text-slate">It appears again on the next Home visit after being closed.</p><button type="submit" className="btn-gold shrink-0" disabled={form.processing}>{form.processing ? 'Saving…' : 'Save Popup'}</button></div>
+                <label className="flex items-center gap-3"><input type="checkbox" checked={form.data.is_active} onChange={(e) => form.setData('is_active', e.target.checked)} className="h-4 w-4 accent-gold" /><span className="text-sm">Tampilkan popup di Beranda member</span></label>
+                <div className="flex items-center justify-between gap-3 border-t border-ink/10 pt-5"><p className="text-xs text-slate">Muncul kembali pada kunjungan berikutnya setelah ditutup.</p><button type="submit" className="btn-gold shrink-0" disabled={form.processing}>{form.processing ? 'Menyimpan…' : 'Simpan Popup'}</button></div>
             </form>
         </div>
     );
@@ -91,7 +91,7 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
     };
 
     const destroy = (banner) => {
-        if (confirm(`Delete this banner?`)) {
+        if (confirm(`Hapus banner ini?`)) {
             router.delete(route('admin.banners.destroy', banner.id), { preserveScroll: true });
         }
     };
@@ -100,15 +100,15 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
 
     return (
         <>
-            <Head title="Home Banners" />
+            <Head title="Banner Beranda" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="eyebrow">Member Home</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Home Banners</h1>
+                        <p className="eyebrow">Beranda Member</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Banner Beranda</h1>
                         <p className="mt-2 text-sm text-slate">
-                            Curate up to three featured slots on the member home.
+                            Kelola hingga tiga slot banner unggulan di halaman utama member.
                         </p>
                     </div>
                     <div className="flex flex-col items-start gap-1.5 sm:items-end">
@@ -116,21 +116,21 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                             onClick={openCreate}
                             className="btn-gold"
                             disabled={atCapacity}
-                            title={atCapacity ? 'Maximum of 3 banners. Deactivate or delete one first.' : undefined}
+                            title={atCapacity ? 'Maksimal 3 banner. Nonaktifkan atau hapus salah satu terlebih dahulu.' : undefined}
                         >
-                            + Add Banner
+                            + Tambah Banner
                         </button>
                         {atCapacity && (
                             <p className="text-xs text-ember">
-                                Slot full (3/3) — deactivate or delete a banner first.
+                                Slot penuh (3/3) — nonaktifkan atau hapus banner terlebih dahulu.
                             </p>
                         )}
                     </div>
                 </header>
 
                 <div className="flex gap-1 border-b border-ink/10">
-                    <button type="button" onClick={() => setTab('banners')} className={`border-b-2 px-3 pb-3 text-sm font-semibold ${tab === 'banners' ? 'border-gold text-ink' : 'border-transparent text-slate'}`}>Featured banners</button>
-                    <button type="button" onClick={() => setTab('popup')} className={`border-b-2 px-3 pb-3 text-sm font-semibold ${tab === 'popup' ? 'border-gold text-ink' : 'border-transparent text-slate'}`}>Opening popup</button>
+                    <button type="button" onClick={() => setTab('banners')} className={`border-b-2 px-3 pb-3 text-sm font-semibold ${tab === 'banners' ? 'border-gold text-ink' : 'border-transparent text-slate'}`}>Banner Unggulan</button>
+                    <button type="button" onClick={() => setTab('popup')} className={`border-b-2 px-3 pb-3 text-sm font-semibold ${tab === 'popup' ? 'border-gold text-ink' : 'border-transparent text-slate'}`}>Popup Pembuka</button>
                 </div>
 
                 {tab === 'popup' ? <PopupSettings popup={popup} promos={popup_promos} /> : <>
@@ -140,33 +140,33 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                         <div>
                             <label className="label">Status</label>
                             <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
-                                <option value="">All</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
+                                <option value="">Semua</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
                             </select>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button type="submit" className="btn-ink text-xs">Apply</button>
-                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Atur Ulang</button>
                     </div>
                 </form>
 
                 <div className="card-surface flex items-center justify-between gap-4 px-5 py-4">
                     <p className="text-sm text-slate">
-                        <span className="font-display font-bold text-ink">{banners.length}</span> of{' '}
-                        {MAX_BANNERS} featured slots in use.
+                        <span className="font-display font-bold text-ink">{banners.length}</span> dari{' '}
+                        {MAX_BANNERS} slot unggulan sedang digunakan.
                     </p>
-                    <span className="chip border border-gold/30 bg-gold/15 text-gold-deep">Max {MAX_BANNERS}</span>
+                    <span className="chip border border-gold/30 bg-gold/15 text-gold-deep">Maks {MAX_BANNERS}</span>
                 </div>
 
                 {banners.length === 0 ? (
                     <EmptyState
-                        title="No banners yet"
-                        description="Feature a promo on the member home."
+                        title="Belum ada banner"
+                        description="Unggulkan promo di beranda member."
                         action={
                             <button onClick={openCreate} className="btn-gold">
-                                Add banner
+                                Tambah Banner
                             </button>
                         }
                     />
@@ -195,7 +195,7 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                                             <span className="chip border border-gold/30 bg-gold/15 text-gold-deep">Promo</span>
                                             <StatusChip
                                                 status={banner.is_active ? 'active' : 'inactive'}
-                                                label={banner.is_active ? 'Active' : 'Inactive'}
+                                                label={banner.is_active ? 'Aktif' : 'Tidak Aktif'}
                                                 pulse={banner.is_active}
                                             />
                                         </div>
@@ -210,10 +210,10 @@ export default function BannersIndex({ banners = [], filters = {}, promos = [], 
                                         Edit
                                     </button>
                                     <button onClick={() => toggle(banner)} className="btn-ghost text-xs">
-                                        {banner.is_active ? 'Deactivate' : 'Activate'}
+                                        {banner.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                                     </button>
                                     <button onClick={() => destroy(banner)} className="btn-danger text-xs">
-                                        Delete
+                                        Hapus
                                     </button>
                                 </div>
                             </div>

@@ -42,50 +42,50 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
 
     return (
         <>
-            <Head title="Promo & Partner" />
+            <Head title="Partner" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="eyebrow">Partner Management</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo & Partner</h1>
+                        <p className="eyebrow">Manajemen Partner</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Partner & Merchant</h1>
                     </div>
-                    <button onClick={openCreate} className="btn-gold">+ Add Partner</button>
+                    <button onClick={openCreate} className="btn-gold">+ Tambah Partner</button>
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
                     <div className="grid flex-1 gap-3 sm:grid-cols-3">
                         <div>
-                            <label className="label">Search</label>
-                            <input type="text" className="input" placeholder="Name / category" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                            <label className="label">Cari</label>
+                            <input type="text" className="input" placeholder="Nama / kategori" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">Category</label>
+                            <label className="label">Kategori</label>
                             <select className="input" value={filter.data.category || ''} onChange={(e) => filter.setData('category', e.target.value)}>
-                                <option value="">All</option>
+                                <option value="">Semua</option>
                                 {categories.map((category) => <option key={category} value={category}>{category}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className="label">Status</label>
                             <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
-                                <option value="">All</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
+                                <option value="">Semua</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
                             </select>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button type="submit" className="btn-ink text-xs">Apply</button>
-                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Atur Ulang</button>
                     </div>
                 </form>
 
                 {partners.data.length === 0 ? (
                     <EmptyState
-                        title="No partners found"
-                        description="No partners match this filter yet."
-                        action={<button onClick={openCreate} className="btn-gold">Add partner</button>}
+                        title="Partner tidak ditemukan"
+                        description="Belum ada partner yang sesuai dengan filter ini."
+                        action={<button onClick={openCreate} className="btn-gold">Tambah Partner</button>}
                     />
                 ) : (
                     <div className="card-surface overflow-x-auto">
@@ -93,12 +93,12 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                             <thead className="border-b border-ink/10 bg-paper/60">
                                 <tr>
                                     <th className="table-head px-4 py-3">Partner</th>
-                                    <th className="table-head px-4 py-3">Category</th>
+                                    <th className="table-head px-4 py-3">Kategori</th>
                                     <th className="table-head px-4 py-3">PIC / Kontak</th>
                                     <th className="table-head px-4 py-3">Tgl Bergabung</th>
                                     <th className="table-head px-4 py-3">Tgl Berakhir</th>
                                     <th className="table-head px-4 py-3">Status</th>
-                                    <th className="table-head px-4 py-3 text-right">Actions</th>
+                                    <th className="table-head px-4 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-ink/5">
@@ -136,7 +136,7 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                         <td className="px-4 py-3 font-mono text-xs text-slate">{formatDate(partner.joined_at)}</td>
                                         <td className="px-4 py-3 font-mono text-xs text-slate">{formatDate(partner.expires_at)}</td>
                                         <td className="px-4 py-3">
-                                            <StatusChip status={partner.is_active ? 'active' : 'inactive'} label={partner.is_active ? 'Active' : 'Inactive'} pulse={partner.is_active} />
+                                            <StatusChip status={partner.is_active ? 'active' : 'inactive'} label={partner.is_active ? 'Aktif' : 'Tidak Aktif'} pulse={partner.is_active} />
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center justify-end gap-2">
@@ -145,15 +145,15 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                                     onClick={() => router.put(route('admin.partners.toggle', partner.id), { is_active: !partner.is_active }, { preserveScroll: true })}
                                                     className="btn-ghost text-xs"
                                                 >
-                                                    {partner.is_active ? 'Deactivate' : 'Activate'}
+                                                    {partner.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                                                 </button>
                                                 <button
                                                     onClick={() => {
-                                                        if (confirm(`Delete partner ${partner.name}?`)) router.delete(route('admin.partners.destroy', partner.id));
+                                                        if (confirm(`Hapus partner ${partner.name}?`)) router.delete(route('admin.partners.destroy', partner.id));
                                                     }}
                                                     className="btn-danger text-xs"
                                                 >
-                                                    Delete
+                                                    Hapus
                                                 </button>
                                             </div>
                                         </td>

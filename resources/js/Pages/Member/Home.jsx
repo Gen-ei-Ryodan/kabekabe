@@ -113,13 +113,13 @@ function PromoPopup({ open, onClose, popup }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent" />
                 </div>
                 <div className="p-6">
-                    <p className="eyebrow">Member exclusive</p>
+                    <p className="eyebrow">Eksklusif Member</p>
                     <h3 className="mt-1 font-display text-2xl font-bold text-ink">{promo.title}</h3>
                     <p className="mt-2 text-sm text-slate">
-                        {promo.partner?.name && `from ${promo.partner.name}`}
+                        {promo.partner?.name && `dari ${promo.partner.name}`}
                     </p>
                     <Link href={route('member.promos.show', promo.id)} onClick={onClose} className="btn-gold mt-5 w-full justify-center">
-                        View promo
+                        Lihat Promo
                     </Link>
                 </div>
             </div>
@@ -172,7 +172,7 @@ function PromoBanner({ promo, imageUrl }) {
                                 {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
                             </span>
                             <span className="shrink-0 font-mono text-[7px] font-semibold uppercase tracking-widest text-gold-deep">
-                                View →
+                                Lihat →
                             </span>
                         </div>
                     </div>
@@ -333,7 +333,7 @@ function BannerZone({ banners, agendas }) {
     return (
         <div className="flex flex-col gap-4">
             <BannerSection
-                label="Promos"
+                label="PROMO"
                 banners={promoBanners}
                 renderBanner={(banner) => <PromoBanner promo={banner.promo} imageUrl={banner.image_url} />}
             />
@@ -361,7 +361,7 @@ export default function Home({
     popup = null,
 }) {
     const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    const greeting = hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 18 ? 'Selamat sore' : 'Selamat malam';
 
     const firstName = (member?.name || '').split(' ')[0];
     const bannerList = Array.isArray(banners) ? banners : [];
@@ -387,7 +387,7 @@ export default function Home({
                     <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
                         {greeting}, {firstName}
                     </h1>
-                    <p className="sr-only">Your member card is ready.</p>
+                    <p className="sr-only">Kartu member digital Anda siap digunakan.</p>
                 </header>
 
                 <section className="flex w-full justify-center">

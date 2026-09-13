@@ -27,29 +27,29 @@ export default function TransactionIndex({ transactions, filters, partners, memb
 
     return (
         <>
-            <Head title="Transactions" />
+            <Head title="Transaksi" />
 
             <div className="flex flex-col gap-8">
                 <header>
                     <p className="eyebrow">Monitoring</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Benefit Transactions</h1>
-                    <p className="mt-2 text-sm text-slate">Monitor all benefit transactions across every partner.</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Transaksi Benefit</h1>
+                    <p className="mt-2 text-sm text-slate">Pantau seluruh riwayat transaksi benefit dari seluruh partner.</p>
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
                     <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                         <div>
-                            <label className="label">From date</label>
+                            <label className="label">Dari tanggal</label>
                             <input type="date" className="input" value={filter.data.from || ''} onChange={(e) => filter.setData('from', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">To date</label>
+                            <label className="label">Sampai tanggal</label>
                             <input type="date" className="input" value={filter.data.to || ''} onChange={(e) => filter.setData('to', e.target.value)} />
                         </div>
                         <div>
                             <label className="label">Partner</label>
                             <select className="input" value={filter.data.partner_id || ''} onChange={(e) => filter.setData('partner_id', e.target.value)}>
-                                <option value="">All</option>
+                                <option value="">Semua</option>
                                 {partners.map((p) => (
                                     <option key={p.id} value={p.id}>{p.name}</option>
                                 ))}
@@ -58,37 +58,37 @@ export default function TransactionIndex({ transactions, filters, partners, memb
                         <div>
                             <label className="label">Member</label>
                             <select className="input" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)}>
-                                <option value="">All</option>
+                                <option value="">Semua</option>
                                 {members.map((m) => (
                                     <option key={m.id} value={m.id}>{m.name} ({m.member_code})</option>
                                 ))}
                             </select>
                         </div>
                         <div>
-                            <label className="label">Search</label>
-                            <input type="text" className="input" placeholder="No. / name / member ID" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                            <label className="label">Cari</label>
+                            <input type="text" className="input" placeholder="No. / nama / ID member" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button type="submit" className="btn-ink text-xs">Apply</button>
-                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Atur Ulang</button>
                     </div>
                 </form>
 
                 {transactions.data.length === 0 ? (
-                    <EmptyState title="No transactions found" description="No transactions match this filter yet." />
+                    <EmptyState title="Transaksi tidak ditemukan" description="Belum ada transaksi yang sesuai dengan filter ini." />
                 ) : (
                     <div className="card-surface overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="border-b border-ink/10 bg-paper/60">
                                 <tr>
-                                    <th className="table-head px-4 py-3">No. Transaction</th>
-                                    <th className="table-head px-4 py-3">Date</th>
+                                    <th className="table-head px-4 py-3">No. Transaksi</th>
+                                    <th className="table-head px-4 py-3">Tanggal</th>
                                     <th className="table-head px-4 py-3">Member</th>
                                     <th className="table-head px-4 py-3">Partner</th>
                                     <th className="table-head px-4 py-3 text-right">Total</th>
-                                    <th className="table-head px-4 py-3 text-right">Discount</th>
-                                    <th className="table-head px-4 py-3 text-right">Net</th>
+                                    <th className="table-head px-4 py-3 text-right">Diskon</th>
+                                    <th className="table-head px-4 py-3 text-right">Bersih</th>
                                     <th className="table-head px-4 py-3"></th>
                                 </tr>
                             </thead>
@@ -106,7 +106,7 @@ export default function TransactionIndex({ transactions, filters, partners, memb
                                         <td className="px-4 py-3 text-right text-sage">-{formatRupiah(t.discount_amount)}</td>
                                         <td className="px-4 py-3 text-right font-bold">{formatRupiah(t.net_amount)}</td>
                                         <td className="px-4 py-3">
-                                            <button onClick={() => openShow(t.id)} className="text-sm font-medium text-gold-deep">View →</button>
+                                            <button onClick={() => openShow(t.id)} className="text-sm font-medium text-gold-deep">Lihat →</button>
                                         </td>
                                     </tr>
                                 ))}

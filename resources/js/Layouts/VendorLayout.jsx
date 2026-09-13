@@ -55,7 +55,7 @@ export default function VendorLayout({ children }) {
                         </span>
                         <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-paper">{user?.name}</p>
-                            <p className="font-mono text-[10px] uppercase tracking-wider text-paper/50">Partner Merchant</p>
+                            <p className="font-mono text-[10px] uppercase tracking-wider text-paper/50">Mitra Partner</p>
                         </div>
                     </div>
                     <button

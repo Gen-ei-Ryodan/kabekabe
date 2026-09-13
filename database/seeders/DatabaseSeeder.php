@@ -38,12 +38,15 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ---------- Membership Plans ----------
-        $plans = collect([
-            ['name' => '1 Bulan (30 Hari)', 'duration_months' => 1, 'price' => 100000],
-            ['name' => '3 Bulan (90 Hari)', 'duration_months' => 3, 'price' => 300000],
-            ['name' => '6 Bulan (180 Hari)', 'duration_months' => 6, 'price' => 600000],
-            ['name' => '12 Bulan (360 Hari)', 'duration_months' => 12, 'price' => 1200000],
-        ])->map(fn ($p) => MembershipPlan::create($p));
+        $plans = collect(range(1, 12))->map(function ($months) {
+            $days = $months * 30;
+            return MembershipPlan::create([
+                'name' => "{$months} Bulan ({$days} Hari)",
+                'duration_months' => $months,
+                'price' => $months * 100000,
+                'is_active' => true,
+            ]);
+        });
 
         // ---------- Partners & Vendors ----------
         $partnerData = [

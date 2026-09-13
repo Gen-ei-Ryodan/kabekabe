@@ -31,65 +31,65 @@ export default function PromoEdit({ promo }) {
                         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Edit Promo</h1>
                         <p className="mt-2 text-sm text-slate">{promo.partner?.name} · {promo.partner?.category}</p>
                     </div>
-                    <StatusChip status={promo.status} label={promo.status === 'pending' ? 'Pending' : promo.status === 'approved' ? 'Approved' : 'Rejected'} />
+                    <StatusChip status={promo.status} label={promo.status === 'pending' ? 'Menunggu Persetujuan' : promo.status === 'approved' ? 'Disetujui' : 'Ditolak'} />
                 </header>
 
                 <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
                     <div>
-                        <label className="label" htmlFor="title">Promo title</label>
+                        <label className="label" htmlFor="title">Judul Promo</label>
                         <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                         {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
                     </div>
                     <div>
-                        <label className="label" htmlFor="description">Description</label>
+                        <label className="label" htmlFor="description">Deskripsi</label>
                         <textarea id="description" rows={3} className="input" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
                         {form.errors.description && <p className="mt-1 text-xs text-ember">{form.errors.description}</p>}
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="label">Discount type</label>
+                            <label className="label">Tipe Diskon</label>
                             <select className="input" value={form.data.discount_type} onChange={(e) => form.setData('discount_type', e.target.value)}>
-                                <option value="percent">Percentage (%)</option>
-                                <option value="nominal">Amount (Rp)</option>
+                                <option value="percent">Persentase (%)</option>
+                                <option value="nominal">Nominal (Rp)</option>
                             </select>
                         </div>
                         <div>
-                            <label className="label">{form.data.discount_type === 'percent' ? 'Discount (%)' : 'Discount (Rp)'}</label>
+                            <label className="label">{form.data.discount_type === 'percent' ? 'Diskon (%)' : 'Diskon (Rp)'}</label>
                             <input type="number" min="1" className="input" value={form.data.discount_value} onChange={(e) => form.setData('discount_value', e.target.value)} />
                             {form.errors.discount_value && <p className="mt-1 text-xs text-ember">{form.errors.discount_value}</p>}
                         </div>
                         <div>
-                            <label className="label">Minimum purchase (Rp)</label>
+                            <label className="label">Minimal Belanja (Rp)</label>
                             <input type="number" min="0" className="input" value={form.data.min_purchase} onChange={(e) => form.setData('min_purchase', e.target.value)} />
                         </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="label">Start date</label>
+                            <label className="label">Tanggal Mulai</label>
                             <input type="date" className="input" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
                             {form.errors.start_date && <p className="mt-1 text-xs text-ember">{form.errors.start_date}</p>}
                         </div>
                         <div>
-                            <label className="label">End date</label>
+                            <label className="label">Tanggal Berakhir</label>
                             <input type="date" className="input" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} />
                             {form.errors.end_date && <p className="mt-1 text-xs text-ember">{form.errors.end_date}</p>}
                         </div>
                     </div>
                     <div>
-                        <label className="label">Terms & conditions</label>
+                        <label className="label">Syarat & Ketentuan</label>
                         <textarea rows={2} className="input" value={form.data.terms} onChange={(e) => form.setData('terms', e.target.value)} />
                     </div>
 
                     {promo.status === 'approved' && (
                         <p className="rounded-xl bg-sage/10 px-4 py-3 text-xs text-sage">
-                            Active promo provides {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)} benefit to ACTIVE members. You can toggle active/inactive from the promo list.
+                            Promo aktif memberikan benefit {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)} bagi member AKTIF. Anda dapat mengaktifkan/menonaktifkan dari daftar promo.
                         </p>
                     )}
 
                     <div className="flex justify-end gap-3">
-                        <a href={route('admin.promos.index')} className="btn-ghost">Back</a>
+                        <a href={route('admin.promos.index')} className="btn-ghost">Kembali</a>
                         <button type="submit" className="btn-gold" disabled={form.processing}>
-                            {form.processing ? 'Saving…' : 'Save'}
+                            {form.processing ? 'Menyimpan…' : 'Simpan Perubahan'}
                         </button>
                     </div>
                 </form>

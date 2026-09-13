@@ -26,7 +26,7 @@ export default function MemberEdit({ member }) {
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Member Management</p>
+                    <p className="eyebrow">Manajemen Member</p>
                     <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Edit Member</h1>
                     <p className="mt-1 font-mono text-sm text-slate">{member.member_code}</p>
                 </header>
@@ -34,28 +34,28 @@ export default function MemberEdit({ member }) {
                 <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="sm:col-span-2">
-                            <label className="label" htmlFor="name">Full name</label>
+                            <label className="label" htmlFor="name">Nama Lengkap</label>
                             <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                             {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
                         </div>
                         <div>
-                            <label className="label" htmlFor="gender">Gender</label>
+                            <label className="label" htmlFor="gender">Jenis Kelamin</label>
                             <select id="gender" className="input" value={form.data.gender} onChange={(e) => form.setData('gender', e.target.value)}>
-                                <option value="">Select gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
+                                <option value="">Pilih jenis kelamin</option>
+                                <option value="male">Laki-laki</option>
+                                <option value="female">Perempuan</option>
                             </select>
                             {form.errors.gender && <p className="mt-1 text-xs text-ember">{form.errors.gender}</p>}
                         </div>
                         <div>
-                            <label className="label" htmlFor="birth_date">Birth date</label>
+                            <label className="label" htmlFor="birth_date">Tanggal Lahir</label>
                             <input id="birth_date" type="date" className="input" value={form.data.birth_date} onChange={(e) => form.setData('birth_date', e.target.value)} />
                             {form.errors.birth_date && <p className="mt-1 text-xs text-ember">{form.errors.birth_date}</p>}
                         </div>
                         <div>
-                            <label className="label" htmlFor="religion">Religion</label>
+                            <label className="label" htmlFor="religion">Agama</label>
                             <select id="religion" className="input" value={form.data.religion} onChange={(e) => form.setData('religion', e.target.value)}>
-                                <option value="">Select religion</option>
+                                <option value="">Pilih agama</option>
                                 <option value="islam">Islam</option>
                                 <option value="kristen">Kristen</option>
                                 <option value="katolik">Katolik</option>
@@ -72,7 +72,7 @@ export default function MemberEdit({ member }) {
                             {form.errors.email && <p className="mt-1 text-xs text-ember">{form.errors.email}</p>}
                         </div>
                         <div>
-                            <label className="label" htmlFor="phone">Phone</label>
+                            <label className="label" htmlFor="phone">Telepon</label>
                             <input id="phone" type="text" className="input" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
                         </div>
                         <div>
@@ -80,24 +80,24 @@ export default function MemberEdit({ member }) {
                             <input id="whatsapp" type="text" className="input" value={form.data.whatsapp} onChange={(e) => form.setData('whatsapp', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label" htmlFor="company">Company</label>
+                            <label className="label" htmlFor="company">Perusahaan</label>
                             <input id="company" type="text" className="input" value={form.data.company} onChange={(e) => form.setData('company', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label" htmlFor="password">New password (optional)</label>
-                            <input id="password" type="password" className="input" placeholder="Leave blank to keep current password" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
+                            <label className="label" htmlFor="password">Kata Sandi Baru (opsional)</label>
+                            <input id="password" type="password" className="input" placeholder="Kosongkan jika tidak ingin mengubah kata sandi" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
                             {form.errors.password && <p className="mt-1 text-xs text-ember">{form.errors.password}</p>}
                         </div>
                         <div>
-                            <label className="label" htmlFor="password_confirmation">Confirm password</label>
+                            <label className="label" htmlFor="password_confirmation">Konfirmasi Kata Sandi</label>
                             <input id="password_confirmation" type="password" className="input" value={form.data.password_confirmation} onChange={(e) => form.setData('password_confirmation', e.target.value)} />
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-3">
-                        <a href={route('admin.members.show', member.id)} className="btn-ghost">Cancel</a>
+                        <a href={route('admin.members.show', member.id)} className="btn-ghost">Batal</a>
                         <button type="submit" className="btn-gold" disabled={form.processing}>
-                            {form.processing ? 'Saving…' : 'Save'}
+                            {form.processing ? 'Menyimpan…' : 'Simpan Perubahan'}
                         </button>
                     </div>
                 </form>

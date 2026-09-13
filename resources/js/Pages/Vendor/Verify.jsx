@@ -29,14 +29,14 @@ export default function Verify({ result }) {
 
     return (
         <>
-            <Head title="Verify Members" />
+            <Head title="Verifikasi Member" />
 
             <div className="mx-auto max-w-4xl">
                 <header className="mb-8">
-                    <p className="eyebrow">Verification</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Verify Members</h1>
+                    <p className="eyebrow">Verifikasi</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Verifikasi Member</h1>
                     <p className="mt-2 text-sm text-slate">
-                        Scan the QR on the member's digital card or enter the Member ID to check membership status.
+                        Pindai QR pada kartu digital member atau masukkan Nomor Anggota untuk memeriksa status keaktifan.
                     </p>
                 </header>
 
@@ -44,10 +44,10 @@ export default function Verify({ result }) {
                     result.found === false ? (
                         <div className="card-surface p-10 text-center">
                             <span className="text-4xl">⚠</span>
-                            <h2 className="mt-4 font-display text-xl font-bold">Card not found</h2>
-                            <p className="mt-2 text-sm text-slate">The token or Member ID is not registered on this platform.</p>
+                            <h2 className="mt-4 font-display text-xl font-bold">Kartu Tidak Ditemukan</h2>
+                            <p className="mt-2 text-sm text-slate">Token atau Nomor Anggota tidak terdaftar pada sistem.</p>
                             <button onClick={() => router.get(route('vendor.verify'), {}, { preserveScroll: true })} className="btn-ghost mt-6">
-                                Scan again
+                                Pindai Ulang
                             </button>
                         </div>
                     ) : (
@@ -66,9 +66,9 @@ export default function Verify({ result }) {
                                     </div>
                                 </div>
                                 <div className="space-y-3 p-6">
-                                    <div className="flex justify-between text-sm"><span className="text-slate">Status</span><StatusChip status={result.active ? 'active' : 'inactive'} label={result.status_label} pulse={result.active} /></div>
-                                    <div className="flex justify-between text-sm"><span className="text-slate">Valid until</span><span className="font-mono font-semibold">{result.expires_at || '-'}</span></div>
-                                    <div className="flex justify-between text-sm"><span className="text-slate">Company</span><span>{result.member.company || '-'}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-slate">Status</span><StatusChip status={result.active ? 'active' : 'inactive'} label={result.active ? 'AKTIF' : 'TIDAK AKTIF'} pulse={result.active} /></div>
+                                    <div className="flex justify-between text-sm"><span className="text-slate">Berlaku hingga</span><span className="font-mono font-semibold">{result.expires_at || '-'}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-slate">Perusahaan</span><span>{result.member.company || '-'}</span></div>
                                 </div>
                             </div>
 
@@ -76,29 +76,29 @@ export default function Verify({ result }) {
                                 {result.active ? (
                                     <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-sage/30 bg-sage/10 p-8 text-center">
                                         <span className="text-3xl">✓</span>
-                                        <h3 className="mt-3 font-display text-xl font-bold text-sage-deep">Membership ACTIVE</h3>
+                                        <h3 className="mt-3 font-display text-xl font-bold text-sage-deep">Keanggotaan AKTIF</h3>
                                         <p className="mt-2 text-sm text-slate">
-                                            This member can use partner benefits and promos.
+                                            Member ini berhak menikmati promo dan diskon khusus mitra.
                                         </p>
                                         <a
                                             href={route('vendor.transactions.create', { member_code: result.member.member_code })}
                                             className="btn-ink mt-6"
                                         >
-                                            Record a transaction for this member
+                                            Catat Transaksi untuk Member Ini
                                         </a>
                                     </div>
                                 ) : (
                                     <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-ember/30 bg-ember/10 p-8 text-center">
                                         <span className="text-3xl">⛔</span>
-                                        <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Membership INACTIVE</h3>
+                                        <h3 className="mt-3 font-display text-xl font-bold text-ember-deep">Keanggotaan TIDAK AKTIF</h3>
                                         <p className="mt-2 text-sm text-slate">
-                                            This member cannot use benefits/promos until the membership is renewed.
+                                            Member ini tidak dapat menggunakan benefit/promo hingga masa keanggotaan diperpanjang.
                                         </p>
                                     </div>
                                 )}
 
                                 <button onClick={() => router.get(route('vendor.verify'), {}, { preserveScroll: true })} className="btn-ghost">
-                                    Scan another member
+                                    Pindai Member Lain
                                 </button>
                             </div>
                         </div>
@@ -106,8 +106,8 @@ export default function Verify({ result }) {
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2">
                         <section className="card-surface p-6">
-                            <h2 className="font-display text-lg font-bold">Scan QR Card</h2>
-                            <p className="mt-1 text-sm text-slate">Point the camera at the QR code on the member's digital card.</p>
+                            <h2 className="font-display text-lg font-bold">Pindai QR Kartu</h2>
+                            <p className="mt-1 text-sm text-slate">Arahkan kamera ke kode QR pada kartu digital member.</p>
 
                             <div className="mt-4 overflow-hidden rounded-2xl border border-ink/10 bg-ink">
                                 <Scanner
@@ -123,15 +123,15 @@ export default function Verify({ result }) {
                         </section>
 
                         <section className="card-surface p-6">
-                            <h2 className="font-display text-lg font-bold">Or enter the Member ID</h2>
-                            <p className="mt-1 text-sm text-slate">Type the Member ID shown on the member's card.</p>
+                            <h2 className="font-display text-lg font-bold">Atau Masukkan Nomor Anggota</h2>
+                            <p className="mt-1 text-sm text-slate">Ketik Nomor Anggota yang tertera pada kartu member.</p>
 
                             <form onSubmit={submitManual} className="mt-4">
-                                <label className="label" htmlFor="query">Member ID / Token</label>
+                                <label className="label" htmlFor="query">Nomor Anggota / Token</label>
                                 <input id="query" type="text" className="input font-mono" value={manual.data.query} onChange={(e) => manual.setData('query', e.target.value)} placeholder="7030260001" />
                                 {manual.errors.query && <p className="mt-1 text-xs text-ember">{manual.errors.query}</p>}
                                 <button type="submit" className="btn-gold mt-4 w-full" disabled={manual.processing}>
-                                    {manual.processing ? 'Checking…' : 'Check Status'}
+                                    {manual.processing ? 'Memeriksa…' : 'Periksa Status'}
                                 </button>
                             </form>
                         </section>

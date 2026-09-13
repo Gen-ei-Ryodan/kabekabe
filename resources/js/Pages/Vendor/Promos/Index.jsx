@@ -20,35 +20,40 @@ export default function PromoIndex({ promos, filters }) {
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <p className="eyebrow">Promo</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">My Promos</h1>
-                        <p className="mt-2 text-sm text-slate">Submit promos for community members. Promos appear after admin approval.</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo Saya</h1>
+                        <p className="mt-2 text-sm text-slate">Ajukan promo untuk member komunitas. Promo akan tayang setelah disetujui admin.</p>
                     </div>
                     <Link href={route('vendor.promos.create')} className="btn-gold">
-                        + Create Promo
+                        + Buat Promo
                     </Link>
                 </header>
 
                 <div className="flex flex-wrap gap-2">
-                    {['all', 'pending', 'approved', 'rejected'].map((status) => (
+                    {[
+                        { key: 'all', label: 'Semua' },
+                        { key: 'pending', label: 'Menunggu' },
+                        { key: 'approved', label: 'Disetujui' },
+                        { key: 'rejected', label: 'Ditolak' },
+                    ].map(({ key, label }) => (
                         <button
-                            key={status}
-                            onClick={() => selectStatus(status)}
+                            key={key}
+                            onClick={() => selectStatus(key)}
                             className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                                (filters.status || 'all') === status
+                                (filters.status || 'all') === key
                                     ? 'bg-ink text-paper'
                                     : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
                             }`}
                         >
-                            {status === 'all' ? 'All' : status === 'pending' ? 'Pending' : status === 'approved' ? 'Approved' : 'Rejected'}
+                            {label}
                         </button>
                     ))}
                 </div>
 
                 {promos.data.length === 0 ? (
                     <EmptyState
-                        title="No promos yet"
-                        description="Create your first promo for community members."
-                        action={<Link href={route('vendor.promos.create')} className="btn-gold">Create promo</Link>}
+                        title="Belum ada promo"
+                        description="Buat promo pertama Anda untuk member komunitas."
+                        action={<Link href={route('vendor.promos.create')} className="btn-gold">Buat promo</Link>}
                     />
                 ) : (
                     <div className="space-y-3">
@@ -60,10 +65,10 @@ export default function PromoIndex({ promos, filters }) {
                                             <span className="font-mono text-xs text-slate">#{promo.id}</span>
                                             <StatusChip
                                                 status={promo.status}
-                                                label={promo.status === 'pending' ? 'Pending' : promo.status === 'approved' ? 'Approved' : 'Rejected'}
+                                                label={promo.status === 'pending' ? 'Menunggu' : promo.status === 'approved' ? 'Disetujui' : 'Ditolak'}
                                             />
                                             {promo.status === 'approved' && (
-                                                <StatusChip status={promo.is_active ? 'active' : 'inactive'} label={promo.is_active ? 'Active' : 'Inactive'} />
+                                                <StatusChip status={promo.is_active ? 'active' : 'inactive'} label={promo.is_active ? 'Aktif' : 'Tidak Aktif'} />
                                             )}
                                         </div>
                                         <h3 className="mt-2 font-display text-lg font-bold">{promo.title}</h3>
@@ -75,7 +80,7 @@ export default function PromoIndex({ promos, filters }) {
                                         </p>
                                         {promo.status === 'rejected' && promo.rejection_reason && (
                                             <p className="mt-2 rounded-lg bg-ember/10 px-3 py-2 text-xs text-ember">
-                                                Rejection reason: {promo.rejection_reason}
+                                                Alasan penolakan: {promo.rejection_reason}
                                             </p>
                                         )}
                                     </div>
@@ -83,17 +88,17 @@ export default function PromoIndex({ promos, filters }) {
                                     <div className="flex shrink-0 gap-2">
                                         {promo.status === 'rejected' && (
                                             <Link href={route('vendor.promos.edit', promo.id)} className="btn-ghost text-xs">
-                                                Revise & resubmit
+                                                Revisi & Ajukan Ulang
                                             </Link>
                                         )}
                                         {promo.status !== 'approved' && (
                                             <button
                                                 onClick={() => {
-                                                    if (confirm('Delete this promo?')) router.delete(route('vendor.promos.destroy', promo.id));
+                                                    if (confirm('Hapus promo ini?')) router.delete(route('vendor.promos.destroy', promo.id));
                                                 }}
                                                 className="btn-danger text-xs"
                                             >
-                                                Delete
+                                                Hapus
                                             </button>
                                         )}
                                     </div>

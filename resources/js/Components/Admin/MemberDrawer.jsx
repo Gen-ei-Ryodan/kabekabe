@@ -28,28 +28,28 @@ function CreateMemberDrawer({ onClose }) {
         <form id="member-form" onSubmit={submit} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                    <label className="label" htmlFor="name">Full name</label>
+                    <label className="label" htmlFor="name">Nama Lengkap</label>
                     <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                     {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="gender">Gender</label>
+                    <label className="label" htmlFor="gender">Jenis Kelamin</label>
                     <select id="gender" className="input" value={form.data.gender} onChange={(e) => form.setData('gender', e.target.value)}>
-                        <option value="">Select gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
+                        <option value="">Pilih jenis kelamin</option>
+                        <option value="male">Laki-laki</option>
+                        <option value="female">Perempuan</option>
                     </select>
                     {form.errors.gender && <p className="mt-1 text-xs text-ember">{form.errors.gender}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="birth_date">Birth date</label>
+                    <label className="label" htmlFor="birth_date">Tanggal Lahir</label>
                     <input id="birth_date" type="date" className="input" value={form.data.birth_date} onChange={(e) => form.setData('birth_date', e.target.value)} />
                     {form.errors.birth_date && <p className="mt-1 text-xs text-ember">{form.errors.birth_date}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="religion">Religion</label>
+                    <label className="label" htmlFor="religion">Agama</label>
                     <select id="religion" className="input" value={form.data.religion} onChange={(e) => form.setData('religion', e.target.value)}>
-                        <option value="">Select religion</option>
+                        <option value="">Pilih agama</option>
                         <option value="islam">Islam</option>
                         <option value="kristen">Kristen</option>
                         <option value="katolik">Katolik</option>
@@ -66,21 +66,21 @@ function CreateMemberDrawer({ onClose }) {
                     {form.errors.email && <p className="mt-1 text-xs text-ember">{form.errors.email}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="valid_until">Valid until</label>
+                    <label className="label" htmlFor="valid_until">Berlaku Hingga</label>
                     <input id="valid_until" type="date" className="input" value={form.data.valid_until} onChange={(e) => form.setData('valid_until', e.target.value)} />
                     {form.errors.valid_until && <p className="mt-1 text-xs text-ember">{form.errors.valid_until}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="password">Password</label>
+                    <label className="label" htmlFor="password">Kata Sandi</label>
                     <input id="password" type="password" className="input" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
                     {form.errors.password && <p className="mt-1 text-xs text-ember">{form.errors.password}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="password_confirmation">Confirm password</label>
+                    <label className="label" htmlFor="password_confirmation">Konfirmasi Kata Sandi</label>
                     <input id="password_confirmation" type="password" className="input" value={form.data.password_confirmation} onChange={(e) => form.setData('password_confirmation', e.target.value)} />
                 </div>
                 <div>
-                    <label className="label" htmlFor="phone">Phone</label>
+                    <label className="label" htmlFor="phone">Telepon</label>
                     <input id="phone" type="text" className="input" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
                 </div>
                 <div>
@@ -88,15 +88,15 @@ function CreateMemberDrawer({ onClose }) {
                     <input id="whatsapp" type="text" className="input" value={form.data.whatsapp} onChange={(e) => form.setData('whatsapp', e.target.value)} />
                 </div>
                 <div className="sm:col-span-2">
-                    <label className="label" htmlFor="company">Company</label>
+                    <label className="label" htmlFor="company">Perusahaan</label>
                     <input id="company" type="text" className="input" value={form.data.company} onChange={(e) => form.setData('company', e.target.value)} />
                 </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
+                <button type="button" onClick={onClose} className="btn-ghost">Batal</button>
                 <button type="submit" className="btn-gold" disabled={form.processing}>
-                    {form.processing ? 'Saving…' : 'Add Member'}
+                    {form.processing ? 'Menyimpan…' : 'Tambah Member'}
                 </button>
             </div>
         </form>
@@ -126,28 +126,28 @@ function EditMemberDrawer({ member, onClose }) {
         <form id="member-form" onSubmit={submit} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                    <label className="label" htmlFor="name">Full name</label>
+                    <label className="label" htmlFor="name">Nama Lengkap</label>
                     <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                     {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="gender">Gender</label>
+                    <label className="label" htmlFor="gender">Jenis Kelamin</label>
                     <select id="gender" className="input" value={form.data.gender} onChange={(e) => form.setData('gender', e.target.value)}>
-                        <option value="">Select gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
+                        <option value="">Pilih jenis kelamin</option>
+                        <option value="male">Laki-laki</option>
+                        <option value="female">Perempuan</option>
                     </select>
                     {form.errors.gender && <p className="mt-1 text-xs text-ember">{form.errors.gender}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="birth_date">Birth date</label>
+                    <label className="label" htmlFor="birth_date">Tanggal Lahir</label>
                     <input id="birth_date" type="date" className="input" value={form.data.birth_date} onChange={(e) => form.setData('birth_date', e.target.value)} />
                     {form.errors.birth_date && <p className="mt-1 text-xs text-ember">{form.errors.birth_date}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="religion">Religion</label>
+                    <label className="label" htmlFor="religion">Agama</label>
                     <select id="religion" className="input" value={form.data.religion} onChange={(e) => form.setData('religion', e.target.value)}>
-                        <option value="">Select religion</option>
+                        <option value="">Pilih agama</option>
                         <option value="islam">Islam</option>
                         <option value="kristen">Kristen</option>
                         <option value="katolik">Katolik</option>
@@ -164,7 +164,7 @@ function EditMemberDrawer({ member, onClose }) {
                     {form.errors.email && <p className="mt-1 text-xs text-ember">{form.errors.email}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="phone">Phone</label>
+                    <label className="label" htmlFor="phone">Telepon</label>
                     <input id="phone" type="text" className="input" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
                 </div>
                 <div>
@@ -172,24 +172,24 @@ function EditMemberDrawer({ member, onClose }) {
                     <input id="whatsapp" type="text" className="input" value={form.data.whatsapp} onChange={(e) => form.setData('whatsapp', e.target.value)} />
                 </div>
                 <div>
-                    <label className="label" htmlFor="company">Company</label>
+                    <label className="label" htmlFor="company">Perusahaan</label>
                     <input id="company" type="text" className="input" value={form.data.company} onChange={(e) => form.setData('company', e.target.value)} />
                 </div>
                 <div>
-                    <label className="label" htmlFor="password">New password (optional)</label>
-                    <input id="password" type="password" className="input" placeholder="Leave blank to keep current password" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
+                    <label className="label" htmlFor="password">Kata Sandi Baru (opsional)</label>
+                    <input id="password" type="password" className="input" placeholder="Kosongkan jika tidak ingin mengubah kata sandi" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
                     {form.errors.password && <p className="mt-1 text-xs text-ember">{form.errors.password}</p>}
                 </div>
                 <div>
-                    <label className="label" htmlFor="password_confirmation">Confirm password</label>
+                    <label className="label" htmlFor="password_confirmation">Konfirmasi Kata Sandi</label>
                     <input id="password_confirmation" type="password" className="input" value={form.data.password_confirmation} onChange={(e) => form.setData('password_confirmation', e.target.value)} />
                 </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
+                <button type="button" onClick={onClose} className="btn-ghost">Batal</button>
                 <button type="submit" className="btn-gold" disabled={form.processing}>
-                    {form.processing ? 'Saving…' : 'Save'}
+                    {form.processing ? 'Menyimpan…' : 'Simpan Perubahan'}
                 </button>
             </div>
         </form>
@@ -200,7 +200,7 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
     const { member, membership, payments, transactions } = drawer;
 
     const remove = () => {
-        if (confirm('Delete this member?')) router.delete(route('admin.members.destroy', member.id));
+        if (confirm('Hapus member ini?')) router.delete(route('admin.members.destroy', member.id));
     };
 
     return (
@@ -215,44 +215,44 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
                 </div>
                 <div className="flex gap-2">
                     <button onClick={onEdit} className="btn-ghost text-xs">Edit</button>
-                    <button onClick={remove} className="btn-danger text-xs">Delete</button>
+                    <button onClick={remove} className="btn-danger text-xs">Hapus</button>
                 </div>
             </div>
 
             <section className="rounded-2xl border border-ink/10 p-5">
-                <h2 className="font-display text-lg font-bold">Membership</h2>
+                <h2 className="font-display text-lg font-bold">Keanggotaan</h2>
                 {membership ? (
                     <div className="mt-3 space-y-3">
                         <div className="flex items-center justify-between">
                             <span className="eyebrow">Status</span>
-                            <StatusChip status={membership.status} label={membership.status === 'active' ? 'Active' : 'Inactive'} pulse={membership.status === 'active'} />
+                            <StatusChip status={membership.status} label={membership.status === 'active' ? 'Aktif' : 'Tidak Aktif'} pulse={membership.status === 'active'} />
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-slate">Plan</span>
+                            <span className="text-slate">Paket</span>
                             <span className="font-semibold">{membership.plan?.name || '-'}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-slate">Start</span>
+                            <span className="text-slate">Mulai</span>
                             <span className="font-mono text-xs">{formatDate(membership.starts_at)}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-slate">Valid until</span>
+                            <span className="text-slate">Berlaku hingga</span>
                             <span className="font-mono text-xs">{formatDate(membership.expires_at)}</span>
                         </div>
                     </div>
                 ) : (
-                    <p className="mt-3 text-sm text-slate">No membership yet.</p>
+                    <p className="mt-3 text-sm text-slate">Belum ada data keanggotaan.</p>
                 )}
             </section>
 
             <section className="rounded-2xl border border-ink/10 p-5">
-                <h2 className="font-display text-lg font-bold">Contact Information</h2>
+                <h2 className="font-display text-lg font-bold">Informasi Kontak</h2>
                 <dl className="mt-3 grid gap-3 sm:grid-cols-2">
                     {[
-                        ['Phone', member.phone || '-'],
+                        ['Telepon', member.phone || '-'],
                         ['WhatsApp', member.whatsapp || '-'],
-                        ['Company', member.company || '-'],
-                        ['Joined', member.created_at],
+                        ['Perusahaan', member.company || '-'],
+                        ['Bergabung', member.created_at],
                     ].map(([label, value]) => (
                         <div key={label} className="rounded-xl bg-paper p-3">
                             <dt className="eyebrow">{label}</dt>
@@ -263,10 +263,10 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
             </section>
 
             <section className="rounded-2xl border border-ink/10 p-5">
-                <h2 className="font-display text-lg font-bold">Recent Transactions</h2>
+                <h2 className="font-display text-lg font-bold">Transaksi Terkini</h2>
                 <div className="mt-3 space-y-3">
                     {transactions.length === 0 ? (
-                        <p className="text-sm text-slate">No transactions yet.</p>
+                        <p className="text-sm text-slate">Belum ada transaksi.</p>
                     ) : (
                         transactions.map((t) => (
                             <a
@@ -290,7 +290,7 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
                 if (!partner || (!partner.total_belanja && !partner.diskon1 && !partner.diskon2 && !partner.diskon3)) return null;
                 return (
                     <section className="rounded-2xl border border-ink/10 p-5">
-                        <h2 className="font-display text-lg font-bold">Vendor Info — {partner.name}</h2>
+                        <h2 className="font-display text-lg font-bold">Info Vendor — {partner.name}</h2>
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
                             {[
                                 ['Total Belanja', partner.total_belanja],
@@ -309,10 +309,10 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
             })()}
 
             <section className="rounded-2xl border border-ink/10 p-5">
-                <h2 className="font-display text-lg font-bold">Payment History</h2>
+                <h2 className="font-display text-lg font-bold">Riwayat Pembayaran</h2>
                 <div className="mt-3 space-y-3">
                     {payments.length === 0 ? (
-                        <p className="text-sm text-slate">No payments yet.</p>
+                        <p className="text-sm text-slate">Belum ada pembayaran.</p>
                     ) : (
                         payments.map((p) => (
                             <a
@@ -322,7 +322,7 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
                             >
                                 <div>
                                     <p className="text-sm font-semibold">{formatRupiah(p.amount)}</p>
-                                    <p className="font-mono text-xs text-slate">{formatDate(p.created_at)}</p>
+                                    <p className="font-mono text-xs text-slate">{p.plan?.name || '-'} · {formatDate(p.created_at)}</p>
                                 </div>
                                 <StatusChip status={p.status} label={p.status} />
                             </a>
@@ -338,7 +338,7 @@ export default function MemberDrawer({ drawer, onClose, onEdit }) {
     if (!drawer?.mode) return null;
 
     const meta = {
-        create: ['Add Member', 'Create a new member along with their membership.'],
+        create: ['Tambah Member', 'Buat member baru beserta status keanggotaannya.'],
         edit: ['Edit Member', drawer.member?.member_code],
         show: [drawer.member?.name, drawer.member?.email],
     };

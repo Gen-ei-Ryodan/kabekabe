@@ -39,71 +39,71 @@ export default function MemberIndex({ members, filters, drawer }) {
 
     return (
         <>
-            <Head title="Members" />
+            <Head title="Member" />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <p className="eyebrow">Member Management</p>
-                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Members</h1>
-                        <p className="mt-2 text-sm text-slate">Manage members, status, and membership history.</p>
+                        <p className="eyebrow">Manajemen Member</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Member</h1>
+                        <p className="mt-2 text-sm text-slate">Kelola member, status, dan riwayat keanggotaan.</p>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setImportOpen(true)} className="btn-ghost">Import</button>
-                        <button onClick={openCreate} className="btn-gold">+ Add Member</button>
+                        <button onClick={() => setImportOpen(true)} className="btn-ghost">Impor</button>
+                        <button onClick={openCreate} className="btn-gold">+ Tambah Member</button>
                     </div>
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-4 p-4">
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
-                            <label className="label">Search</label>
-                            <input type="text" className="input" placeholder="Name / email / member ID" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
+                            <label className="label">Cari</label>
+                            <input type="text" className="input" placeholder="Nama / email / ID member" value={filter.data.search || ''} onChange={(e) => filter.setData('search', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">Name</label>
-                            <input type="text" className="input" placeholder="Member name" value={filter.data.name || ''} onChange={(e) => filter.setData('name', e.target.value)} />
+                            <label className="label">Nama</label>
+                            <input type="text" className="input" placeholder="Nama member" value={filter.data.name || ''} onChange={(e) => filter.setData('name', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">Member ID</label>
+                            <label className="label">ID Member</label>
                             <input type="text" className="input" placeholder="7030260001" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)} />
                         </div>
                         <div>
                             <label className="label">Status</label>
                             <select className="input" value={filter.data.status || ''} onChange={(e) => filter.setData('status', e.target.value)}>
-                                <option value="">All</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
+                                <option value="">Semua</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
                             </select>
                         </div>
                         <div>
-                            <label className="label">Valid from</label>
+                            <label className="label">Berlaku dari</label>
                             <input type="date" className="input" value={filter.data.valid_from || ''} onChange={(e) => filter.setData('valid_from', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">Valid until</label>
+                            <label className="label">Berlaku sampai</label>
                             <input type="date" className="input" value={filter.data.valid_to || ''} onChange={(e) => filter.setData('valid_to', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">Joined from</label>
+                            <label className="label">Bergabung dari</label>
                             <input type="date" className="input" value={filter.data.joined_from || ''} onChange={(e) => filter.setData('joined_from', e.target.value)} />
                         </div>
                         <div>
-                            <label className="label">Joined until</label>
+                            <label className="label">Bergabung sampai</label>
                             <input type="date" className="input" value={filter.data.joined_to || ''} onChange={(e) => filter.setData('joined_to', e.target.value)} />
                         </div>
                     </div>
                     <div className="flex gap-2 self-end">
-                        <button type="submit" className="btn-ink text-xs">Apply</button>
-                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Reset</button>
+                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
+                        <button type="button" onClick={clearFilter} className="btn-ghost text-xs">Atur Ulang</button>
                     </div>
                 </form>
 
                 {members.data.length === 0 ? (
                     <EmptyState
-                        title="No members found"
-                        description="No members match this filter yet."
-                        action={<button onClick={openCreate} className="btn-gold">Add member</button>}
+                        title="Member tidak ditemukan"
+                        description="Belum ada member yang sesuai dengan filter ini."
+                        action={<button onClick={openCreate} className="btn-gold">Tambah Member</button>}
                     />
                 ) : (
                     <div className="card-surface overflow-x-auto">
@@ -111,11 +111,11 @@ export default function MemberIndex({ members, filters, drawer }) {
                             <thead className="border-b border-ink/10 bg-paper/60">
                                 <tr>
                                     <th className="table-head px-4 py-3">Member</th>
-                                    <th className="table-head px-4 py-3">Member ID</th>
-                                    <th className="table-head px-4 py-3">Contact</th>
+                                    <th className="table-head px-4 py-3">ID Member</th>
+                                    <th className="table-head px-4 py-3">Kontak</th>
                                     <th className="table-head px-4 py-3">Status</th>
-                                    <th className="table-head px-4 py-3">Valid until</th>
-                                    <th className="table-head px-4 py-3">Joined</th>
+                                    <th className="table-head px-4 py-3">Berlaku Hingga</th>
+                                    <th className="table-head px-4 py-3">Bergabung</th>
                                     <th className="table-head px-4 py-3"></th>
                                 </tr>
                             </thead>
@@ -133,11 +133,11 @@ export default function MemberIndex({ members, filters, drawer }) {
                                             <p>{member.email}</p>
                                             <p className="font-mono text-[10px]">{member.whatsapp || '-'}</p>
                                         </td>
-                                        <td className="px-4 py-3"><StatusChip status={member.membership_status} label={member.membership_status === 'active' ? 'Active' : 'Inactive'} pulse={member.membership_status === 'active'} /></td>
+                                        <td className="px-4 py-3"><StatusChip status={member.membership_status} label={member.membership_status === 'active' ? 'Aktif' : 'Tidak Aktif'} pulse={member.membership_status === 'active'} /></td>
                                         <td className="px-4 py-3 font-mono text-xs">{member.expires_at || '-'}</td>
                                         <td className="px-4 py-3 text-slate">{member.created_at}</td>
                                         <td className="px-4 py-3">
-                                            <button onClick={() => openShow(member.id)} className="text-sm font-medium text-gold-deep">View →</button>
+                                            <button onClick={() => openShow(member.id)} className="text-sm font-medium text-gold-deep">Lihat →</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -152,9 +152,9 @@ export default function MemberIndex({ members, filters, drawer }) {
             <MemberDrawer drawer={drawer} onClose={closeDrawer} onEdit={() => openEdit(drawer?.member?.id)} />
             {importOpen && (
                 <ImportDrawer
-                    title="Import Members"
-                    subtitle="Bulk-create members from a spreadsheet."
-                    columns={['Name*', 'Email*', 'Password', 'Phone', 'WhatsApp', 'Company', 'Valid Until*']}
+                    title="Impor Member"
+                    subtitle="Buat banyak member sekaligus dari file spreadsheet."
+                    columns={['Nama*', 'Email*', 'Password', 'Telepon', 'WhatsApp', 'Perusahaan', 'Berlaku Hingga*']}
                     templateHref={route('admin.members.import.template')}
                     uploadRoute={route('admin.members.import')}
                     onClose={() => setImportOpen(false)}

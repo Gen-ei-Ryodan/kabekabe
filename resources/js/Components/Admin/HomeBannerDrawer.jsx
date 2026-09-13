@@ -49,14 +49,14 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
     return (
         <form id="home-banner-form" onSubmit={submit} className="space-y-5">
             <div>
-                <label className="label" htmlFor="banner-target">Promo target</label>
+                <label className="label" htmlFor="banner-target">Target Promo</label>
                 <select
                     id="banner-target"
                     className="input"
                     value={form.data.target_id}
                     onChange={(e) => form.setData('target_id', e.target.value)}
                 >
-                    <option value="">Select a promo…</option>
+                    <option value="">Pilih promo…</option>
                     {options.map((item) => (
                         <option key={item.id} value={item.id}>
                             {optionLabel(item)}
@@ -65,7 +65,7 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
                 </select>
                 {options.length === 0 && (
                     <p className="mt-1.5 text-xs text-slate">
-                        No promos available right now.
+                        Tidak ada promo tersedia saat ini.
                     </p>
                 )}
                 {form.errors.promo_id && <p className="mt-1 text-xs text-ember">{form.errors.promo_id}</p>}
@@ -73,7 +73,7 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
             </div>
 
             <div>
-                <label className="label" htmlFor="banner-image">Image (optional)</label>
+                <label className="label" htmlFor="banner-image">Gambar (opsional)</label>
                 <input
                     id="banner-image"
                     type="file"
@@ -81,17 +81,17 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
                     className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper"
                     onChange={(e) => form.setData((data) => ({ ...data, image: e.target.files[0] || null, remove_image: false }))}
                 />
-                <p className="mt-1.5 text-xs text-slate">JPG/PNG/WebP, max 2 MB. Ideal ratio 4:5 (e.g. 1080×1350px). Shown as the banner cover on member home.</p>
+                <p className="mt-1.5 text-xs text-slate">Format JPG/PNG/WebP, maksimal 2 MB. Rasio ideal 4:5 (misal 1080×1350px). Tampil sebagai cover banner di beranda member.</p>
 
                 {imagePreview && (
                     <div className="mt-3 flex items-start gap-3">
-                        <img src={imagePreview} alt="Banner preview" className="h-32 w-full max-w-[256px] rounded-xl border border-ink/10 object-cover" style={{ aspectRatio: '4/5' }} />
+                        <img src={imagePreview} alt="Pratinjau Banner" className="h-32 w-full max-w-[256px] rounded-xl border border-ink/10 object-cover" style={{ aspectRatio: '4/5' }} />
                         <button
                             type="button"
                             onClick={() => form.setData((data) => ({ ...data, image: null, remove_image: true }))}
                             className="btn-ghost text-xs"
                         >
-                            Remove
+                            Hapus
                         </button>
                     </div>
                 )}
@@ -101,7 +101,7 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
             </div>
 
             <div>
-                <label className="label" htmlFor="banner-sort">Sort order</label>
+                <label className="label" htmlFor="banner-sort">Urutan Tampilan</label>
                 <input
                     id="banner-sort"
                     type="number"
@@ -111,7 +111,7 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
                     value={form.data.sort_order}
                     onChange={(e) => form.setData('sort_order', e.target.value)}
                 />
-                <p className="mt-1.5 text-xs text-slate">Lower numbers appear first on the member home.</p>
+                <p className="mt-1.5 text-xs text-slate">Angka lebih kecil akan muncul lebih awal di beranda member.</p>
                 {form.errors.sort_order && <p className="mt-1 text-xs text-ember">{form.errors.sort_order}</p>}
             </div>
 
@@ -122,15 +122,15 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
                     onChange={(e) => form.setData('is_active', e.target.checked)}
                     className="h-4 w-4 accent-gold"
                 />
-                <span className="text-sm">Show on member home</span>
+                <span className="text-sm">Tampilkan di beranda member</span>
             </label>
 
             <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={onClose} className="btn-ghost">
-                    Cancel
+                    Batal
                 </button>
                 <button type="submit" className="btn-gold" disabled={form.processing}>
-                    {form.processing ? 'Saving…' : editing ? 'Save' : 'Save Banner'}
+                    {form.processing ? 'Menyimpan…' : editing ? 'Simpan' : 'Simpan Banner'}
                 </button>
             </div>
         </form>
@@ -147,9 +147,9 @@ export default function HomeBannerDrawer({ drawer, onClose, promos = [], nextSor
         <SlideOver
             open
             onClose={onClose}
-            title={isEdit ? 'Edit Banner' : 'Add Home Banner'}
+            title={isEdit ? 'Edit Banner' : 'Tambah Banner Beranda'}
             subtitle={
-                isEdit ? banner?.target_title : 'Feature a promo or an agenda on the member home.'
+                isEdit ? banner?.target_title : 'Unggulkan promo di beranda utama member.'
             }
             width="max-w-2xl"
         >

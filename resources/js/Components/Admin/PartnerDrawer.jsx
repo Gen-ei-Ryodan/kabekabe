@@ -43,7 +43,7 @@ function CreatePartnerDrawer({ onClose }) {
     return (
         <form id="partner-form" onSubmit={submit} className="space-y-5">
             <section className="space-y-4">
-                <h2 className="font-display text-lg font-bold">Partner Details</h2>
+                <h2 className="font-display text-lg font-bold">Rincian Partner</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="label" htmlFor="name">Nama Usaha / Brand</label>
@@ -52,7 +52,7 @@ function CreatePartnerDrawer({ onClose }) {
                     </div>
                     <div>
                         <label className="label" htmlFor="category">Kategori</label>
-                        <input id="category" type="text" className="input" value={form.data.category} onChange={(e) => form.setData('category', e.target.value)} placeholder="Restaurant, Retail, Healthcare…" required />
+                        <input id="category" type="text" className="input" value={form.data.category} onChange={(e) => form.setData('category', e.target.value)} placeholder="Restoran, Retail, Kesehatan…" required />
                         {form.errors.category && <p className="mt-1 text-xs text-ember">{form.errors.category}</p>}
                     </div>
                     <div>
@@ -115,25 +115,25 @@ function CreatePartnerDrawer({ onClose }) {
             </section>
 
             <section className="space-y-4 border-t border-ink/10 pt-5">
-                <h2 className="font-display text-lg font-bold">Vendor Login Account</h2>
+                <h2 className="font-display text-lg font-bold">Akun Login Vendor</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label className="label" htmlFor="vendor_name">Vendor Account Name</label>
+                        <label className="label" htmlFor="vendor_name">Nama Akun Vendor</label>
                         <input id="vendor_name" type="text" className="input" value={form.data.vendor_name} onChange={(e) => form.setData('vendor_name', e.target.value)} />
                         {form.errors.vendor_name && <p className="mt-1 text-xs text-ember">{form.errors.vendor_name}</p>}
                     </div>
                     <div>
-                        <label className="label" htmlFor="vendor_email">Login Email</label>
+                        <label className="label" htmlFor="vendor_email">Email Login</label>
                         <input id="vendor_email" type="email" className="input" value={form.data.vendor_email} onChange={(e) => form.setData('vendor_email', e.target.value)} />
                         {form.errors.vendor_email && <p className="mt-1 text-xs text-ember">{form.errors.vendor_email}</p>}
                     </div>
                     <div>
-                        <label className="label" htmlFor="vendor_password">Password</label>
+                        <label className="label" htmlFor="vendor_password">Kata Sandi</label>
                         <input id="vendor_password" type="password" className="input" value={form.data.vendor_password} onChange={(e) => form.setData('vendor_password', e.target.value)} />
                         {form.errors.vendor_password && <p className="mt-1 text-xs text-ember">{form.errors.vendor_password}</p>}
                     </div>
                     <div>
-                        <label className="label" htmlFor="vendor_password_confirmation">Confirm Password</label>
+                        <label className="label" htmlFor="vendor_password_confirmation">Konfirmasi Kata Sandi</label>
                         <input id="vendor_password_confirmation" type="password" className="input" value={form.data.vendor_password_confirmation} onChange={(e) => form.setData('vendor_password_confirmation', e.target.value)} />
                     </div>
                 </div>

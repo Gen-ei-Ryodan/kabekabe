@@ -25,11 +25,11 @@ export default function MemberShow({ member, membership, payments, transactions 
                         <Link href={route('admin.members.edit', member.id)} className="btn-ghost text-xs">Edit</Link>
                         <button
                             onClick={() => {
-                                if (confirm('Delete this member?')) router.delete(route('admin.members.destroy', member.id));
+                                if (confirm('Hapus member ini?')) router.delete(route('admin.members.destroy', member.id));
                             }}
                             className="btn-danger text-xs"
                         >
-                            Delete
+                            Hapus
                         </button>
                     </div>
                 </header>
@@ -37,36 +37,36 @@ export default function MemberShow({ member, membership, payments, transactions 
                 <section className="grid gap-4 lg:grid-cols-3">
                     <div className="card-surface p-6 lg:col-span-1">
                         <div className="flex items-center justify-between">
-                            <h2 className="font-display text-lg font-bold">Membership</h2>
+                            <h2 className="font-display text-lg font-bold">Keanggotaan</h2>
                             {membership && (
-                                <StatusChip status={membership.status} label={membership.status === 'active' ? 'Active' : 'Inactive'} pulse={membership.status === 'active'} />
+                                <StatusChip status={membership.status} label={membership.status === 'active' ? 'Aktif' : 'Tidak Aktif'} pulse={membership.status === 'active'} />
                             )}
                         </div>
 
                         {membership ? (
                             <div className="mt-4 space-y-3">
                                 <div className="rounded-xl bg-paper p-3">
-                                    <dt className="eyebrow">Current Plan</dt>
+                                    <dt className="eyebrow">Paket Saat Ini</dt>
                                     <dd className="mt-1 text-sm font-bold">{membership.plan?.name || '-'}</dd>
                                     {membership.plan?.duration_months && (
-                                        <dd className="text-xs text-slate">{membership.plan.duration_months} months · {formatRupiah(membership.plan?.price)}</dd>
+                                        <dd className="text-xs text-slate">{membership.plan.duration_months} bulan · {formatRupiah(membership.plan?.price)}</dd>
                                     )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="rounded-xl bg-paper p-3">
-                                        <dt className="eyebrow">Started</dt>
+                                        <dt className="eyebrow">Dimulai</dt>
                                         <dd className="mt-1 font-mono text-xs">{formatDate(membership.started_at)}</dd>
                                     </div>
                                     <div className="rounded-xl bg-paper p-3">
-                                        <dt className="eyebrow">Valid Until</dt>
+                                        <dt className="eyebrow">Berlaku Hingga</dt>
                                         <dd className="mt-1 font-mono text-xs">{formatDate(membership.expires_at)}</dd>
                                     </div>
                                 </div>
                                 {daysLeft !== null && (
                                     <div className={`rounded-xl p-3 ${isExpiringSoon ? 'bg-amber-50 border border-amber-200' : 'bg-paper'}`}>
-                                        <dt className={`eyebrow ${isExpiringSoon ? 'text-amber-700' : ''}`}>Days Remaining</dt>
+                                        <dt className={`eyebrow ${isExpiringSoon ? 'text-amber-700' : ''}`}>Sisa Masa Aktif</dt>
                                         <dd className={`mt-1 font-mono text-sm font-bold ${isExpiringSoon ? 'text-amber-700' : ''}`}>
-                                            {daysLeft >= 0 ? `${daysLeft} days` : 'Expired'}
+                                            {daysLeft >= 0 ? `${daysLeft} hari` : 'Kadaluarsa'}
                                         </dd>
                                     </div>
                                 )}
@@ -79,33 +79,33 @@ export default function MemberShow({ member, membership, payments, transactions 
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    Record Payment
+                                    Catat Pembayaran
                                 </Link>
                                 <Link href={route('admin.members.edit', member.id)} className="btn-ink flex w-full justify-center text-xs">Edit Member</Link>
                             </div>
                         ) : (
                             <div className="mt-4 space-y-3">
-                                <p className="text-sm text-slate">No membership yet.</p>
+                                <p className="text-sm text-slate">Belum memiliki keanggotaan aktif.</p>
                                 <Link
                                     href={route('admin.payments.create')}
                                     method="get"
                                     data={{ member_id: member.id }}
                                     className="btn-gold flex w-full items-center justify-center gap-2 text-xs"
                                 >
-                                    Create Membership
+                                    Buat Keanggotaan
                                 </Link>
                             </div>
                         )}
                     </div>
 
                     <div className="card-surface p-6 lg:col-span-2">
-                        <h2 className="font-display text-lg font-bold">Contact Information</h2>
+                        <h2 className="font-display text-lg font-bold">Informasi Kontak</h2>
                         <dl className="mt-4 grid gap-3 sm:grid-cols-2">
                             {[
-                                ['Phone', member.phone || '-'],
+                                ['Telepon', member.phone || '-'],
                                 ['WhatsApp', member.whatsapp || '-'],
-                                ['Company', member.company || '-'],
-                                ['Joined', member.created_at],
+                                ['Perusahaan', member.company || '-'],
+                                ['Bergabung', member.created_at],
                             ].map(([label, value]) => (
                                 <div key={label} className="rounded-xl bg-paper p-3">
                                     <dt className="eyebrow">{label}</dt>
@@ -118,10 +118,10 @@ export default function MemberShow({ member, membership, payments, transactions 
 
                 <section className="grid gap-8 lg:grid-cols-2">
                     <div className="card-surface p-6">
-                        <h2 className="font-display text-lg font-bold">Recent Transactions</h2>
+                        <h2 className="font-display text-lg font-bold">Transaksi Terkini</h2>
                         <div className="mt-4 space-y-3">
                             {transactions.length === 0 ? (
-                                <p className="text-sm text-slate">No transactions yet.</p>
+                                <p className="text-sm text-slate">Belum ada transaksi.</p>
                             ) : (
                                 transactions.map((t) => (
                                     <Link key={t.id} href={route('admin.transactions.show', t.id)} className="flex items-center justify-between rounded-xl border border-ink/10 p-4 transition-colors hover:bg-paper/60">
@@ -141,7 +141,7 @@ export default function MemberShow({ member, membership, payments, transactions 
                         if (!partner || (!partner.total_belanja && !partner.diskon1 && !partner.diskon2 && !partner.diskon3)) return null;
                         return (
                             <div className="card-surface p-6">
-                                <h2 className="font-display text-lg font-bold">Vendor Info — {partner.name}</h2>
+                                <h2 className="font-display text-lg font-bold">Info Vendor — {partner.name}</h2>
                                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                                     {[
                                         ['Total Belanja', partner.total_belanja],
@@ -161,12 +161,12 @@ export default function MemberShow({ member, membership, payments, transactions 
 
                     <div className="card-surface p-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="font-display text-lg font-bold">Payment History</h2>
-                            <Link href={route('admin.payments.index')} className="text-xs font-medium text-gold hover:underline">View All</Link>
+                            <h2 className="font-display text-lg font-bold">Riwayat Pembayaran</h2>
+                            <Link href={route('admin.payments.index')} className="text-xs font-medium text-gold hover:underline">Lihat Semua</Link>
                         </div>
                         <div className="mt-4 space-y-3">
                             {payments.length === 0 ? (
-                                <p className="text-sm text-slate">No payments yet.</p>
+                                <p className="text-sm text-slate">Belum ada pembayaran.</p>
                             ) : (
                                 payments.map((p) => (
                                     <Link key={p.id} href={route('admin.payments.show', p.id)} className="flex items-center justify-between rounded-xl border border-ink/10 p-4 transition-colors hover:bg-paper/60">

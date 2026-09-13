@@ -5,16 +5,16 @@ import FlashMessages from '@/Components/FlashMessages';
 
 const NAV = [
     { name: 'Dashboard', route: 'admin.dashboard', icon: '▦' },
-    { name: 'Members', route: 'admin.members.index', icon: '◈' },
-    { name: 'Partners', route: 'admin.partners.index', icon: '▤' },
-    { name: 'Promos', route: 'admin.promos.index', icon: '◉' },
-    { name: 'Home Banners', route: 'admin.banners.index', icon: '❏' },
-    { name: 'Payments', route: 'admin.payments.index', icon: '⭑' },
-    { name: 'Events & Activities', route: 'admin.community.index', icon: '✎' },
-    { name: 'Notifications', route: 'admin.notifications.index', icon: '◌' },
-    { name: 'Transactions', route: 'admin.transactions.index', icon: '⤹' },
-    { name: 'Integrations', route: 'admin.integrations.index', icon: '⇄' },
-    { name: 'Reports', route: 'admin.reports.index', icon: '⌁' },
+    { name: 'Member', route: 'admin.members.index', icon: '◈' },
+    { name: 'Partner', route: 'admin.partners.index', icon: '▤' },
+    { name: 'Promo', route: 'admin.promos.index', icon: '◉' },
+    { name: 'Banner Beranda', route: 'admin.banners.index', icon: '❏' },
+    { name: 'Pembayaran', route: 'admin.payments.index', icon: '⭑' },
+    { name: 'Event & Aktivitas', route: 'admin.community.index', icon: '✎' },
+    { name: 'Notifikasi', route: 'admin.notifications.index', icon: '◌' },
+    { name: 'Transaksi', route: 'admin.transactions.index', icon: '⤹' },
+    { name: 'Integrasi', route: 'admin.integrations.index', icon: '⇄' },
+    { name: 'Laporan', route: 'admin.reports.index', icon: '⌁' },
 ];
 
 export default function AdminLayout({ children }) {
@@ -68,7 +68,7 @@ export default function AdminLayout({ children }) {
                         onClick={() => router.post(route('logout'))}
                         className="mt-3 w-full rounded-xl px-4 py-2.5 text-sm font-medium text-paper/60 hover:bg-ember/20 hover:text-ember"
                     >
-                        Logout
+                        Keluar
                     </button>
                 </div>
             </aside>
@@ -103,7 +103,7 @@ export default function AdminLayout({ children }) {
                             onClick={() => router.post(route('logout'))}
                             className="rounded-xl px-4 py-3 text-left text-sm font-medium text-ember hover:bg-ember/20"
                         >
-                            Logout
+                            Keluar
                         </button>
                     </div>
                 </nav>

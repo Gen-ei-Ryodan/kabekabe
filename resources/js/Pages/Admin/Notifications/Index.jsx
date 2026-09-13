@@ -5,10 +5,10 @@ import { formatDate } from '@/Utils/format';
 
 const TYPE_LABELS = {
     promo: 'Promo',
-    membership: 'Membership',
-    community: 'Community',
-    system: 'System',
-    transaction: 'Transaction',
+    membership: 'Keanggotaan',
+    community: 'Komunitas',
+    system: 'Sistem',
+    transaction: 'Transaksi',
 };
 
 export default function NotificationIndex({ sent, members }) {
@@ -27,28 +27,28 @@ export default function NotificationIndex({ sent, members }) {
 
     return (
         <>
-            <Head title="Notifications" />
+            <Head title="Notifikasi" />
 
             <div className="flex flex-col gap-8">
                 <header>
-                    <p className="eyebrow">Notification Center</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Send Notification</h1>
-                    <p className="mt-2 text-sm text-slate">Send announcements to all members or specific members.</p>
+                    <p className="eyebrow">Pusat Notifikasi</p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Kirim Notifikasi</h1>
+                    <p className="mt-2 text-sm text-slate">Kirim pengumuman atau pesan ke seluruh member maupun member tertentu.</p>
                 </header>
 
                 <div className="grid gap-8 lg:grid-cols-5">
                     <form onSubmit={submit} className="card-surface space-y-6 p-6 lg:col-span-2">
                         <div>
-                            <label className="label" htmlFor="recipient_id">Recipient</label>
+                            <label className="label" htmlFor="recipient_id">Penerima</label>
                             <select id="recipient_id" className="input" value={form.data.recipient_id} onChange={(e) => form.setData('recipient_id', e.target.value)}>
-                                <option value="">All members</option>
+                                <option value="">Semua member</option>
                                 {members.map((m) => (
                                     <option key={m.id} value={m.id}>{m.name} · {m.member_code}</option>
                                 ))}
                             </select>
                         </div>
                         <div>
-                            <label className="label" htmlFor="type">Type</label>
+                            <label className="label" htmlFor="type">Tipe</label>
                             <select id="type" className="input" value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
                                 {Object.entries(TYPE_LABELS).map(([value, label]) => (
                                     <option key={value} value={value}>{label}</option>
@@ -56,35 +56,35 @@ export default function NotificationIndex({ sent, members }) {
                             </select>
                         </div>
                         <div>
-                            <label className="label" htmlFor="title">Title</label>
+                            <label className="label" htmlFor="title">Judul Notifikasi</label>
                             <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                             {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
                         </div>
                         <div>
-                            <label className="label" htmlFor="body">Message body</label>
+                            <label className="label" htmlFor="body">Isi Pesan</label>
                             <textarea id="body" rows={4} className="input" value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
                             {form.errors.body && <p className="mt-1 text-xs text-ember">{form.errors.body}</p>}
                         </div>
                         <div>
-                            <label className="label" htmlFor="action_url">Target URL (optional)</label>
+                            <label className="label" htmlFor="action_url">URL Tujuan (opsional)</label>
                             <input id="action_url" type="text" className="input" value={form.data.action_url} onChange={(e) => form.setData('action_url', e.target.value)} placeholder="/member/promos" />
                         </div>
                         <button type="submit" className="btn-gold w-full" disabled={form.processing}>
-                            {form.processing ? 'Sending…' : 'Send Notification'}
+                            {form.processing ? 'Mengirim…' : 'Kirim Notifikasi'}
                         </button>
                     </form>
 
                     <section className="card-surface p-6 lg:col-span-3">
-                        <h2 className="font-display text-lg font-bold">Sent History</h2>
+                        <h2 className="font-display text-lg font-bold">Riwayat Notifikasi Terkirim</h2>
                         <div className="mt-4 space-y-3">
                             {sent.length === 0 ? (
-                                <p className="text-sm text-slate">No notifications sent yet.</p>
+                                <p className="text-sm text-slate">Belum ada notifikasi yang dikirim.</p>
                             ) : (
                                 sent.map((n) => (
                                     <div key={n.id} className="flex items-start justify-between gap-4 rounded-xl border border-ink/10 p-4">
                                         <div className="min-w-0">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <StatusChip status={n.read_at ? 'active' : 'inactive'} label={n.read_at ? 'Read' : 'New'} />
+                                                <StatusChip status={n.read_at ? 'active' : 'inactive'} label={n.read_at ? 'Dibaca' : 'Baru'} />
                                                 <span className="font-mono text-[10px] text-slate">{TYPE_LABELS[n.type] || n.type}</span>
                                             </div>
                                             <p className="mt-1 truncate font-semibold">{n.title}</p>
