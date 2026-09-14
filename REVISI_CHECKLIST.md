@@ -167,11 +167,8 @@ File: `app/Services/PaymentGateway/FaspayService.php`, `app/Services/Whatsapp/Wa
   - [x] `WaBlastService::broadcast(recipients, message)` — multi-recipient
   - [x] Audience filter: all_members, active_members, expired_members, all_admins
   - [x] Route: `admin.integrations.wa-blast.send`
-- [x] Halaman Integrasi di sidebar admin (route `admin.integrations.index`)
-- [x] Runtime-verified:
-  - Faspay invoice generated (trx_id, channel=qris, status=pending, payment_url)
-  - WA Blast send (queued), no-phone (failed)
-- [ ] Integrasi penuh Faspay & WA Blast (deferred)
+- [x] Halaman Integrasi di sidebar admin: *Dihapus (deprecated/obsolete)* karena sistem sudah beralih ke real payment gateway (DOKU) dengan otomasi aktivasi masa aktif member & transaksi.
+- [ ] Integrasi penuh Faspay & WA Blast (deferred/tidak digunakan)
 
 ---
 
