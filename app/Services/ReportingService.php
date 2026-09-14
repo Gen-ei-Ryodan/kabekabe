@@ -40,6 +40,13 @@ class ReportingService
         $pendingPromos = Promo::query()->where('status', Promo::STATUS_PENDING)->count();
         $pendingPayments = Payment::query()->where('status', Payment::STATUS_PENDING)->count();
         $totalVendors = User::query()->where('role', User::ROLE_VENDOR)->count();
+        $pendingMemberApprovals = User::query()
+            ->where('role', User::ROLE_MEMBER)
+            ->where('approval_status', User::APPROVAL_PENDING)
+            ->count();
+        $pendingPartnerApprovals = Partner::query()
+            ->whereHas('user', fn ($u) => $u->where('approval_status', User::APPROVAL_PENDING))
+            ->count();
 
         $expiredNextMonth = User::query()
             ->where('role', User::ROLE_MEMBER)
@@ -98,6 +105,8 @@ class ReportingService
             'active_promos' => $activePromos,
             'pending_promos' => $pendingPromos,
             'pending_payments' => $pendingPayments,
+            'pending_member_approvals' => $pendingMemberApprovals,
+            'pending_partner_approvals' => $pendingPartnerApprovals,
             'total_vendors' => $totalVendors,
             'total_transactions' => (int) $transactionAgg->total_transactions,
             'total_sales' => (int) $transactionAgg->total_amount,

@@ -49,9 +49,19 @@ class MemberController extends Controller
         }
 
         $status = $request->string('status')->toString();
+        $approvalStatus = $request->string('approval_status')->toString();
+
+        if ($status === 'pending' || $approvalStatus === 'pending') {
+            $query->where('approval_status', User::APPROVAL_PENDING);
+        } elseif ($approvalStatus === 'approved') {
+            $query->where('approval_status', User::APPROVAL_APPROVED);
+        } elseif ($approvalStatus === 'rejected') {
+            $query->where('approval_status', User::APPROVAL_REJECTED);
+        }
 
         if ($status === 'active') {
-            $query->whereHas('membership', fn ($q) => $q->where('status', 'active')->where('expires_at', '>', now()));
+            $query->where('approval_status', User::APPROVAL_APPROVED)
+                ->whereHas('membership', fn ($q) => $q->where('status', 'active')->where('expires_at', '>', now()));
         } elseif ($status === 'inactive') {
             $query->where(function ($q) {
                 $q->whereDoesntHave('membership')
@@ -84,13 +94,17 @@ class MemberController extends Controller
             $members->appends($request->except(['drawer', 'id']));
         }
 
+        $pendingCount = User::query()->where('role', User::ROLE_MEMBER)->where('approval_status', User::APPROVAL_PENDING)->count();
+
         return Inertia::render('Admin/Members/Index', [
             'members' => $members,
+            'pending_count' => $pendingCount,
             'filters' => [
                 'search' => $search,
                 'name' => $name,
                 'member_id' => $memberId,
                 'status' => $status,
+                'approval_status' => $approvalStatus,
                 'valid_from' => $validFrom,
                 'valid_to' => $validTo,
                 'joined_from' => $joinedFrom,

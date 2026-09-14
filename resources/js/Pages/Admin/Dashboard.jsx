@@ -27,8 +27,10 @@ function MonthRow({ label, data }) {
 
 export default function AdminDashboard({ stats, recent_transactions }) {
     const quickLinks = [
-        { label: 'Tinjau promo', value: stats.pending_promos, href: route('admin.promos.index', { status: 'pending' }), tone: 'ember' },
-        { label: 'Verifikasi pembayaran', value: stats.pending_payments, href: route('admin.payments.index', { status: 'pending' }), tone: 'gold' },
+        { label: 'Persetujuan Member', value: stats.pending_member_approvals ?? 0, href: route('admin.members.index', { status: 'pending' }), tone: (stats.pending_member_approvals > 0 ? 'ember' : 'paper') },
+        { label: 'Persetujuan Partner', value: stats.pending_partner_approvals ?? 0, href: route('admin.partners.index', { status: 'pending' }), tone: (stats.pending_partner_approvals > 0 ? 'ember' : 'paper') },
+        { label: 'Tinjau Promo', value: stats.pending_promos, href: route('admin.promos.index', { status: 'pending' }), tone: 'ember' },
+        { label: 'Verifikasi Pembayaran', value: stats.pending_payments, href: route('admin.payments.index', { status: 'pending' }), tone: 'gold' },
     ];
 
     return (
@@ -42,6 +44,45 @@ export default function AdminDashboard({ stats, recent_transactions }) {
                     <p className="mt-2 text-sm text-slate">Ringkasan aktivitas di seluruh ekosistem platform.</p>
                 </header>
 
+                {(stats.pending_member_approvals > 0 || stats.pending_partner_approvals > 0) && (
+                    <div className="flex flex-col gap-3 rounded-2xl border border-amber-300 bg-amber-50/90 p-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-3.5">
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-400 font-bold text-ink text-lg">
+                                ⚠️
+                            </span>
+                            <div>
+                                <h3 className="font-display font-bold text-ink">
+                                    Pendaftaran Baru Menunggu Persetujuan Admin
+                                </h3>
+                                <p className="mt-0.5 text-xs text-amber-900">
+                                    {stats.pending_member_approvals > 0 && <span><strong>{stats.pending_member_approvals}</strong> member baru </span>}
+                                    {stats.pending_member_approvals > 0 && stats.pending_partner_approvals > 0 && <span>dan </span>}
+                                    {stats.pending_partner_approvals > 0 && <span><strong>{stats.pending_partner_approvals}</strong> partner baru </span>}
+                                    menunggu approval agar akun dapat aktif digunakan login.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                            {stats.pending_member_approvals > 0 && (
+                                <Link
+                                    href={route('admin.members.index', { status: 'pending' })}
+                                    className="rounded-xl bg-ink px-3.5 py-2 text-xs font-semibold text-paper hover:bg-ink/90 transition-colors"
+                                >
+                                    Tinjau Member ({stats.pending_member_approvals})
+                                </Link>
+                            )}
+                            {stats.pending_partner_approvals > 0 && (
+                                <Link
+                                    href={route('admin.partners.index', { status: 'pending' })}
+                                    className="rounded-xl bg-gold-deep px-3.5 py-2 text-xs font-semibold text-paper hover:bg-gold-deep/90 transition-colors"
+                                >
+                                    Tinjau Partner ({stats.pending_partner_approvals})
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard label="Total Member" value={stats.total_members} tone="ink" sub={`${stats.active_members} aktif · ${stats.inactive_members} tidak aktif`} />
                     <StatCard label="Kadaluarsa Bulan Depan" value={stats.expired_next_month} tone="ember" sub={`${stats.expired_next_2_months} dalam 2 bulan`} />
@@ -49,7 +90,7 @@ export default function AdminDashboard({ stats, recent_transactions }) {
                     <StatCard label="Total Promo" value={stats.total_promos} tone="paper" sub={`${stats.active_promos} Aktif`} />
                 </section>
 
-                <section className="grid gap-4 sm:grid-cols-3 lg:grid-cols-3">
+                <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {quickLinks.map((link) => (
                         <Link key={link.label} href={link.href} className="card-surface flex items-center justify-between p-5 transition-all hover:-translate-y-0.5 hover:shadow-card">
                             <div>
@@ -59,16 +100,16 @@ export default function AdminDashboard({ stats, recent_transactions }) {
                             <span className="text-2xl">→</span>
                         </Link>
                     ))}
-
-                    <div className="card-surface p-5">
-                        <p className="eyebrow">Status Besok</p>
-                        <p className="mt-1 font-display text-lg">
-                            <span className="font-bold text-sage">{stats.tomorrow_active} aktif</span>
-                            {' · '}
-                            <span className="font-bold text-ember">{stats.tomorrow_non_active} tidak aktif</span>
-                        </p>
-                    </div>
                 </section>
+
+                <div className="card-surface p-5">
+                    <p className="eyebrow">Status Besok</p>
+                    <p className="mt-1 font-display text-lg">
+                        <span className="font-bold text-sage">{stats.tomorrow_active} aktif</span>
+                        {' · '}
+                        <span className="font-bold text-ember">{stats.tomorrow_non_active} tidak aktif</span>
+                    </p>
+                </div>
 
                 <section className="card-surface p-6">
                     <p className="eyebrow">Ringkasan Transaksi & Promo</p>

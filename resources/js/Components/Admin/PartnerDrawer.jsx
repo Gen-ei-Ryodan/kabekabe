@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
 import { INDUSTRY_CATEGORIES } from '@/constants/membership';
 
@@ -178,6 +178,53 @@ function EditPartnerDrawer({ partner, onClose }) {
 
     return (
         <form id="partner-form" onSubmit={submit} className="space-y-5">
+            {partner.user?.approval_status === 'pending' && (
+                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="font-semibold text-amber-900 text-sm">⚠️ Menunggu Persetujuan Partner</p>
+                            <p className="text-xs text-amber-800 mt-0.5">Partner baru mendaftar. Setujui untuk mengaktifkan akun vendor dan profil partner.</p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => router.put(route('admin.partners.approve', partner.id), {}, { preserveScroll: true })}
+                                className="btn-gold text-xs"
+                            >
+                                Setujui Partner
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (confirm(`Tolak pendaftaran partner ${partner.name}?`)) {
+                                        router.put(route('admin.partners.reject', partner.id), {}, { preserveScroll: true });
+                                    }
+                                }}
+                                className="btn-danger text-xs"
+                            >
+                                Tolak
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {partner.user?.approval_status === 'rejected' && (
+                <div className="rounded-2xl border border-ember/30 bg-ember/10 p-4 flex items-center justify-between">
+                    <div>
+                        <p className="font-semibold text-ember text-sm">Pendaftaran Partner Ini Ditolak</p>
+                        <p className="text-xs text-ember/80 mt-0.5">Akun vendor partner dinonaktifkan.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => router.put(route('admin.partners.approve', partner.id), {}, { preserveScroll: true })}
+                        className="btn-gold text-xs"
+                    >
+                        Setujui Ulang
+                    </button>
+                </div>
+            )}
+
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label className="label" htmlFor="name">Nama Usaha / Brand</label>

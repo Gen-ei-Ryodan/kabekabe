@@ -17,7 +17,7 @@ const NAV = [
 ];
 
 export default function AdminLayout({ children }) {
-    const { ziggy, auth } = usePage().props;
+    const { ziggy, auth, pending_approvals } = usePage().props;
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const user = auth?.user;
@@ -25,6 +25,16 @@ export default function AdminLayout({ children }) {
     const isActive = (routeName) => {
         const base = routeName.split('.').slice(0, 2).join('.');
         return ziggy?.current() === routeName || ziggy?.current()?.startsWith(`${base}.`);
+    };
+
+    const getBadge = (routeName) => {
+        if (routeName === 'admin.members.index' && pending_approvals?.members > 0) {
+            return pending_approvals.members;
+        }
+        if (routeName === 'admin.partners.index' && pending_approvals?.partners > 0) {
+            return pending_approvals.partners;
+        }
+        return null;
     };
 
     return (
@@ -41,14 +51,21 @@ export default function AdminLayout({ children }) {
                         <Link
                             key={item.route}
                             href={route(item.route)}
-                            className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                            className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
                                 isActive(item.route)
                                     ? 'bg-gold/15 text-gold-light'
                                     : 'text-paper/60 hover:bg-white/5 hover:text-paper'
                             }`}
                         >
-                            <span className="w-5 text-center text-base">{item.icon}</span>
-                            {item.name}
+                            <div className="flex items-center gap-3">
+                                <span className="w-5 text-center text-base">{item.icon}</span>
+                                <span>{item.name}</span>
+                            </div>
+                            {getBadge(item.route) && (
+                                <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-ink shadow-sm">
+                                    {getBadge(item.route)}
+                                </span>
+                            )}
                         </Link>
                     ))}
                 </nav>
@@ -92,10 +109,15 @@ export default function AdminLayout({ children }) {
                             <Link
                                 key={item.route}
                                 href={route(item.route)}
-                                className="rounded-xl px-4 py-3 text-sm font-medium text-paper/80 hover:bg-white/5"
+                                className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-paper/80 hover:bg-white/5"
                                 onClick={() => setMobileOpen(false)}
                             >
-                                {item.name}
+                                <span>{item.name}</span>
+                                {getBadge(item.route) && (
+                                    <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-ink">
+                                        {getBadge(item.route)}
+                                    </span>
+                                )}
                             </Link>
                         ))}
                         <button

@@ -209,7 +209,7 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
                 <div className="flex items-center gap-3">
                     <Avatar src={member.avatar_url} name={member.name} tone="dark" className="h-12 w-12 rounded-2xl text-xl" />
                     <div>
-                        <p className="font-mono text-xs text-slate">{member.member_code}</p>
+                        <p className="font-mono text-xs text-slate">{member.member_code || '-'}</p>
                         <p className="text-sm font-semibold">{member.email}</p>
                     </div>
                 </div>
@@ -219,12 +219,66 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
                 </div>
             </div>
 
+            {member.approval_status === 'pending' && (
+                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="font-semibold text-amber-900 text-sm">⚠️ Menunggu Persetujuan Akun</p>
+                            <p className="text-xs text-amber-800 mt-0.5">Member baru mendaftar dan akun belum aktif. Klik setujui agar member dapat login.</p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                            <button
+                                onClick={() => router.put(route('admin.members.approve', member.id), {}, { preserveScroll: true })}
+                                className="btn-gold text-xs"
+                            >
+                                Setujui Member
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (confirm(`Tolak pendaftaran member ${member.name}?`)) {
+                                        router.put(route('admin.members.reject', member.id), {}, { preserveScroll: true });
+                                    }
+                                }}
+                                className="btn-danger text-xs"
+                            >
+                                Tolak
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {member.approval_status === 'rejected' && (
+                <div className="rounded-2xl border border-ember/30 bg-ember/10 p-4 flex items-center justify-between">
+                    <div>
+                        <p className="font-semibold text-ember text-sm">Pendaftaran Member Ini Ditolak</p>
+                        <p className="text-xs text-ember/80 mt-0.5">Member tidak dapat login ke aplikasi.</p>
+                    </div>
+                    <button
+                        onClick={() => router.put(route('admin.members.approve', member.id), {}, { preserveScroll: true })}
+                        className="btn-gold text-xs"
+                    >
+                        Setujui Ulang
+                    </button>
+                </div>
+            )}
+
             <section className="rounded-2xl border border-ink/10 p-5">
                 <h2 className="font-display text-lg font-bold">Keanggotaan</h2>
                 {membership ? (
                     <div className="mt-3 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="eyebrow">Status</span>
+                            <span className="eyebrow">Status Akun</span>
+                            {member.approval_status === 'pending' ? (
+                                <StatusChip status="pending" label="Menunggu Persetujuan" pulse />
+                            ) : member.approval_status === 'rejected' ? (
+                                <StatusChip status="rejected" label="Ditolak" />
+                            ) : (
+                                <StatusChip status="approved" label="Disetujui" />
+                            )}
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="eyebrow">Status Masa Aktif</span>
                             <StatusChip status={membership.status} label={membership.status === 'active' ? 'Aktif' : 'Tidak Aktif'} pulse={membership.status === 'active'} />
                         </div>
                         <div className="flex items-center justify-between text-sm">

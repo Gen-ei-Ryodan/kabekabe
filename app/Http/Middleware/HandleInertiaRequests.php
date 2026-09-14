@@ -51,6 +51,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'pending_approvals' => ($user && $user->isAdmin()) ? [
+                'members' => \App\Models\User::query()->where('role', \App\Models\User::ROLE_MEMBER)->where('approval_status', \App\Models\User::APPROVAL_PENDING)->count(),
+                'partners' => \App\Models\Partner::query()->whereHas('user', fn ($u) => $u->where('approval_status', \App\Models\User::APPROVAL_PENDING))->count(),
+            ] : null,
         ];
     }
 }

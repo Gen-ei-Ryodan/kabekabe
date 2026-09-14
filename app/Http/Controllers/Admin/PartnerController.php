@@ -17,7 +17,7 @@ class PartnerController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Partner::query()->with('user:id,name,email');
+        $query = Partner::query()->with('user:id,name,email,approval_status');
 
         $search = $request->string('search')->toString();
         $category = $request->string('category')->toString();
@@ -30,7 +30,12 @@ class PartnerController extends Controller
             });
         }
 
-        if ($status === 'active') {
+        if ($status === 'pending') {
+            $query->where(function ($q) {
+                $q->where('status', 'inactive')
+                    ->whereHas('user', fn ($u) => $u->where('approval_status', User::APPROVAL_PENDING));
+            });
+        } elseif ($status === 'active') {
             $query->where('is_active', true);
         } elseif ($status === 'inactive') {
             $query->where('is_active', false);
@@ -51,8 +56,13 @@ class PartnerController extends Controller
             $partners->appends($request->except(['drawer', 'id']));
         }
 
+        $pendingCount = Partner::query()
+            ->whereHas('user', fn ($u) => $u->where('approval_status', User::APPROVAL_PENDING))
+            ->count();
+
         return Inertia::render('Admin/Partners/Index', [
             'partners' => $partners,
+            'pending_count' => $pendingCount,
             'filters' => ['search' => $search, 'category' => $category, 'status' => $status],
             'categories' => Partner::query()->select('category')->distinct()->orderBy('category')->pluck('category'),
             'drawer' => $drawer,
@@ -70,7 +80,7 @@ class PartnerController extends Controller
         $drawer = ['mode' => $mode];
 
         if ($mode === 'edit') {
-            $partner = Partner::query()->with('user:id,name,email')->find($request->integer('id'));
+            $partner = Partner::query()->with('user:id,name,email,approval_status')->find($request->integer('id'));
 
             if ($partner) {
                 $drawer['partner'] = $partner;
