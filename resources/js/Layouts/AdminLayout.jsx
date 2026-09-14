@@ -13,7 +13,6 @@ const NAV = [
     { name: 'Event & Aktivitas', route: 'admin.community.index', icon: '✎' },
     { name: 'Notifikasi', route: 'admin.notifications.index', icon: '◌' },
     { name: 'Transaksi', route: 'admin.transactions.index', icon: '⤹' },
-    { name: 'Integrasi', route: 'admin.integrations.index', icon: '⇄' },
     { name: 'Laporan', route: 'admin.reports.index', icon: '⌁' },
 ];
 
