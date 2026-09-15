@@ -115,16 +115,6 @@ export default function Login() {
                                 </p>
 
                                 <p className="text-center text-xs text-white/80">
-                                    Ingin bergabung sebagai partner?{' '}
-                                    <Link
-                                        href={route('partner.register.show')}
-                                        className="font-semibold text-white hover:underline"
-                                    >
-                                        Daftar partner
-                                    </Link>
-                                </p>
-
-                                <p className="text-center text-xs text-white/80">
                                     Butuh bantuan?{' '}
                                     <a
                                         href="https://wa.me/62811290689"
@@ -222,16 +212,6 @@ export default function Login() {
                                             className="font-semibold text-white hover:underline"
                                         >
                                             Daftar di sini
-                                        </Link>
-                                    </p>
-
-                                    <p className="text-center text-xs text-white/80">
-                                        Ingin bergabung sebagai partner?{' '}
-                                        <Link
-                                            href={route('partner.register.show')}
-                                            className="font-semibold text-white hover:underline"
-                                        >
-                                            Daftar partner
                                         </Link>
                                     </p>
 

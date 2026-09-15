@@ -42,6 +42,14 @@ class RegisteredUserController extends Controller
                 'district' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
                 'industry' => 'nullable|string|max:150',
+                'employee_count' => 'nullable|integer|min:1',
+                'established_since' => 'nullable|string|max:4',
+                'is_member' => 'nullable|boolean',
+                'member_code' => 'nullable|string|max:50',
+                'member_name' => 'nullable|string|max:255',
+                'member_birth_date' => 'nullable|date',
+                'hobbies' => 'nullable|array',
+                'hobbies.*' => 'string|max:100',
             ]);
 
             $generatedPassword = 'KBKB' . random_int(1000, 9999);
@@ -74,10 +82,24 @@ class RegisteredUserController extends Controller
                 'district' => $request->district,
                 'city' => $request->city,
                 'industry' => $request->industry,
+                'employee_count' => $request->employee_count,
+                'established_since' => $request->established_since,
+                'is_member' => $request->boolean('is_member'),
+                'member_code' => $request->member_code,
+                'hobbies' => $request->hobbies,
+                'date_of_birth' => $request->member_birth_date,
                 'joined_at' => now(),
                 'is_active' => false,
                 'status' => Partner::STATUS_INACTIVE,
             ]);
+
+            // If member info provided, optionally update user birth_date
+            if ($request->filled('member_birth_date')) {
+                $user->update(['birth_date' => $request->member_birth_date]);
+            }
+            if ($request->filled('member_name')) {
+                // keep pic_name as is, no extra action
+            }
         } else {
             $request->validate([
                 'role' => 'required|in:member,partner',

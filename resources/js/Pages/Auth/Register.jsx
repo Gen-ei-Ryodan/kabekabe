@@ -36,6 +36,12 @@ export default function Register() {
         pic_name: '',
         pic_phone: '',
         category: 'F&B',
+        employee_count: '',
+        established_since: '',
+        is_member: null,
+        member_code: '',
+        member_name: '',
+        member_birth_date: '',
     });
 
     const [hobbySearch, setHobbySearch] = useState('');
@@ -581,80 +587,97 @@ export default function Register() {
                 {/* ==================================================== */}
                 {data.role === 'partner' && (
                     <div className="space-y-8">
-                        {/* 1. DATA PEMILIK / PIC */}
+                        {/* 1. DATA PERUSAHAAN */}
                         <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
                             <div className="border-b border-ink/10 pb-3">
                                 <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
                                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">1</span>
-                                    Data Pemilik / PIC
+                                    Data Perusahaan
                                 </h2>
-                                <p className="text-xs text-slate mt-0.5">Penanggung jawab akun mitra dan kontak personal.</p>
+                                <p className="text-xs text-slate mt-0.5">Informasi identitas perusahaan sesuai task.</p>
                             </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-4">
                                 <div>
-                                    <InputLabel htmlFor="pic_name" value="Nama Pemilik / PIC *" />
+                                    <InputLabel htmlFor="partner_name" value="Nama Perusahaan *" />
                                     <TextInput
-                                        id="pic_name"
-                                        value={data.pic_name}
-                                        onChange={(e) => setData('pic_name', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="Nama lengkap PIC"
-                                        required
-                                    />
-                                    <InputError message={errors.pic_name} className="mt-1" />
-                                </div>
-
-                                <div>
-                                    <InputLabel htmlFor="pic_phone" value="Nomor Telepon Pemilik / PIC *" />
-                                    <TextInput
-                                        id="pic_phone"
-                                        type="tel"
-                                        value={data.pic_phone}
-                                        onChange={(e) => setData('pic_phone', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="081234567890"
-                                        required
-                                    />
-                                    <InputError message={errors.pic_phone} className="mt-1" />
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* 2. DATA PERUSAHAAN / USAHA */}
-                        <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
-                            <div className="border-b border-ink/10 pb-3">
-                                <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">2</span>
-                                    Data Usaha & Perusahaan
-                                </h2>
-                                <p className="text-xs text-slate mt-0.5">Informasi profil bisnis yang akan ditampilkan kepada anggota.</p>
-                            </div>
-
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="sm:col-span-2">
-                                    <InputLabel htmlFor="name" value="Nama Perusahaan / Usaha *" />
-                                    <TextInput
-                                        id="name"
+                                        id="partner_name"
                                         value={data.name}
                                         onChange={(e) => setData('name', e.target.value)}
                                         className="mt-1 block w-full"
-                                        placeholder="Contoh: Kopi Cantik Bali, Toko Sinar Maju"
+                                        placeholder="Nama perusahaan"
                                         required
                                     />
                                     <InputError message={errors.name} className="mt-1" />
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="category" value="Kategori Usaha" />
-                                    <TextInput
-                                        id="category"
-                                        value={data.category}
-                                        onChange={(e) => setData('category', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="F&B, Retail, Fashion, Otomotif, dll."
+                                    <InputLabel htmlFor="partner_address" value="Alamat Perusahaan" />
+                                    <textarea
+                                        id="partner_address"
+                                        rows={2}
+                                        value={data.address}
+                                        onChange={(e) => setData('address', e.target.value)}
+                                        className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+                                        placeholder="Alamat perusahaan"
                                     />
-                                    <InputError message={errors.category} className="mt-1" />
+                                    <InputError message={errors.address} className="mt-1" />
+                                </div>
+
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <InputLabel htmlFor="partner_phone" value="Nomor Telfon Perusahaan" />
+                                        <TextInput
+                                            id="partner_phone"
+                                            type="tel"
+                                            value={data.phone}
+                                            onChange={(e) => setData('phone', e.target.value)}
+                                            className="mt-1 block w-full"
+                                            placeholder="0361-XXXXXX"
+                                        />
+                                        <InputError message={errors.phone} className="mt-1" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="employee_count" value="Jumlah Karyawan" />
+                                        <TextInput
+                                            id="employee_count"
+                                            type="number"
+                                            value={data.employee_count}
+                                            onChange={(e) => setData('employee_count', e.target.value)}
+                                            className="mt-1 block w-full"
+                                            placeholder="Contoh: 15"
+                                        />
+                                        <InputError message={errors.employee_count} className="mt-1" />
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <InputLabel htmlFor="established_since" value="Berdiri Sejak" />
+                                        <TextInput
+                                            id="established_since"
+                                            value={data.established_since}
+                                            onChange={(e) => setData('established_since', e.target.value)}
+                                            className="mt-1 block w-full"
+                                            placeholder="Contoh: 2018"
+                                        />
+                                        <InputError message={errors.established_since} className="mt-1" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="email" value="Email Perusahaan (Untuk Login) *" />
+                                        <TextInput
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            className="mt-1 block w-full"
+                                            placeholder="info@perusahaan.com"
+                                            required
+                                        />
+                                        <InputError message={errors.email} className="mt-1" />
+                                    </div>
                                 </div>
 
                                 <div>
@@ -674,84 +697,132 @@ export default function Register() {
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="email" value="Email Perusahaan (Untuk Login) *" />
-                                    <TextInput
-                                        id="email"
-                                        type="email"
-                                        value={data.email}
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="info@perusahaan.com"
-                                        required
-                                    />
-                                    <InputError message={errors.email} className="mt-1" />
-                                </div>
-
-                                <div>
-                                    <InputLabel htmlFor="phone" value="Nomor Telepon Perusahaan" />
-                                    <TextInput
-                                        id="phone"
-                                        type="tel"
-                                        value={data.phone}
-                                        onChange={(e) => setData('phone', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="0361-XXXXXX atau No WA Kantor"
-                                    />
-                                    <InputError message={errors.phone} className="mt-1" />
+                                    <InputLabel htmlFor="partner_hobby" value="Hobby" />
+                                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                        {HOBBY_LIST.slice(0, 30).map((h) => (
+                                            <button
+                                                key={h}
+                                                type="button"
+                                                onClick={() => toggleHobby(h)}
+                                                className={`rounded-lg border px-2.5 py-1 text-xs ${data.hobbies.includes(h) ? 'border-gold bg-gold/20 text-gold-deep font-semibold' : 'border-ink/10 bg-white text-slate hover:border-gold/50'}`}
+                                            >
+                                                {data.hobbies.includes(h) ? '✓ ' : '+ '}{h}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {HOBBY_LIST.slice(30).map((h) => (
+                                            <button
+                                                key={h}
+                                                type="button"
+                                                onClick={() => toggleHobby(h)}
+                                                className={`rounded-lg border px-2.5 py-1 text-xs ${data.hobbies.includes(h) ? 'border-gold bg-gold/20 text-gold-deep font-semibold' : 'border-ink/10 bg-white text-slate hover:border-gold/50'}`}
+                                            >
+                                                {data.hobbies.includes(h) ? '✓ ' : '+ '}{h}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="mt-2 flex gap-2">
+                                        <TextInput
+                                            value={customHobbyInput}
+                                            onChange={(e) => setCustomHobbyInput(e.target.value)}
+                                            placeholder="Lainnya (isi sendiri)"
+                                            className="flex-1 text-xs"
+                                        />
+                                        <button type="button" onClick={addCustomHobby} className="btn-ink text-xs px-3">+ Tambah</button>
+                                    </div>
+                                    <InputError message={errors.hobbies} className="mt-1" />
                                 </div>
                             </div>
                         </section>
 
-                        {/* 3. LOKASI USAHA */}
+                        {/* 2. DATA PIC */}
+                        <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
+                            <div className="border-b border-ink/10 pb-3">
+                                <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">2</span>
+                                    PIC (Person In Charge)
+                                </h2>
+                                <p className="text-xs text-slate mt-0.5">Penanggung jawab.</p>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <InputLabel htmlFor="pic_name" value="PIC *" />
+                                    <TextInput id="pic_name" value={data.pic_name} onChange={(e) => setData('pic_name', e.target.value)} className="mt-1 block w-full" placeholder="Nama PIC" required />
+                                    <InputError message={errors.pic_name} className="mt-1" />
+                                </div>
+                                <div>
+                                    <InputLabel htmlFor="pic_phone" value="Nomor HP PIC *" />
+                                    <TextInput id="pic_phone" type="tel" value={data.pic_phone} onChange={(e) => setData('pic_phone', e.target.value)} className="mt-1 block w-full" placeholder="081234567890" required />
+                                    <InputError message={errors.pic_phone} className="mt-1" />
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 3. STATUS MEMBER */}
                         <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
                             <div className="border-b border-ink/10 pb-3">
                                 <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
                                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">3</span>
-                                    Alamat Kantor & Lokasi Usaha
+                                    Apakah anda sudah bergabung sebagai member?
                                 </h2>
-                                <p className="text-xs text-slate mt-0.5">Lokasi operasional atau gerai mitra usaha.</p>
+                                <p className="text-xs text-slate mt-0.5">Pilih Ya atau Tidak.</p>
                             </div>
+                            <div className="flex gap-4">
+                                <label className={`flex-1 flex items-center justify-center gap-2 rounded-xl border p-3 cursor-pointer ${data.is_member === true ? 'border-gold bg-gold/10 font-bold' : 'border-ink/15 bg-white'}`}>
+                                    <input type="radio" name="is_member" checked={data.is_member === true} onChange={() => setData('is_member', true)} className="accent-gold" />
+                                    Ya
+                                </label>
+                                <label className={`flex-1 flex items-center justify-center gap-2 rounded-xl border p-3 cursor-pointer ${data.is_member === false ? 'border-gold bg-gold/10 font-bold' : 'border-ink/15 bg-white'}`}>
+                                    <input type="radio" name="is_member" checked={data.is_member === false} onChange={() => setData('is_member', false)} className="accent-gold" />
+                                    Tidak
+                                </label>
+                            </div>
+                            <InputError message={errors.is_member} className="mt-1" />
 
-                            <div className="space-y-4">
-                                <div>
-                                    <InputLabel htmlFor="address" value="Alamat Kantor / Usaha" />
-                                    <textarea
-                                        id="address"
-                                        rows={2}
-                                        value={data.address}
-                                        onChange={(e) => setData('address', e.target.value)}
-                                        className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-                                        placeholder="Tulis alamat toko / outlet / kantor..."
-                                    />
-                                    <InputError message={errors.address} className="mt-1" />
-                                </div>
-
-                                <div className="grid gap-4 sm:grid-cols-2">
+                            {data.is_member === true && (
+                                <div className="space-y-4 border-t border-ink/10 pt-4">
                                     <div>
-                                        <InputLabel htmlFor="district" value="Kecamatan" />
-                                        <TextInput
-                                            id="district"
-                                            value={data.district}
-                                            onChange={(e) => setData('district', e.target.value)}
-                                            className="mt-1 block w-full"
-                                            placeholder="Contoh: Kuta, Ubud, Denpasar Barat"
-                                        />
-                                        <InputError message={errors.district} className="mt-1" />
+                                        <InputLabel htmlFor="member_code" value="Nomor ID member *" />
+                                        <TextInput id="member_code" value={data.member_code} onChange={(e) => setData('member_code', e.target.value)} className="mt-1 block w-full" placeholder="Contoh: MMB-00001" required />
+                                        <InputError message={errors.member_code} className="mt-1" />
                                     </div>
-
                                     <div>
-                                        <InputLabel htmlFor="city" value="Kota / Kabupaten" />
-                                        <TextInput
-                                            id="city"
-                                            value={data.city}
-                                            onChange={(e) => setData('city', e.target.value)}
-                                            className="mt-1 block w-full"
-                                            placeholder="Contoh: Badung, Denpasar, Gianyar"
-                                        />
-                                        <InputError message={errors.city} className="mt-1" />
+                                        <InputLabel htmlFor="member_name" value="Nama *" />
+                                        <TextInput id="member_name" value={data.member_name} onChange={(e) => setData('member_name', e.target.value)} className="mt-1 block w-full" placeholder="Nama member" required />
+                                        <InputError message={errors.member_name} className="mt-1" />
+                                    </div>
+                                    <div>
+                                        <InputLabel htmlFor="member_birth_date" value="Tanggal Lahir *" />
+                                        <TextInput id="member_birth_date" type="date" value={data.member_birth_date} onChange={(e) => setData('member_birth_date', e.target.value)} className="mt-1 block w-full" required />
+                                        <InputError message={errors.member_birth_date} className="mt-1" />
                                     </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {data.is_member === false && (
+                                <div className="space-y-4 border-t border-ink/10 pt-4">
+                                    <p className="text-xs font-semibold text-ink">Silakan isi form registrasi member:</p>
+                                    <div>
+                                        <InputLabel htmlFor="member_name2" value="Nama *" />
+                                        <TextInput id="member_name2" value={data.member_name} onChange={(e) => setData('member_name', e.target.value)} className="mt-1 block w-full" placeholder="Nama lengkap" required />
+                                        <InputError message={errors.member_name} className="mt-1" />
+                                    </div>
+                                    <div>
+                                        <InputLabel htmlFor="member_birth_date2" value="Tanggal Lahir *" />
+                                        <TextInput id="member_birth_date2" type="date" value={data.member_birth_date} onChange={(e) => setData('member_birth_date', e.target.value)} className="mt-1 block w-full" required />
+                                        <InputError message={errors.member_birth_date} className="mt-1" />
+                                    </div>
+                                    <div>
+                                        <InputLabel htmlFor="member_phone" value="No HP" />
+                                        <TextInput id="member_phone" type="tel" value={data.phone} onChange={(e) => setData('phone', e.target.value)} className="mt-1 block w-full" placeholder="081234567890" />
+                                    </div>
+                                    <div>
+                                        <InputLabel htmlFor="member_address" value="Alamat" />
+                                        <textarea id="member_address" rows={2} value={data.address} onChange={(e) => setData('address', e.target.value)} className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm" placeholder="Alamat tinggal" />
+                                    </div>
+                                </div>
+                            )}
                         </section>
                     </div>
                 )}
@@ -778,13 +849,6 @@ export default function Register() {
                 Sudah memiliki akun?{' '}
                 <Link href={route('login')} className="font-semibold text-gold-deep hover:underline">
                     Masuk di sini
-                </Link>
-            </p>
-
-            <p className="mt-2 text-center text-sm text-slate">
-                Want to join as a partner?{' '}
-                <Link href={route('partner.register.show')} className="font-semibold text-gold-deep hover:underline">
-                    Register as partner
                 </Link>
             </p>
         </GuestLayout>
