@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -137,11 +138,21 @@ export default function Register() {
         custom_hobby: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
-        post(route('partner.register.store'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+    const [industrySearch, setIndustrySearch] = useState('');
+    const [hobbySearch, setHobbySearch] = useState('');
+    const [customHobbyInput, setCustomHobbyInput] = useState('');
+
+    const filteredIndustries = INDUSTRI_OPTIONS.filter((i) =>
+        i.toLowerCase().includes(industrySearch.toLowerCase())
+    );
+
+    const filteredHobbies = HOBBY_OPTIONS.filter((h) =>
+        h.toLowerCase().includes(hobbySearch.toLowerCase())
+    );
+
+    const handleIndustryChange = (industry) => {
+        setData('industry', industry);
+        setIndustrySearch('');
     };
 
     const handleHobbyChange = (hobby) => {
@@ -154,7 +165,7 @@ export default function Register() {
     };
 
     const handleCustomHobby = (value) => {
-        setData('custom_hobby', value);
+        setCustomHobbyInput(value);
         const filtered = data.hobbies.filter((h) => h !== data.custom_hobby);
         if (value) {
             setData('hobbies', [...filtered, value]);
@@ -163,310 +174,483 @@ export default function Register() {
         }
     };
 
-    return (
-        <GuestLayout>
-            <Head title="Register Partner" />
+    const submit = (e) => {
+        e.preventDefault();
+        post(route('partner.register.store'), {
+            onFinish: () => reset('password', 'password_confirmation'),
+        });
+    };
 
-            <header className="mb-6">
-                <h1 className="font-display text-2xl font-bold tracking-tight">Partner Registration</h1>
-                <p className="mt-1 text-sm text-slate">Join KBKB as a partner and grow your business with our community.</p>
+    return (
+        <GuestLayout maxWidth="max-w-3xl">
+            <Head title="Registrasi Partner KBKB" />
+
+            <header className="mb-6 text-center sm:text-left">
+                <span className="inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep mb-2">
+                    Mitra Usaha KBKB
+                </span>
+                <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+                    Formulir Registrasi Partner
+                </h1>
+                <p className="mt-1 text-sm text-slate">
+                    Isi data lengkap perusahaan Anda untuk bergabung sebagai mitra usaha KBKB.
+                </p>
             </header>
 
-            <form onSubmit={submit} className="space-y-6">
-                {/* Company Information */}
-                <section className="space-y-4">
-                    <h2 className="font-display text-lg font-bold">Company Information</h2>
-
-                    <div>
-                        <InputLabel htmlFor="company_name" value="Nama Perusahaan" />
-                        <TextInput
-                            id="company_name"
-                            name="company_name"
-                            value={data.company_name}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('company_name', e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.company_name} className="mt-2" />
+            <form onSubmit={submit} className="space-y-8">
+                {/* 1. DATA PERUSAHAAN */}
+                <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-ink/10 pb-3">
+                        <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">1</span>
+                            Data Perusahaan
+                        </h2>
+                        <p className="text-xs text-slate mt-0.5">Informasi identitas perusahaan/usaha Anda.</p>
                     </div>
 
-                    <div>
-                        <InputLabel htmlFor="company_address" value="Alamat Perusahaan" />
-                        <TextInput
-                            id="company_address"
-                            name="company_address"
-                            value={data.company_address}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('company_address', e.target.value)}
-                        />
-                        <InputError message={errors.company_address} className="mt-2" />
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-4">
                         <div>
-                            <InputLabel htmlFor="company_phone" value="Nomor Telfon Perusahaan" />
+                            <InputLabel htmlFor="company_name" value="Nama Perusahaan *" />
                             <TextInput
-                                id="company_phone"
-                                name="company_phone"
-                                value={data.company_phone}
+                                id="company_name"
+                                value={data.company_name}
+                                onChange={(e) => setData('company_name', e.target.value)}
                                 className="mt-1 block w-full"
-                                onChange={(e) => setData('company_phone', e.target.value)}
+                                placeholder="Contoh: PT Maju Jaya, Kopi Cantik Bali"
+                                required
                             />
-                            <InputError message={errors.company_phone} className="mt-2" />
+                            <InputError message={errors.company_name} className="mt-1" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="employee_count" value="Jumlah Karyawan" />
-                            <TextInput
-                                id="employee_count"
-                                name="employee_count"
-                                type="number"
-                                value={data.employee_count}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('employee_count', e.target.value)}
-                            />
-                            <InputError message={errors.employee_count} className="mt-2" />
+                            <InputLabel htmlFor="industry" value="Bidang Industri *" />
+                            <div className="space-y-2">
+                                <div className="flex gap-2">
+                                    <TextInput
+                                        type="text"
+                                        value={industrySearch}
+                                        onChange={(e) => setIndustrySearch(e.target.value)}
+                                        placeholder="Cari bidang industri (misal: F&B, Hotel, Retail)..."
+                                        className="flex-1 text-xs"
+                                    />
+                                    {industrySearch && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIndustrySearch('')}
+                                            className="btn-ghost text-xs px-3"
+                                        >
+                                            Reset
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="max-h-48 overflow-y-auto rounded-xl border border-ink/10 bg-white/80 p-3">
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {filteredIndustries.map((ind) => {
+                                            const isSelected = data.industry === ind;
+                                            return (
+                                                <button
+                                                    key={ind}
+                                                    type="button"
+                                                    onClick={() => handleIndustryChange(ind)}
+                                                    className={`rounded-lg border px-2.5 py-1 text-xs transition-all ${
+                                                        isSelected
+                                                            ? 'border-gold bg-gold/20 text-gold-deep font-semibold shadow-xs'
+                                                            : 'border-ink/10 bg-white text-slate hover:border-gold/50 hover:text-ink'
+                                                    }`}
+                                                >
+                                                    {isSelected ? '✓ ' : ''}{ind}
+                                                </button>
+                                            );
+                                        })}
+                                        {filteredIndustries.length === 0 && (
+                                            <p className="text-xs text-slate py-1">Tidak ditemukan pilihan industri.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <InputError message={errors.industry} className="mt-1" />
                         </div>
-                    </div>
 
-                    <div>
-                        <InputLabel htmlFor="established_since" value="Berdiri Sejak" />
-                        <TextInput
-                            id="established_since"
-                            name="established_since"
-                            placeholder="Contoh: 2020"
-                            value={data.established_since}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('established_since', e.target.value)}
-                        />
-                        <InputError message={errors.established_since} className="mt-2" />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel htmlFor="company_phone" value="Nomor Telepon Perusahaan" />
+                                <TextInput
+                                    id="company_phone"
+                                    type="tel"
+                                    value={data.company_phone}
+                                    onChange={(e) => setData('company_phone', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder="0361-XXXXXX / 0812-XXXX-XXXX"
+                                />
+                                <InputError message={errors.company_phone} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="employee_count" value="Jumlah Karyawan" />
+                                <TextInput
+                                    id="employee_count"
+                                    type="number"
+                                    value={data.employee_count}
+                                    onChange={(e) => setData('employee_count', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder="Contoh: 25"
+                                />
+                                <InputError message={errors.employee_count} className="mt-1" />
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel htmlFor="established_since" value="Berdiri Sejak" />
+                                <TextInput
+                                    id="established_since"
+                                    value={data.established_since}
+                                    onChange={(e) => setData('established_since', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder="Contoh: 2020"
+                                />
+                                <InputError message={errors.established_since} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="company_address" value="Alamat Perusahaan" />
+                                <textarea
+                                    id="company_address"
+                                    rows={2}
+                                    value={data.company_address}
+                                    onChange={(e) => setData('company_address', e.target.value)}
+                                    className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+                                    placeholder="Jalan, No. Rumah, RT/RW, Kelurahan/Desa, Kota"
+                                />
+                                <InputError message={errors.company_address} className="mt-1" />
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                {/* PIC Information */}
-                <section className="space-y-4 border-t border-ink/10 pt-6">
-                    <h2 className="font-display text-lg font-bold">PIC (Person In Charge)</h2>
+                {/* 2. PIC (PERSON IN CHARGE) */}
+                <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-ink/10 pb-3">
+                        <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">2</span>
+                            PIC (Person In Charge)
+                        </h2>
+                        <p className="text-xs text-slate mt-0.5">Penanggung jawab akun mitra dan kontak personal.</p>
+                    </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <InputLabel htmlFor="pic_name" value="PIC" />
+                            <InputLabel htmlFor="pic_name" value="Nama PIC *" />
                             <TextInput
                                 id="pic_name"
-                                name="pic_name"
                                 value={data.pic_name}
-                                className="mt-1 block w-full"
                                 onChange={(e) => setData('pic_name', e.target.value)}
+                                className="mt-1 block w-full"
+                                placeholder="Nama lengkap PIC"
                                 required
                             />
-                            <InputError message={errors.pic_name} className="mt-2" />
+                            <InputError message={errors.pic_name} className="mt-1" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="pic_phone" value="Nomor HP PIC" />
+                            <InputLabel htmlFor="pic_phone" value="Nomor HP PIC *" />
                             <TextInput
                                 id="pic_phone"
-                                name="pic_phone"
+                                type="tel"
                                 value={data.pic_phone}
-                                className="mt-1 block w-full"
                                 onChange={(e) => setData('pic_phone', e.target.value)}
+                                className="mt-1 block w-full"
+                                placeholder="081234567890"
                                 required
                             />
-                            <InputError message={errors.pic_phone} className="mt-2" />
+                            <InputError message={errors.pic_phone} className="mt-1" />
                         </div>
                     </div>
                 </section>
 
-                {/* Member Check */}
-                <section className="space-y-4 border-t border-ink/10 pt-6">
-                    <h2 className="font-display text-lg font-bold">Membership Status</h2>
+                {/* 3. STATUS KEANGGOTAAN */}
+                <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-ink/10 pb-3">
+                        <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">3</span>
+                            Status Keanggotaan
+                        </h2>
+                        <p className="text-xs text-slate mt-0.5">Apakah Anda sudah bergabung sebagai member KBKB?</p>
+                    </div>
 
-                    <div>
-                        <label className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
-                                className="h-5 w-5 rounded border-ink/20 accent-gold"
-                                checked={data.is_member}
-                                onChange={(e) => {
-                                    setData('is_member', e.target.checked);
-                                    if (!e.target.checked) {
-                                        setData('member_code', '');
-                                    }
-                                }}
-                            />
-                            <span className="text-sm">Apakah anda sudah bergabung sebagai member?</span>
+                    <div className="flex items-center gap-3 p-3 rounded-xl border border-ink/10 bg-white/80">
+                        <input
+                            type="checkbox"
+                            id="is_member"
+                            className="h-5 w-5 rounded border-ink/20 accent-gold"
+                            checked={data.is_member}
+                            onChange={(e) => {
+                                setData('is_member', e.target.checked);
+                                if (!e.target.checked) {
+                                    setData('member_code', '');
+                                }
+                            }}
+                        />
+                        <label htmlFor="is_member" className="cursor-pointer text-sm font-medium text-ink">
+                            Sudah bergabung sebagai member KBKB
                         </label>
                     </div>
 
                     {data.is_member && (
-                        <div>
-                            <InputLabel htmlFor="member_code" value="Nomor ID Member" />
+                        <div className="border-t border-ink/10 pt-3">
+                            <InputLabel htmlFor="member_code" value="Nomor ID Member *" />
                             <TextInput
                                 id="member_code"
-                                name="member_code"
-                                placeholder="Contoh: MMB-00001"
                                 value={data.member_code}
-                                className="mt-1 block w-full"
                                 onChange={(e) => setData('member_code', e.target.value)}
+                                className="mt-1 block w-full"
+                                placeholder="Contoh: MMB-00001"
                                 required
                             />
-                            <InputError message={errors.member_code} className="mt-2" />
+                            <InputError message={errors.member_code} className="mt-1" />
                         </div>
                     )}
                 </section>
 
-                {/* Account Information */}
-                <section className="space-y-4 border-t border-ink/10 pt-6">
-                    <h2 className="font-display text-lg font-bold">Account Information</h2>
-
-                    <div>
-                        <InputLabel htmlFor="name" value="Nama" />
-                        <TextInput
-                            id="name"
-                            name="name"
-                            value={data.name}
-                            className="mt-1 block w-full"
-                            autoComplete="name"
-                            onChange={(e) => setData('name', e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.name} className="mt-2" />
+                {/* 4. AKUN LOGIN & DATA DIRI */}
+                <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-ink/10 pb-3">
+                        <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">4</span>
+                            Akun Login & Data Diri
+                        </h2>
+                        <p className="text-xs text-slate mt-0.5">Kredensial untuk mengakses dashboard partner KBKB.</p>
                     </div>
 
-                    <div>
-                        <InputLabel htmlFor="email" value="Email" />
-                        <TextInput
-                            id="email"
-                            type="email"
-                            name="email"
-                            value={data.email}
-                            className="mt-1 block w-full"
-                            autoComplete="username"
-                            onChange={(e) => setData('email', e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.email} className="mt-2" />
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-4">
                         <div>
-                            <InputLabel htmlFor="password" value="Password" />
+                            <InputLabel htmlFor="name" value="Nama Lengkap *" />
                             <TextInput
-                                id="password"
-                                type="password"
-                                name="password"
-                                value={data.password}
+                                id="name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
                                 className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                onChange={(e) => setData('password', e.target.value)}
+                                autoComplete="name"
+                                placeholder="Nama sesuai KTP"
                                 required
                             />
-                            <InputError message={errors.password} className="mt-2" />
+                            <InputError message={errors.name} className="mt-1" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="password_confirmation" value="Confirm Password" />
+                            <InputLabel htmlFor="email" value="Email (Untuk Login) *" />
                             <TextInput
-                                id="password_confirmation"
-                                type="password"
-                                name="password_confirmation"
-                                value={data.password_confirmation}
+                                id="email"
+                                type="email"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
                                 className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                autoComplete="username"
+                                placeholder="email@perusahaan.com"
                                 required
                             />
-                            <InputError message={errors.password_confirmation} className="mt-2" />
-                        </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <InputLabel htmlFor="phone" value="Nomor HP" />
-                            <TextInput
-                                id="phone"
-                                name="phone"
-                                value={data.phone}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('phone', e.target.value)}
-                            />
-                            <InputError message={errors.phone} className="mt-2" />
+                            <InputError message={errors.email} className="mt-1" />
                         </div>
 
-                        <div>
-                            <InputLabel htmlFor="date_of_birth" value="Tanggal Lahir" />
-                            <TextInput
-                                id="date_of_birth"
-                                type="date"
-                                name="date_of_birth"
-                                value={data.date_of_birth}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('date_of_birth', e.target.value)}
-                            />
-                            <InputError message={errors.date_of_birth} className="mt-2" />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel htmlFor="password" value="Password *" />
+                                <TextInput
+                                    id="password"
+                                    type="password"
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    autoComplete="new-password"
+                                    required
+                                />
+                                <InputError message={errors.password} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="password_confirmation" value="Konfirmasi Password *" />
+                                <TextInput
+                                    id="password_confirmation"
+                                    type="password"
+                                    value={data.password_confirmation}
+                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    autoComplete="new-password"
+                                    required
+                                />
+                                <InputError message={errors.password_confirmation} className="mt-1" />
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel htmlFor="phone" value="Nomor HP" />
+                                <TextInput
+                                    id="phone"
+                                    type="tel"
+                                    value={data.phone}
+                                    onChange={(e) => setData('phone', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder="081234567890"
+                                />
+                                <InputError message={errors.phone} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="date_of_birth" value="Tanggal Lahir" />
+                                <TextInput
+                                    id="date_of_birth"
+                                    type="date"
+                                    value={data.date_of_birth}
+                                    onChange={(e) => setData('date_of_birth', e.target.value)}
+                                    className="mt-1 block w-full"
+                                />
+                                <InputError message={errors.date_of_birth} className="mt-1" />
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                {/* Industry & Hobbies */}
-                <section className="space-y-4 border-t border-ink/10 pt-6">
-                    <h2 className="font-display text-lg font-bold">Industry & Hobbies</h2>
-
-                    <div>
-                        <InputLabel htmlFor="industry" value="Bidang Industri" />
-                        <select
-                            id="industry"
-                            className="input mt-1 block w-full"
-                            value={data.industry}
-                            onChange={(e) => setData('industry', e.target.value)}
-                        >
-                            <option value="">Pilih bidang industri...</option>
-                            {INDUSTRI_OPTIONS.map((option) => (
-                                <option key={option} value={option}>
-                                    {option}
-                                </option>
-                            ))}
-                        </select>
-                        <InputError message={errors.industry} className="mt-2" />
+                {/* 5. HOBI */}
+                <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
+                    <div className="border-b border-ink/10 pb-3">
+                        <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">5</span>
+                            Hobi & Kesukaan
+                        </h2>
+                        <p className="text-xs text-slate mt-0.5">Pilih minat/hobi untuk memudahkan networking dengan sesama mitra KBKB.</p>
                     </div>
 
+                    {/* Hobi Terpilih */}
                     <div>
-                        <InputLabel value="Hobby" />
-                        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                            {HOBBY_OPTIONS.map((hobby) => (
-                                <label key={hobby} className="flex items-center gap-2 text-sm">
-                                    <input
-                                        type="checkbox"
-                                        className="h-4 w-4 rounded border-ink/20 accent-gold"
-                                        checked={data.hobbies.includes(hobby)}
-                                        onChange={() => handleHobbyChange(hobby)}
-                                    />
-                                    {hobby}
-                                </label>
-                            ))}
-                        </div>
-                        <div className="mt-3">
+                        <InputLabel value={`Hobi Terpilih (${data.hobbies.length})`} className="mb-1.5" />
+                        {data.hobbies.length === 0 ? (
+                            <p className="text-xs italic text-slate">Belum ada hobi yang dipilih.</p>
+                        ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                                {data.hobbies.map((h) => (
+                                    <span
+                                        key={h}
+                                        className="inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep"
+                                    >
+                                        {h}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleHobbyChange(h)}
+                                            className="hover:text-ember ml-1"
+                                        >
+                                            ✕
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Search & List */}
+                    <div className="space-y-2">
+                        <div className="flex gap-2">
                             <TextInput
-                                id="custom_hobby"
-                                name="custom_hobby"
-                                placeholder="Lainnya (isi sendiri)"
-                                value={data.custom_hobby}
-                                className="block w-full"
-                                onChange={(e) => handleCustomHobby(e.target.value)}
+                                type="text"
+                                value={hobbySearch}
+                                onChange={(e) => setHobbySearch(e.target.value)}
+                                placeholder="Cari dari 60+ pilihan hobi (misal: Bulutangkis, Golf, Memasak)..."
+                                className="flex-1 text-xs"
                             />
+                            {hobbySearch && (
+                                <button
+                                    type="button"
+                                    onClick={() => setHobbySearch('')}
+                                    className="btn-ghost text-xs px-3"
+                                >
+                                    Reset
+                                </button>
+                            )}
                         </div>
-                        <InputError message={errors.hobbies} className="mt-2" />
+
+                        <div className="max-h-48 overflow-y-auto rounded-xl border border-ink/10 bg-white/80 p-3">
+                            <div className="flex flex-wrap gap-1.5">
+                                {filteredHobbies.map((hobby) => {
+                                    const isSelected = data.hobbies.includes(hobby);
+                                    return (
+                                        <button
+                                            key={hobby}
+                                            type="button"
+                                            onClick={() => handleHobbyChange(hobby)}
+                                            className={`rounded-lg border px-2.5 py-1 text-xs transition-all ${
+                                                isSelected
+                                                    ? 'border-gold bg-gold/20 text-gold-deep font-semibold shadow-xs'
+                                                    : 'border-ink/10 bg-white text-slate hover:border-gold/50 hover:text-ink'
+                                            }`}
+                                        >
+                                            {isSelected ? '✓ ' : '+ '}{hobby}
+                                        </button>
+                                    );
+                                })}
+                                {filteredHobbies.length === 0 && (
+                                    <p className="text-xs text-slate py-1">Tidak ditemukan pilihan hobi yang sesuai.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Custom Hobby */}
+                    <div className="border-t border-ink/10 pt-3">
+                        <InputLabel value="Lainnya (sebutkan hobi khusus jika belum tersedia di atas)" />
+                        <div className="mt-1.5 flex gap-2">
+                            <TextInput
+                                value={customHobbyInput}
+                                onChange={(e) => setCustomHobbyInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleCustomHobby(e.target.value);
+                                        setCustomHobbyInput('');
+                                    }
+                                }}
+                                placeholder="Ketik nama hobi lainnya..."
+                                className="flex-1"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    handleCustomHobby(customHobbyInput);
+                                    setCustomHobbyInput('');
+                                }}
+                                className="btn-ink text-xs px-4 py-2"
+                            >
+                                + Tambah
+                            </button>
+                        </div>
                     </div>
                 </section>
 
-                <PrimaryButton className="w-full justify-center" disabled={processing}>
-                    {processing ? 'Processing…' : 'Register as Partner'}
+                {/* Notifikasi & Submit */}
+                <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4 text-xs text-slate space-y-1">
+                    <p className="font-semibold text-gold-deep flex items-center gap-1.5">
+                        <span>ℹ️</span> Informasi:
+                    </p>
+                    <p>
+                        Pendaftaran partner akan ditinjau oleh tim KBKB. Anda akan menerima email konfirmasi setelah diverifikasi.
+                    </p>
+                </div>
+
+                <PrimaryButton className="w-full justify-center py-3 text-base font-semibold" disabled={processing}>
+                    {processing ? 'Memproses Pendaftaran…' : 'Kirim Pendaftaran'}
                 </PrimaryButton>
             </form>
 
             <p className="mt-6 text-center text-sm text-slate">
-                Already have an account?{' '}
+                Sudah memiliki akun?{' '}
                 <Link href={route('login')} className="font-semibold text-gold-deep hover:underline">
-                    Login
+                    Masuk di sini
+                </Link>
+            </p>
+
+            <p className="mt-2 text-center text-sm text-slate">
+                Ingin daftar sebagai member biasa?{' '}
+                <Link href={route('register')} className="font-semibold text-gold-deep hover:underline">
+                    Daftar Member
                 </Link>
             </p>
         </GuestLayout>
