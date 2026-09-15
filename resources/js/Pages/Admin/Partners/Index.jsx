@@ -1,4 +1,4 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Pagination from '@/Components/Pagination';
@@ -235,6 +235,7 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                                         </>
                                                     ) : (
                                                         <>
+                                                            <Link href={route('admin.partners.show', partner.id)} className="btn-ghost text-xs">Lihat</Link>
                                                             <button onClick={() => openEdit(partner.id)} className="btn-ghost text-xs">Edit</button>
                                                             <button
                                                                 onClick={() => router.put(route('admin.partners.toggle', partner.id), { is_active: !partner.is_active }, { preserveScroll: true })}

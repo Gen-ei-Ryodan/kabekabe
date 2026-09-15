@@ -16,6 +16,7 @@ use App\Http\Controllers\Member\HomeController;
 use App\Http\Controllers\Member\NotificationController as MemberNotificationController;
 use App\Http\Controllers\Member\PartnerController as MemberPartnerController;
 use App\Http\Controllers\Member\PromoController as MemberPromoController;
+use App\Http\Controllers\Partner\RegisterController as PartnerRegisterController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\PromoController as VendorPromoController;
 use App\Http\Controllers\Vendor\ReportController as VendorReportController;
@@ -106,6 +107,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/partners', [AdminPartnerController::class, 'index'])->name('partners.index');
         Route::get('/partners/create', [AdminPartnerController::class, 'create'])->name('partners.create');
         Route::post('/partners', [AdminPartnerController::class, 'store'])->name('partners.store');
+        Route::get('/partners/{partner}', [AdminPartnerController::class, 'show'])->name('partners.show');
         Route::get('/partners/{partner}/edit', [AdminPartnerController::class, 'edit'])->name('partners.edit');
         Route::put('/partners/{partner}', [AdminPartnerController::class, 'update'])->name('partners.update');
         Route::put('/partners/{partner}/approve', [AdminPartnerController::class, 'approve'])->name('partners.approve');
@@ -162,5 +164,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // ---------- DOKU WEBHOOK ----------
 Route::post('/api/doku/notifications', [\App\Http\Controllers\Member\DokuPaymentController::class, 'notification'])->name('doku.notification');
+
+// ---------- PARTNER REGISTRATION (Public) ----------
+Route::get('/partner/register', [PartnerRegisterController::class, 'show'])->name('partner.register.show');
+Route::post('/partner/register', [PartnerRegisterController::class, 'store'])->name('partner.register.store');
+Route::get('/partner/thank-you', [PartnerRegisterController::class, 'thankyou'])->name('partner.register.thankyou');
 
 require __DIR__.'/auth.php';

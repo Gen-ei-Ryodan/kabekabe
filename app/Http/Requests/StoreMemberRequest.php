@@ -24,6 +24,10 @@ class StoreMemberRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
             'company' => ['nullable', 'string', 'max:255'],
+            'date_of_birth' => ['nullable', 'date'],
+            'industry' => ['nullable', 'string', 'max:255'],
+            'hobbies' => ['nullable', 'array'],
+            'hobbies.*' => ['string', 'max:255'],
             'valid_until' => ['required', 'date', 'after_or_equal:today'],
         ];
     }

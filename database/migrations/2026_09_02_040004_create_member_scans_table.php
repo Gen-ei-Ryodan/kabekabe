@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('member_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('scanned_by_vendor_id')->constrained('users')->cascadeOnDelete();
             $table->timestamp('scanned_at');
-            $table->timestamp('expires_at');
+            $table->timestamp('expires_at')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->timestamps();
 

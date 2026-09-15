@@ -162,6 +162,9 @@ class MemberController extends Controller
             'phone' => $validated['phone'] ?? null,
             'whatsapp' => $validated['whatsapp'] ?? null,
             'company' => $validated['company'] ?? null,
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
+            'industry' => $validated['industry'] ?? null,
+            'hobbies' => $validated['hobbies'] ?? null,
         ]);
 
         $this->memberships->activateUntil($member, $validated['valid_until']);
@@ -308,6 +311,9 @@ class MemberController extends Controller
             'phone' => $m->phone,
             'whatsapp' => $m->whatsapp,
             'company' => $m->company,
+            'date_of_birth' => $m->date_of_birth?->format('d M Y'),
+            'industry' => $m->industry,
+            'hobbies' => $m->hobbies,
             'avatar_url' => $m->avatarUrl(),
             'created_at' => $m->created_at?->translatedFormat('d M Y'),
             'approval_status' => $m->approval_status ?? 'approved',

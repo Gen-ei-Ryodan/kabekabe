@@ -105,6 +105,10 @@ export default function MemberShow({ member, membership, payments, transactions 
                                 ['Telepon', member.phone || '-'],
                                 ['WhatsApp', member.whatsapp || '-'],
                                 ['Perusahaan', member.company || '-'],
+                                ['Tanggal Lahir', member.birth_date || '-'],
+                                ['Jenis Kelamin', member.gender === 'male' ? 'Laki-laki' : member.gender === 'female' ? 'Perempuan' : '-'],
+                                ['Agama', member.religion || '-'],
+                                ['Industri', member.industry || '-'],
                                 ['Bergabung', member.created_at],
                             ].map(([label, value]) => (
                                 <div key={label} className="rounded-xl bg-paper p-3">
@@ -115,6 +119,19 @@ export default function MemberShow({ member, membership, payments, transactions 
                         </dl>
                     </div>
                 </section>
+
+                {member.hobbies && member.hobbies.length > 0 && (
+                    <section className="card-surface p-6">
+                        <h2 className="font-display text-lg font-bold">Hobbies</h2>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {member.hobbies.map((hobby, index) => (
+                                <span key={index} className="rounded-full bg-ink/5 px-3 py-1 text-xs font-medium text-ink">
+                                    {hobby}
+                                </span>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 <section className="grid gap-8 lg:grid-cols-2">
                     <div className="card-surface p-6">

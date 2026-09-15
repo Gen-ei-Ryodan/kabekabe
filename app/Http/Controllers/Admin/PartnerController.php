@@ -95,6 +95,15 @@ class PartnerController extends Controller
         return Inertia::render('Admin/Partners/Create');
     }
 
+    public function show(Partner $partner): Response
+    {
+        return Inertia::render('Admin/Partners/Show', [
+            'partner' => $partner->load('user:id,name,email'),
+            'transactions' => $partner->transactions()->with('member:id,name')->latest('transacted_at')->limit(10)->get(),
+            'promos' => $partner->promos()->latest()->limit(10)->get(),
+        ]);
+    }
+
     public function store(StorePartnerRequest $request): RedirectResponse
     {
         $validated = $request->validated();

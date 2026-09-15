@@ -780,6 +780,13 @@ export default function Register() {
                     Masuk di sini
                 </Link>
             </p>
+
+            <p className="mt-2 text-center text-sm text-slate">
+                Want to join as a partner?{' '}
+                <Link href={route('partner.register.show')} className="font-semibold text-gold-deep hover:underline">
+                    Register as partner
+                </Link>
+            </p>
         </GuestLayout>
     );
 }
