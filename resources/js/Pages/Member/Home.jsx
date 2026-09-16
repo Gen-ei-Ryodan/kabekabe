@@ -144,11 +144,84 @@ function PromoBanner({ promo, imageUrl }) {
             ? `${promo.discount_value}%`
             : formatRupiah(promo.discount_value);
 
+    const [isPortrait, setIsPortrait] = useState(null);
+
+    useEffect(() => {
+        if (!imageUrl) {
+            setIsPortrait(false);
+            return;
+        }
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = () => {
+            setIsPortrait(img.height > img.width);
+        };
+    }, [imageUrl]);
+
+    if (isPortrait === null || isPortrait) {
+        return (
+            <Link
+                href={route('member.promos.show', promo.id)}
+                className="group relative flex h-full flex-row-reverse overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
+            >
+                {imageUrl && (
+                    <div className="relative h-full w-24 shrink-0 overflow-hidden sm:w-32">
+                        <img
+                            src={imageUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                        />
+                        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink/25 to-transparent" />
+                    </div>
+                )}
+                <div className="flex flex-1 flex-col">
+                    <div className="relative flex items-center justify-between gap-2 bg-ink px-3 py-1.5 sm:px-4 sm:py-2">
+                        <span className="relative font-display text-sm font-bold text-gold-light sm:text-base">
+                            {discountLabel}
+                        </span>
+                        <span className="relative truncate rounded-full bg-gold/15 px-2 py-0.5 font-mono text-[7px] uppercase tracking-widest text-gold-light">
+                            {promo.partner?.name}
+                        </span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-2.5 sm:p-3">
+                        <p className="eyebrow text-[8px]">Promo</p>
+                        <h3 className="mt-0.5 font-display text-[11px] font-bold leading-snug text-ink group-hover:text-ink-soft line-clamp-1">
+                            {promo.title}
+                        </h3>
+                        {promo.min_purchase > 0 && (
+                            <p className="mt-0.5 text-[9px] text-slate">Min. {formatRupiah(promo.min_purchase)}</p>
+                        )}
+                        <div className="mt-auto pt-1.5">
+                            <div className="flex items-center justify-between gap-2 border-t border-ink/5 pt-1.5">
+                                <span className="font-mono text-[7px] uppercase tracking-wide text-slate-soft">
+                                    {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
+                                </span>
+                                <span className="shrink-0 font-mono text-[7px] font-semibold uppercase tracking-widest text-gold-deep">
+                                    Lihat →
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        );
+    }
+
     return (
         <Link
             href={route('member.promos.show', promo.id)}
-            className="group relative flex h-full flex-row overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
+            className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
         >
+            {imageUrl && (
+                <div className="relative h-28 w-full shrink-0 overflow-hidden sm:h-36">
+                    <img
+                        src={imageUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                    />
+                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink/25 to-transparent" />
+                </div>
+            )}
             <div className="flex flex-1 flex-col">
                 <div className="relative flex items-center justify-between gap-2 bg-ink px-3 py-1.5 sm:px-4 sm:py-2">
                     <span className="relative font-display text-sm font-bold text-gold-light sm:text-base">
@@ -178,15 +251,6 @@ function PromoBanner({ promo, imageUrl }) {
                     </div>
                 </div>
             </div>
-            {imageUrl && (
-                <div className="my-auto h-20 w-24 shrink-0 overflow-hidden sm:h-24 sm:w-32">
-                    <img
-                        src={imageUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
-                    />
-                </div>
-            )}
         </Link>
     );
 }
