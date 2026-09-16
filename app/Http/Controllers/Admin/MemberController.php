@@ -153,18 +153,38 @@ class MemberController extends Controller
 
         $member = User::create([
             'name' => $validated['name'],
+            'nickname' => $validated['nickname'] ?? null,
             'gender' => $validated['gender'] ?? null,
             'birth_date' => $validated['birth_date'] ?? null,
+            'birth_place' => $validated['birth_place'] ?? null,
+            'marital_status' => $validated['marital_status'] ?? null,
             'religion' => $validated['religion'] ?? null,
+            'place_of_worship_address' => $validated['place_of_worship_address'] ?? null,
             'email' => $validated['email'],
             'password' => $validated['password'],
             'role' => User::ROLE_MEMBER,
             'phone' => $validated['phone'] ?? null,
-            'whatsapp' => $validated['whatsapp'] ?? null,
+            'whatsapp' => $validated['whatsapp'] ?? $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'district' => $validated['district'] ?? null,
+            'city' => $validated['city'] ?? null,
             'company' => $validated['company'] ?? null,
+            'industry' => $validated['industry'] ?? null,
+            'business_fields' => $validated['business_fields'] ?? null,
+            'business_address' => $validated['business_address'] ?? null,
+            'business_district' => $validated['business_district'] ?? null,
+            'business_city' => $validated['business_city'] ?? null,
+            'hobbies' => $validated['hobbies'] ?? null,
+            'approval_status' => User::APPROVAL_APPROVED,
         ]);
 
-        $this->memberships->activateUntil($member, $validated['valid_until']);
+        if (! empty($validated['valid_until'])) {
+            $this->memberships->activateUntil($member, $validated['valid_until']);
+        } elseif (! empty($validated['membership_period'])) {
+            $this->memberships->activate($member, (int) $validated['membership_period']);
+        } else {
+            $this->memberships->activate($member, 12);
+        }
 
         return redirect()
             ->route('admin.members.index')
@@ -224,17 +244,35 @@ class MemberController extends Controller
     {
         $validated = $request->validated();
 
-        $member->update([
+        $updateData = [
             'name' => $validated['name'],
+            'nickname' => $validated['nickname'] ?? null,
             'gender' => $validated['gender'] ?? null,
             'birth_date' => $validated['birth_date'] ?? null,
+            'birth_place' => $validated['birth_place'] ?? null,
+            'marital_status' => $validated['marital_status'] ?? null,
             'religion' => $validated['religion'] ?? null,
+            'place_of_worship_address' => $validated['place_of_worship_address'] ?? null,
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'whatsapp' => $validated['whatsapp'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'district' => $validated['district'] ?? null,
+            'city' => $validated['city'] ?? null,
             'company' => $validated['company'] ?? null,
-            'password' => $validated['password'] ?? $member->password,
-        ]);
+            'industry' => $validated['industry'] ?? null,
+            'business_fields' => $validated['business_fields'] ?? null,
+            'business_address' => $validated['business_address'] ?? null,
+            'business_district' => $validated['business_district'] ?? null,
+            'business_city' => $validated['business_city'] ?? null,
+            'hobbies' => $validated['hobbies'] ?? null,
+        ];
+
+        if (! empty($validated['password'])) {
+            $updateData['password'] = $validated['password'];
+        }
+
+        $member->update($updateData);
 
         return redirect()
             ->route('admin.members.index')

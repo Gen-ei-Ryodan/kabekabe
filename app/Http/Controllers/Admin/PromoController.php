@@ -91,6 +91,19 @@ class PromoController extends Controller
             ->with('success', 'Promo updated successfully.');
     }
 
+    public function updateSort(Request $request, Promo $promo): RedirectResponse
+    {
+        $validated = $request->validate([
+            'sort_number' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $promo->update([
+            'sort_number' => $validated['sort_number'] ?? null,
+        ]);
+
+        return back()->with('success', 'Nomor urut promo berhasil diperbarui.');
+    }
+
     public function approve(Request $request, Promo $promo): RedirectResponse
     {
         $this->promos->approve($promo, $request->user());

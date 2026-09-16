@@ -154,6 +154,21 @@ class AdminFlowTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_update_promo_sort_number(): void
+    {
+        $admin = $this->admin();
+        $promo = Promo::factory()->approved()->create();
+
+        $this->actingAs($admin)->put(route('admin.promos.sort', $promo), [
+            'sort_number' => 2,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('promos', [
+            'id' => $promo->id,
+            'sort_number' => 2,
+        ]);
+    }
+
     public function test_admin_approval_of_payment_activates_membership(): void
     {
         $admin = $this->admin();

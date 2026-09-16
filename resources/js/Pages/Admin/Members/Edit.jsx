@@ -1,16 +1,30 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import MemberForm from '@/Components/Admin/MemberForm';
 
 export default function MemberEdit({ member }) {
     const form = useForm({
-        name: member.name,
+        name: member.name || '',
+        nickname: member.nickname || '',
         gender: member.gender || '',
         birth_date: member.birth_date || '',
+        birth_place: member.birth_place || '',
+        marital_status: member.marital_status || '',
         religion: member.religion || '',
-        email: member.email,
+        place_of_worship_address: member.place_of_worship_address || '',
+        email: member.email || '',
         phone: member.phone || '',
         whatsapp: member.whatsapp || '',
+        address: member.address || '',
+        district: member.district || '',
+        city: member.city || '',
         company: member.company || '',
+        industry: member.industry || '',
+        business_fields: Array.isArray(member.business_fields) ? member.business_fields : [],
+        business_address: member.business_address || '',
+        business_district: member.business_district || '',
+        business_city: member.business_city || '',
+        hobbies: Array.isArray(member.hobbies) ? member.hobbies : [],
         password: '',
         password_confirmation: '',
     });
@@ -31,76 +45,18 @@ export default function MemberEdit({ member }) {
                     <p className="mt-1 font-mono text-sm text-slate">{member.member_code}</p>
                 </header>
 
-                <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="sm:col-span-2">
-                            <label className="label" htmlFor="name">Nama Lengkap</label>
-                            <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                            {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="gender">Jenis Kelamin</label>
-                            <select id="gender" className="input" value={form.data.gender} onChange={(e) => form.setData('gender', e.target.value)}>
-                                <option value="">Pilih jenis kelamin</option>
-                                <option value="male">Laki-laki</option>
-                                <option value="female">Perempuan</option>
-                            </select>
-                            {form.errors.gender && <p className="mt-1 text-xs text-ember">{form.errors.gender}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="birth_date">Tanggal Lahir</label>
-                            <input id="birth_date" type="date" className="input" value={form.data.birth_date} onChange={(e) => form.setData('birth_date', e.target.value)} />
-                            {form.errors.birth_date && <p className="mt-1 text-xs text-ember">{form.errors.birth_date}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="religion">Agama</label>
-                            <select id="religion" className="input" value={form.data.religion} onChange={(e) => form.setData('religion', e.target.value)}>
-                                <option value="">Pilih agama</option>
-                                <option value="islam">Islam</option>
-                                <option value="kristen">Kristen</option>
-                                <option value="katolik">Katolik</option>
-                                <option value="buddha">Buddha</option>
-                                <option value="hindu">Hindu</option>
-                                <option value="konghucu">Konghucu</option>
-                                <option value="lainnya">Lainnya</option>
-                            </select>
-                            {form.errors.religion && <p className="mt-1 text-xs text-ember">{form.errors.religion}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="email">Email</label>
-                            <input id="email" type="email" className="input" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
-                            {form.errors.email && <p className="mt-1 text-xs text-ember">{form.errors.email}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="phone">Telepon</label>
-                            <input id="phone" type="text" className="input" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="whatsapp">WhatsApp</label>
-                            <input id="whatsapp" type="text" className="input" value={form.data.whatsapp} onChange={(e) => form.setData('whatsapp', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="company">Perusahaan</label>
-                            <input id="company" type="text" className="input" value={form.data.company} onChange={(e) => form.setData('company', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="password">Kata Sandi Baru (opsional)</label>
-                            <input id="password" type="password" className="input" placeholder="Kosongkan jika tidak ingin mengubah kata sandi" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
-                            {form.errors.password && <p className="mt-1 text-xs text-ember">{form.errors.password}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="password_confirmation">Konfirmasi Kata Sandi</label>
-                            <input id="password_confirmation" type="password" className="input" value={form.data.password_confirmation} onChange={(e) => form.setData('password_confirmation', e.target.value)} />
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end gap-3">
-                        <a href={route('admin.members.show', member.id)} className="btn-ghost">Batal</a>
-                        <button type="submit" className="btn-gold" disabled={form.processing}>
-                            {form.processing ? 'Menyimpan…' : 'Simpan Perubahan'}
-                        </button>
-                    </div>
-                </form>
+                <div className="card-surface mt-8 p-6 sm:p-8">
+                    <MemberForm
+                        data={form.data}
+                        setData={form.setData}
+                        errors={form.errors}
+                        processing={form.processing}
+                        submitLabel="Simpan Perubahan"
+                        onCancel={() => window.history.back()}
+                        onSubmit={submit}
+                        isCreate={false}
+                    />
+                </div>
             </div>
         </>
     );

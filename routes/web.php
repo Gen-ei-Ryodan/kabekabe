@@ -120,6 +120,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/promos', [AdminPromoController::class, 'index'])->name('promos.index');
         Route::get('/promos/{promo}/edit', [AdminPromoController::class, 'edit'])->name('promos.edit');
         Route::put('/promos/{promo}', [AdminPromoController::class, 'update'])->name('promos.update');
+        Route::put('/promos/{promo}/sort', [AdminPromoController::class, 'updateSort'])->name('promos.sort');
         Route::put('/promos/{promo}/approve', [AdminPromoController::class, 'approve'])->name('promos.approve');
         Route::put('/promos/{promo}/reject', [AdminPromoController::class, 'reject'])->name('promos.reject');
         Route::put('/promos/{promo}/toggle', [AdminPromoController::class, 'toggle'])->name('promos.toggle');

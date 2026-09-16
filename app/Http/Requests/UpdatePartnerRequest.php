@@ -39,6 +39,25 @@ class UpdatePartnerRequest extends FormRequest
             'diskon1' => ['nullable', 'string', 'max:255'],
             'diskon2' => ['nullable', 'string', 'max:255'],
             'diskon3' => ['nullable', 'string', 'max:255'],
+            // Keanggotaan KBKB
+            'is_member' => ['nullable', 'boolean'],
+            'member_id_number' => ['nullable', 'string', 'max:100'],
+            'member_name' => ['nullable', 'string', 'max:255'],
+            'member_birth_date' => ['nullable', 'date'],
+            // Biodata PIC / Vendor User
+            'nickname' => ['nullable', 'string', 'max:100'],
+            'gender' => ['nullable', 'string', 'max:50'],
+            'birth_place' => ['nullable', 'string', 'max:100'],
+            'birth_date' => ['nullable', 'date'],
+            'marital_status' => ['nullable', 'string', 'max:50'],
+            'religion' => ['nullable', 'string', 'max:100'],
+            'place_of_worship_address' => ['nullable', 'string', 'max:500'],
+            'member_phone' => ['nullable', 'string', 'max:30'],
+            'member_address' => ['nullable', 'string', 'max:500'],
+            'member_district' => ['nullable', 'string', 'max:100'],
+            'member_city' => ['nullable', 'string', 'max:100'],
+            'hobbies' => ['nullable', 'array'],
+            'hobbies.*' => ['string', 'max:255'],
         ];
     }
 }

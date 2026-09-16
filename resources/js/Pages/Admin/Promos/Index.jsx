@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
@@ -5,6 +6,48 @@ import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
 import PromoDrawer from '@/Components/Admin/PromoDrawer';
 import { formatDate } from '@/Utils/format';
+
+function InlineSortNumber({ promo }) {
+    const [val, setVal] = useState(promo.sort_number ?? '');
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = () => {
+        const num = val === '' ? null : parseInt(val, 10);
+        if (num === (promo.sort_number ?? null)) return;
+        setSaving(true);
+        router.put(
+            route('admin.promos.sort', promo.id),
+            { sort_number: num },
+            {
+                preserveScroll: true,
+                onFinish: () => setSaving(false),
+            }
+        );
+    };
+
+    return (
+        <div className="flex items-center gap-1.5 bg-ink/5 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-ink/10">
+            <span className="text-[11px] font-semibold text-slate">No. Urut:</span>
+            <input
+                type="number"
+                min="1"
+                placeholder="-"
+                className="w-14 text-center text-xs font-bold py-1 px-1.5 rounded border border-ink/20 bg-white focus:border-gold focus:ring-1 focus:ring-gold"
+                value={val}
+                onChange={(e) => setVal(e.target.value)}
+                onBlur={handleSave}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSave();
+                        e.target.blur();
+                    }
+                }}
+            />
+            {saving && <span className="text-[10px] text-gold animate-pulse">…</span>}
+        </div>
+    );
+}
 
 export default function PromoIndex({ promos, filters, drawer }) {
     const filter = useForm(filters);
@@ -69,9 +112,10 @@ export default function PromoIndex({ promos, filters, drawer }) {
                                         <div className="flex flex-wrap items-center gap-2">
                                             {typeof promo.sort_number === 'number' && (
                                                 <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-xs font-bold text-gold-light">
-                                                    {promo.sort_number}
+                                                    #{promo.sort_number}
                                                 </span>
                                             )}
+                                            <InlineSortNumber promo={promo} />
                                             <StatusChip
                                                 status={promo.status}
                                                 label={promo.status === 'pending' ? 'Menunggu Persetujuan' : promo.status === 'approved' ? 'Disetujui' : 'Ditolak'}

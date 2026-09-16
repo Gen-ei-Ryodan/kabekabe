@@ -80,7 +80,7 @@ class PartnerController extends Controller
         $drawer = ['mode' => $mode];
 
         if ($mode === 'edit') {
-            $partner = Partner::query()->with('user:id,name,email,approval_status,birth_date,birth_place,hobbies,gender,marital_status,phone,address,city,district')->find($request->integer('id'));
+            $partner = Partner::query()->with('user:id,name,nickname,email,approval_status,birth_date,birth_place,hobbies,gender,marital_status,religion,place_of_worship_address,phone,address,city,district')->find($request->integer('id'));
 
             if ($partner) {
                 $drawer['partner'] = $partner;
@@ -107,19 +107,37 @@ class PartnerController extends Controller
     public function store(StorePartnerRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $isMember = (bool) ($validated['is_member'] ?? false);
 
-        $vendor = User::create([
+        $vendorUser = User::create([
             'name' => $validated['vendor_name'],
+            'nickname' => $validated['nickname'] ?? null,
             'email' => $validated['vendor_email'],
             'password' => $validated['vendor_password'],
             'role' => User::ROLE_VENDOR,
+            'phone' => $validated['phone'] ?? $validated['member_phone'] ?? null,
+            'whatsapp' => $validated['phone'] ?? $validated['member_phone'] ?? null,
+            'gender' => $isMember ? null : ($validated['gender'] ?? null),
+            'birth_date' => $isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null),
+            'birth_place' => $isMember ? null : ($validated['birth_place'] ?? null),
+            'hobbies' => $isMember ? null : ($validated['hobbies'] ?? null),
+            'marital_status' => $isMember ? null : ($validated['marital_status'] ?? null),
+            'religion' => $isMember ? null : ($validated['religion'] ?? null),
+            'place_of_worship_address' => $isMember ? null : ($validated['place_of_worship_address'] ?? null),
+            'address' => $isMember ? ($validated['address'] ?? null) : ($validated['member_address'] ?? $validated['address'] ?? null),
+            'district' => $isMember ? ($validated['district'] ?? null) : ($validated['member_district'] ?? $validated['district'] ?? null),
+            'city' => $isMember ? ($validated['city'] ?? null) : ($validated['member_city'] ?? $validated['city'] ?? null),
+            'approval_status' => User::APPROVAL_APPROVED,
         ]);
 
-        $partner = $vendor->partner()->create([
+        $partner = $vendorUser->partner()->create([
             'name' => $validated['name'],
-            'slug' => Partner::slugFor($validated['name']),
+            'trade_name' => $validated['trade_name'] ?? null,
+            'slug' => Partner::slugFor(($validated['trade_name'] ?? null) ?: $validated['name']),
             'category' => $validated['category'],
             'industry' => $validated['industry'] ?? null,
+            'employee_count' => $validated['employee_count'] ?? null,
+            'established_since' => $validated['established_since'] ?? null,
             'pic_name' => $validated['pic_name'] ?? $validated['vendor_name'],
             'pic_phone' => $validated['pic_phone'] ?? null,
             'description' => $validated['description'] ?? null,
@@ -132,6 +150,16 @@ class PartnerController extends Controller
             'joined_at' => $validated['joined_at'] ?? now(),
             'expires_at' => $validated['expires_at'] ?? now()->addYear(),
             'is_active' => true,
+            'status' => Partner::STATUS_ACTIVE,
+            'is_member' => $isMember,
+            'member_id_number' => $isMember ? ($validated['member_id_number'] ?? null) : null,
+            'member_name' => $isMember ? ($validated['member_name'] ?? null) : $validated['vendor_name'],
+            'member_birth_date' => $isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null),
+            'total_belanja' => $validated['total_belanja'] ?? null,
+            'diskon1' => $validated['diskon1'] ?? null,
+            'diskon2' => $validated['diskon2'] ?? null,
+            'diskon3' => $validated['diskon3'] ?? null,
+            'sort_number' => $validated['sort_number'] ?? null,
         ]);
 
         return redirect()
@@ -142,7 +170,7 @@ class PartnerController extends Controller
     public function edit(Partner $partner): Response
     {
         return Inertia::render('Admin/Partners/Edit', [
-            'partner' => $partner->load('user:id,name,email'),
+            'partner' => $partner->load('user:id,name,nickname,email,approval_status,birth_date,birth_place,hobbies,gender,marital_status,religion,place_of_worship_address,phone,address,city,district'),
         ]);
     }
 
@@ -158,7 +186,41 @@ class PartnerController extends Controller
             $validated['logo'] = $request->file('logo')->store('partner-logos', 'public');
         }
 
-        $partner->update($validated);
+        $partnerFields = [
+            'name', 'trade_name', 'category', 'industry', 'employee_count', 'established_since',
+            'pic_name', 'pic_phone', 'district', 'city', 'joined_at', 'expires_at',
+            'description', 'address', 'phone', 'email', 'sort_number',
+            'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'is_member',
+            'member_id_number', 'member_name', 'member_birth_date',
+        ];
+        if (isset($validated['logo'])) {
+            $partnerFields[] = 'logo';
+        }
+
+        $partner->update(array_intersect_key($validated, array_flip($partnerFields)));
+
+        if ($partner->user) {
+            $userUpdate = [];
+            if (array_key_exists('pic_name', $validated) && $validated['pic_name']) {
+                $userUpdate['name'] = $validated['pic_name'];
+            }
+            if (array_key_exists('nickname', $validated)) $userUpdate['nickname'] = $validated['nickname'];
+            if (array_key_exists('gender', $validated)) $userUpdate['gender'] = $validated['gender'];
+            if (array_key_exists('birth_place', $validated)) $userUpdate['birth_place'] = $validated['birth_place'];
+            if (array_key_exists('birth_date', $validated)) $userUpdate['birth_date'] = $validated['birth_date'];
+            if (array_key_exists('marital_status', $validated)) $userUpdate['marital_status'] = $validated['marital_status'];
+            if (array_key_exists('religion', $validated)) $userUpdate['religion'] = $validated['religion'];
+            if (array_key_exists('place_of_worship_address', $validated)) $userUpdate['place_of_worship_address'] = $validated['place_of_worship_address'];
+            if (array_key_exists('member_phone', $validated) && $validated['member_phone']) $userUpdate['phone'] = $validated['member_phone'];
+            if (array_key_exists('member_address', $validated) && $validated['member_address']) $userUpdate['address'] = $validated['member_address'];
+            if (array_key_exists('member_district', $validated) && $validated['member_district']) $userUpdate['district'] = $validated['member_district'];
+            if (array_key_exists('member_city', $validated) && $validated['member_city']) $userUpdate['city'] = $validated['member_city'];
+            if (array_key_exists('hobbies', $validated)) $userUpdate['hobbies'] = $validated['hobbies'];
+
+            if (! empty($userUpdate)) {
+                $partner->user->update($userUpdate);
+            }
+        }
 
         return redirect()
             ->route('admin.partners.index')

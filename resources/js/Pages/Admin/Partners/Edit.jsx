@@ -1,19 +1,58 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import PartnerForm from '@/Components/Admin/PartnerForm';
+
+const toDateInput = (val) => {
+    if (!val) return '';
+    try {
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return '';
+        return d.toISOString().slice(0, 10);
+    } catch {
+        return '';
+    }
+};
 
 export default function PartnerEdit({ partner }) {
     const form = useForm({
-        name: partner.name,
-        category: partner.category,
-        description: partner.description || '',
-        address: partner.address || '',
+        name: partner.name || '',
+        trade_name: partner.trade_name || '',
+        category: partner.category || '',
+        industry: partner.industry || '',
+        employee_count: partner.employee_count || '',
+        established_since: partner.established_since || '',
+        pic_name: partner.pic_name || partner.user?.name || '',
+        pic_phone: partner.pic_phone || partner.user?.phone || '',
         phone: partner.phone || '',
         email: partner.email || '',
+        address: partner.address || '',
+        district: partner.district || '',
+        city: partner.city || '',
+        joined_at: toDateInput(partner.joined_at),
+        expires_at: toDateInput(partner.expires_at),
+        description: partner.description || '',
         logo: null,
+        sort_number: partner.sort_number || '',
         total_belanja: partner.total_belanja || '',
         diskon1: partner.diskon1 || '',
         diskon2: partner.diskon2 || '',
         diskon3: partner.diskon3 || '',
+        is_member: Boolean(partner.is_member),
+        member_id_number: partner.member_id_number || '',
+        member_name: partner.member_name || '',
+        member_birth_date: toDateInput(partner.member_birth_date),
+        nickname: partner.user?.nickname || '',
+        gender: partner.user?.gender || '',
+        birth_place: partner.user?.birth_place || '',
+        birth_date: toDateInput(partner.user?.birth_date),
+        marital_status: partner.user?.marital_status || '',
+        religion: partner.user?.religion || '',
+        place_of_worship_address: partner.user?.place_of_worship_address || '',
+        member_phone: partner.user?.phone || '',
+        member_address: partner.user?.address || '',
+        member_district: partner.user?.district || '',
+        member_city: partner.user?.city || '',
+        hobbies: Array.isArray(partner.user?.hobbies) ? partner.user.hobbies : [],
     });
 
     const submit = (e) => {
@@ -32,72 +71,18 @@ export default function PartnerEdit({ partner }) {
                     {partner.user && <p className="mt-1 text-sm text-slate">Akun vendor: {partner.user.email}</p>}
                 </header>
 
-                <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label className="label" htmlFor="name">Nama Partner / Usaha</label>
-                            <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                            {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="category">Kategori</label>
-                            <input id="category" type="text" className="input" value={form.data.category} onChange={(e) => form.setData('category', e.target.value)} />
-                            {form.errors.category && <p className="mt-1 text-xs text-ember">{form.errors.category}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="phone">No. Telp Perusahaan</label>
-                            <input id="phone" type="text" className="input" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="email">Email Kontak</label>
-                            <input id="email" type="email" className="input" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <label className="label" htmlFor="address">Alamat</label>
-                            <input id="address" type="text" className="input" value={form.data.address} onChange={(e) => form.setData('address', e.target.value)} />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <label className="label" htmlFor="description">Deskripsi</label>
-                            <textarea id="description" rows={3} className="input" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
-                            {form.errors.description && <p className="mt-1 text-xs text-ember">{form.errors.description}</p>}
-                        </div>
-                        <div className="sm:col-span-2">
-                            <label className="label" htmlFor="logo">Ganti Logo</label>
-                            <input id="logo" type="file" accept="image/*" className="input" onChange={(e) => form.setData('logo', e.target.files[0])} />
-                            {form.errors.logo && <p className="mt-1 text-xs text-ember">{form.errors.logo}</p>}
-                        </div>
-                    </div>
-
-                    <div className="border-t border-ink/10 pt-5">
-                        <h3 className="font-display font-bold">Info Vendor</h3>
-                        <p className="mt-1 text-xs text-slate">Field manual, tanpa perhitungan otomatis.</p>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label className="label" htmlFor="total_belanja">Total Belanja</label>
-                                <input id="total_belanja" type="text" className="input" value={form.data.total_belanja} onChange={(e) => form.setData('total_belanja', e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="label" htmlFor="diskon1">Diskon 1</label>
-                                <input id="diskon1" type="text" className="input" value={form.data.diskon1} onChange={(e) => form.setData('diskon1', e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="label" htmlFor="diskon2">Diskon 2</label>
-                                <input id="diskon2" type="text" className="input" value={form.data.diskon2} onChange={(e) => form.setData('diskon2', e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="label" htmlFor="diskon3">Diskon 3</label>
-                                <input id="diskon3" type="text" className="input" value={form.data.diskon3} onChange={(e) => form.setData('diskon3', e.target.value)} />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end gap-3">
-                        <a href={route('admin.partners.index')} className="btn-ghost">Batal</a>
-                        <button type="submit" className="btn-gold" disabled={form.processing}>
-                            {form.processing ? 'Menyimpan…' : 'Simpan Perubahan'}
-                        </button>
-                    </div>
-                </form>
+                <div className="card-surface mt-8 p-6 sm:p-8">
+                    <PartnerForm
+                        data={form.data}
+                        setData={form.setData}
+                        errors={form.errors}
+                        processing={form.processing}
+                        submitLabel="Simpan Perubahan"
+                        onCancel={() => window.history.back()}
+                        onSubmit={submit}
+                        isCreate={false}
+                    />
+                </div>
             </div>
         </>
     );
