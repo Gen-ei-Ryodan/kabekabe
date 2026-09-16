@@ -373,8 +373,16 @@ export default function Home({
 
     useEffect(() => {
         if (popup?.promo) {
-            const timer = setTimeout(() => setPopupOpen(true), 3000);
-            return () => clearTimeout(timer);
+            const popupKey = `kbkb_popup_seen_${popup.promo.id || popup.id || 'initial'}`;
+            const hasSeen = sessionStorage.getItem(popupKey);
+
+            if (!hasSeen) {
+                const timer = setTimeout(() => {
+                    setPopupOpen(true);
+                    sessionStorage.setItem(popupKey, 'true');
+                }, 3000);
+                return () => clearTimeout(timer);
+            }
         }
     }, [popup]);
 
