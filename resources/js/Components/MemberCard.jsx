@@ -109,19 +109,20 @@ export default function MemberCard({ member }) {
                         style={{ transform: 'translateX(-130%)', visibility: 'hidden' }}
                     />
 
-                    {/* top row: photo right */}
+                    {/* top row: photo right (Portrait orientation) */}
                     <div className="card-line relative flex items-start justify-end px-4 pt-4 sm:px-6 sm:pt-6">
                         <button
                             type="button"
                             onClick={() => setPhotoOpen(true)}
-                            className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-xl border-2 border-gold shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-28 sm:w-28"
+                            className="group relative h-24 w-18 cursor-pointer overflow-hidden rounded-xl border-2 border-gold shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-32 sm:w-24"
                             aria-label="Lihat foto"
+                            title="Klik untuk memperbesar foto"
                         >
                             <Avatar
                                 src={member.avatar_url}
                                 name={member.name}
                                 tone="dark"
-                                className="h-20 w-20 text-2xl sm:h-28 sm:w-28 sm:text-3xl"
+                                className="h-24 w-18 object-cover text-2xl sm:h-32 sm:w-24 sm:text-3xl"
                             />
                             <span className="absolute inset-0 flex items-center justify-center bg-ink/0 transition-colors group-hover:bg-ink/20">
                                 <svg className="h-5 w-5 text-paper opacity-0 drop-shadow transition-opacity group-hover:opacity-100 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

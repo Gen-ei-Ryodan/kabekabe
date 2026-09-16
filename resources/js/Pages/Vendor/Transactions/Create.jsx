@@ -18,7 +18,7 @@ export default function TransactionCreate({ member, is_completing = false }) {
         discount_percent: '',
         discount_amount: '',
         net_amount: '',
-        discounts: [{ description: '', amount: '' }],
+        discounts: [{ name: '', percent: '', amount: '' }],
         note: '',
         proof: null,
     });
@@ -67,25 +67,133 @@ export default function TransactionCreate({ member, is_completing = false }) {
         checkMember(manualQuery);
     };
 
-    const submit = (e) => {
-        e.preventDefault();
-        form.transform((data) => ({
-            ...data,
-            member_code: member.member_code,
-            scan_id: member.scan_id,
-            discounts: [
-                {
-                    description: data.promo_name || 'Diskon Manual',
-                    amount: parseInt(data.discount_amount) || 0,
-                },
-            ],
-        }));
-        form.post(route('vendor.transactions.store'), { preserveScroll: true });
+    // Calculate totals across all discount items
+    const calculateTotals = (currentDiscounts, totalVal) => {
+        const numTotal = parseInt(totalVal) || 0;
+        let sumDiscount = 0;
+        const mappedDiscounts = currentDiscounts.map((item) => {
+            let itemAmt = parseInt(item.amount) || 0;
+            const itemPct = parseFloat(item.percent);
+            if (!isNaN(itemPct) && item.percent !== '' && numTotal > 0 && !item.amountManuallySet) {
+                itemAmt = Math.round((numTotal * itemPct) / 100);
+            }
+            sumDiscount += itemAmt;
+            return {
+                ...item,
+                amount: itemAmt > 0 ? String(itemAmt) : item.amount,
+            };
+        });
+
+        const net = Math.max(0, numTotal - sumDiscount);
+        return {
+            discounts: mappedDiscounts,
+            discount_amount: String(sumDiscount),
+            net_amount: String(net),
+        };
     };
 
-    const updateDiscount = (index, field, value) => {
-        const discounts = form.data.discounts.map((discount, i) => i === index ? { ...discount, [field]: value } : discount);
-        form.setData('discounts', discounts);
+    const addDiscountRow = () => {
+        form.setData((prev) => ({
+            ...prev,
+            discounts: [...prev.discounts, { name: '', percent: '', amount: '' }],
+        }));
+    };
+
+    const removeDiscountRow = (index) => {
+        form.setData((prev) => {
+            const updated = prev.discounts.filter((_, i) => i !== index);
+            const remaining = updated.length > 0 ? updated : [{ name: '', percent: '', amount: '' }];
+            const calc = calculateTotals(remaining, prev.total);
+            return {
+                ...prev,
+                discounts: calc.discounts,
+                discount_amount: calc.discount_amount,
+                net_amount: calc.net_amount,
+                promo_name: calc.discounts.map((d) => d.name).filter(Boolean).join(', '),
+            };
+        });
+    };
+
+    const updateDiscountRow = (index, field, value) => {
+        form.setData((prev) => {
+            const numTotal = parseInt(prev.total) || 0;
+            const updated = prev.discounts.map((item, i) => {
+                if (i !== index) return item;
+
+                const copy = { ...item, [field]: value };
+                if (field === 'percent') {
+                    const pct = parseFloat(value);
+                    if (!isNaN(pct) && numTotal > 0) {
+                        copy.amount = String(Math.round((numTotal * pct) / 100));
+                        copy.amountManuallySet = false;
+                    } else if (value === '') {
+                        copy.amount = '';
+                        copy.amountManuallySet = false;
+                    }
+                } else if (field === 'amount') {
+                    copy.amountManuallySet = true;
+                    if (numTotal > 0 && value) {
+                        copy.percent = String(Math.round(((parseInt(value) || 0) / numTotal) * 100));
+                    }
+                }
+                return copy;
+            });
+
+            let sumDiscount = 0;
+            updated.forEach((d) => {
+                sumDiscount += parseInt(d.amount) || 0;
+            });
+            const net = Math.max(0, numTotal - sumDiscount);
+            const primaryPromo = updated.map((d) => d.name).filter(Boolean).join(', ');
+
+            return {
+                ...prev,
+                discounts: updated,
+                discount_amount: String(sumDiscount),
+                net_amount: String(net),
+                promo_name: primaryPromo,
+            };
+        });
+    };
+
+    const handleTotalChange = (val) => {
+        form.setData((prev) => {
+            const calc = calculateTotals(prev.discounts, val);
+            return {
+                ...prev,
+                total: val,
+                discounts: calc.discounts,
+                discount_amount: calc.discount_amount,
+                net_amount: calc.net_amount,
+            };
+        });
+    };
+
+    const submit = (e) => {
+        e.preventDefault();
+        form.transform((data) => {
+            const activeDiscounts = data.discounts
+                .filter((d) => (parseInt(d.amount) || 0) > 0 || (d.name && d.name.trim()))
+                .map((d) => ({
+                    description: d.name || 'Diskon Manual',
+                    amount: parseInt(d.amount) || 0,
+                    percent: d.percent ? parseInt(d.percent) : null,
+                }));
+
+            const finalDiscounts = activeDiscounts.length > 0
+                ? activeDiscounts
+                : [{ description: data.promo_name || 'Diskon Manual', amount: parseInt(data.discount_amount) || 0 }];
+
+            return {
+                ...data,
+                member_code: member.member_code,
+                scan_id: member.scan_id,
+                discounts: finalDiscounts,
+                discount_amount: parseInt(data.discount_amount) || 0,
+                net_amount: parseInt(data.net_amount) || 0,
+            };
+        });
+        form.post(route('vendor.transactions.store'), { preserveScroll: true });
     };
 
     return (
@@ -235,113 +343,110 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                         min="1"
                                         className="input"
                                         value={form.data.total}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            form.setData((prev) => {
-                                                const totalNum = parseInt(val) || 0;
-                                                const discNum = parseInt(prev.discount_amount) || 0;
-                                                return {
-                                                    ...prev,
-                                                    total: val,
-                                                    net_amount: prev.net_amount ? prev.net_amount : (val ? Math.max(0, totalNum - discNum) : ''),
-                                                };
-                                            });
-                                        }}
+                                        onChange={(e) => handleTotalChange(e.target.value)}
                                         placeholder="0"
                                     />
                                     {errors.total && <p className="mt-1 text-xs text-ember">{errors.total}</p>}
                                 </div>
 
                                 <div className="rounded-xl border border-gold/30 bg-gold/10 p-4 sm:p-5">
-                                    <div className="mb-3">
-                                        <p className="eyebrow">Diskon Manual</p>
-                                        <p className="mt-0.5 text-xs text-slate">Isi rincian diskon secara sejajar: Nama Promo/Benefit, Diskon %, Diskon Rp, dan Penjualan Bersih.</p>
+                                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                                        <div>
+                                            <p className="eyebrow">Diskon Manual</p>
+                                            <p className="mt-0.5 text-xs text-slate">Dapat menambahkan beberapa diskon (multiple diskon) untuk transaksi ini.</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={addDiscountRow}
+                                            className="rounded-lg border border-gold/40 bg-gold/20 px-3 py-1.5 text-xs font-semibold text-gold-deep hover:bg-gold/30 transition-colors"
+                                        >
+                                            + Tambah Diskon
+                                        </button>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                                        <div>
-                                            <label className="label" htmlFor="promo_name">Nama</label>
-                                            <input
-                                                id="promo_name"
-                                                type="text"
-                                                className="input"
-                                                value={form.data.promo_name}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    form.setData((prev) => ({
-                                                        ...prev,
-                                                        promo_name: val,
-                                                        discounts: [{ description: val || 'Diskon', amount: prev.discount_amount || 0 }],
-                                                    }));
-                                                }}
-                                                placeholder="Contoh: Diskon Member"
-                                            />
-                                            {errors.promo_name && <p className="mt-1 text-xs text-ember">{errors.promo_name}</p>}
-                                        </div>
+                                    <div className="space-y-3">
+                                        {form.data.discounts.map((discount, index) => (
+                                            <div key={index} className="rounded-lg border border-ink/10 bg-white/70 p-3">
+                                                <div className="flex items-center justify-between pb-2 border-b border-ink/5">
+                                                    <span className="font-mono text-[11px] font-semibold text-gold-deep uppercase">
+                                                        Diskon #{index + 1}
+                                                    </span>
+                                                    {form.data.discounts.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeDiscountRow(index)}
+                                                            className="text-xs font-medium text-ember hover:underline"
+                                                        >
+                                                            Hapus
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="mt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                                    <div>
+                                                        <label className="label text-xs" htmlFor={`promo_name_${index}`}>Nama Promo/Diskon</label>
+                                                        <input
+                                                            id={`promo_name_${index}`}
+                                                            type="text"
+                                                            className="input text-xs"
+                                                            value={discount.name || ''}
+                                                            onChange={(e) => updateDiscountRow(index, 'name', e.target.value)}
+                                                            placeholder="Contoh: Diskon Member / Voucher"
+                                                        />
+                                                    </div>
 
-                                        <div>
-                                            <label className="label" htmlFor="discount_percent">Diskon %</label>
-                                            <input
-                                                id="discount_percent"
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                className="input"
-                                                value={form.data.discount_percent}
-                                                onChange={(e) => {
-                                                    const pct = e.target.value;
-                                                    const totalVal = parseInt(form.data.total) || 0;
-                                                    let discAmt = form.data.discount_amount;
-                                                    let netAmt = form.data.net_amount;
-                                                    if (pct && totalVal > 0) {
-                                                        discAmt = Math.round((totalVal * parseFloat(pct)) / 100);
-                                                        netAmt = Math.max(0, totalVal - discAmt);
-                                                    }
-                                                    form.setData((prev) => ({
-                                                        ...prev,
-                                                        discount_percent: pct,
-                                                        discount_amount: discAmt !== undefined ? String(discAmt) : prev.discount_amount,
-                                                        net_amount: netAmt !== undefined ? String(netAmt) : prev.net_amount,
-                                                        discounts: [{ description: prev.promo_name || 'Diskon', amount: discAmt || 0 }],
-                                                    }));
-                                                }}
-                                                placeholder="0"
-                                            />
-                                            {errors.discount_percent && <p className="mt-1 text-xs text-ember">{errors.discount_percent}</p>}
-                                        </div>
+                                                    <div>
+                                                        <label className="label text-xs" htmlFor={`discount_percent_${index}`}>Diskon %</label>
+                                                        <input
+                                                            id={`discount_percent_${index}`}
+                                                            type="number"
+                                                            min="0"
+                                                            max="100"
+                                                            className="input text-xs"
+                                                            value={discount.percent || ''}
+                                                            onChange={(e) => updateDiscountRow(index, 'percent', e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
 
+                                                    <div>
+                                                        <label className="label text-xs" htmlFor={`discount_amount_${index}`}>Diskon Rp <span className="text-ember">*</span></label>
+                                                        <input
+                                                            id={`discount_amount_${index}`}
+                                                            type="number"
+                                                            min="0"
+                                                            className="input text-xs font-medium text-sage-deep"
+                                                            value={discount.amount || ''}
+                                                            onChange={(e) => updateDiscountRow(index, 'amount', e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Rekap Total Diskon & Penjualan Bersih */}
+                                    <div className="mt-4 grid grid-cols-1 gap-3 border-t border-ink/10 pt-3 sm:grid-cols-2">
                                         <div>
-                                            <label className="label" htmlFor="discount_amount">Diskon Rp <span className="text-ember">*</span></label>
+                                            <label className="label" htmlFor="discount_amount">Total Diskon (Rp)</label>
                                             <input
                                                 id="discount_amount"
                                                 type="number"
-                                                min="0"
-                                                className="input"
+                                                readOnly
+                                                className="input cursor-not-allowed bg-ink/5 font-semibold text-sage-deep"
                                                 value={form.data.discount_amount}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    const discAmt = parseInt(val) || 0;
-                                                    const totalVal = parseInt(form.data.total) || 0;
-                                                    const netAmt = totalVal > 0 ? Math.max(0, totalVal - discAmt) : form.data.net_amount;
-                                                    form.setData((prev) => ({
-                                                        ...prev,
-                                                        discount_amount: val,
-                                                        net_amount: netAmt ? String(netAmt) : prev.net_amount,
-                                                        discounts: [{ description: prev.promo_name || 'Diskon', amount: discAmt }],
-                                                    }));
-                                                }}
                                                 placeholder="0"
                                             />
                                             {errors.discount_amount && <p className="mt-1 text-xs text-ember">{errors.discount_amount}</p>}
                                         </div>
 
                                         <div>
-                                            <label className="label" htmlFor="net_amount">Penjualan Bersih <span className="text-ember">*</span></label>
+                                            <label className="label" htmlFor="net_amount">Penjualan Bersih (Rp) <span className="text-ember">*</span></label>
                                             <input
                                                 id="net_amount"
                                                 type="number"
                                                 min="0"
-                                                className="input font-semibold text-sage-deep"
+                                                className="input font-bold text-ink"
                                                 value={form.data.net_amount}
                                                 onChange={(e) => form.setData('net_amount', e.target.value)}
                                                 placeholder="0"
