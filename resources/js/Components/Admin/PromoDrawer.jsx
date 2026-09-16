@@ -13,6 +13,7 @@ function EditPromoDrawer({ promo, onClose }) {
         start_date: promo.start_date,
         end_date: promo.end_date,
         terms: promo.terms || '',
+        sort_number: promo.sort_number !== null && promo.sort_number !== undefined ? String(promo.sort_number) : '',
     });
 
     const submit = (e) => {
@@ -27,26 +28,42 @@ function EditPromoDrawer({ promo, onClose }) {
                 <StatusChip status={promo.status} label={promo.status === 'pending' ? 'Menunggu Persetujuan' : promo.status === 'approved' ? 'Disetujui' : 'Ditolak'} />
             </div>
 
-            <div>
-                <label className="label" htmlFor="title">Judul Promo</label>
-                <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
+            <div className="grid gap-4 sm:grid-cols-3">
+                <div className="sm:col-span-2">
+                    <label className="label" htmlFor="title">Judul Promo</label>
+                    <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
+                </div>
+                <div>
+                    <label className="label" htmlFor="sort_number">Nomor Urut Tampil</label>
+                    <input id="sort_number" type="number" min="1" placeholder="Contoh: 1" className="input" value={form.data.sort_number} onChange={(e) => form.setData('sort_number', e.target.value)} />
+                    {form.errors.sort_number && <p className="mt-1 text-xs text-ember">{form.errors.sort_number}</p>}
+                </div>
             </div>
+
             <div>
                 <label className="label" htmlFor="description">Deskripsi</label>
                 <textarea id="description" rows={3} className="input" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
                 {form.errors.description && <p className="mt-1 text-xs text-ember">{form.errors.description}</p>}
             </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label className="label">Tipe Diskon</label>
                     <select className="input" value={form.data.discount_type} onChange={(e) => form.setData('discount_type', e.target.value)}>
                         <option value="percent">Persentase (%)</option>
                         <option value="nominal">Nominal (Rp)</option>
+                        <option value="free_item">Free Barang</option>
                     </select>
                 </div>
                 <div>
-                    <label className="label">{form.data.discount_type === 'percent' ? 'Diskon (%)' : 'Diskon (Rp)'}</label>
+                    <label className="label">
+                        {form.data.discount_type === 'percent'
+                            ? 'Diskon (%)'
+                            : form.data.discount_type === 'free_item'
+                            ? 'Nilai Barang (Rp)'
+                            : 'Diskon (Rp)'}
+                    </label>
                     <input type="number" min="1" className="input" value={form.data.discount_value} onChange={(e) => form.setData('discount_value', e.target.value)} />
                     {form.errors.discount_value && <p className="mt-1 text-xs text-ember">{form.errors.discount_value}</p>}
                 </div>
@@ -74,7 +91,7 @@ function EditPromoDrawer({ promo, onClose }) {
 
             {promo.status === 'approved' && (
                 <p className="rounded-xl bg-sage/10 px-4 py-3 text-xs text-sage">
-                    Promo aktif memberikan benefit {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)} bagi member AKTIF. Anda dapat mengaktifkan/menonaktifkan dari daftar promo.
+                    Promo aktif memberikan benefit {promo.discount_type === 'percent' ? `${promo.discount_value}%` : promo.discount_type === 'free_item' ? `Free Barang (Nilai: ${formatRupiah(promo.discount_value)})` : formatRupiah(promo.discount_value)} bagi member AKTIF. Anda dapat mengaktifkan/menonaktifkan dari daftar promo.
                 </p>
             )}
 

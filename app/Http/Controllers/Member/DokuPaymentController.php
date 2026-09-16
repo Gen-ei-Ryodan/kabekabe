@@ -15,7 +15,44 @@ use Illuminate\Support\Facades\Log;
 class DokuPaymentController extends Controller
 {
     /**
-     * Initiate payment checkout (DOKU Checkout or Direct VA).
+     * Check and validate promo/discount code.
+     */
+    public function checkPromo(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'plan_id' => ['required', 'integer', 'exists:membership_plans,id'],
+            'code' => ['required', 'string', 'max:50'],
+        ]);
+
+        $plan = MembershipPlan::where('is_active', true)->findOrFail($validated['plan_id']);
+        $discountCode = \App\Models\MembershipDiscountCode::where('code', strtoupper(trim($validated['code'])))->first();
+
+        if (! $discountCode || ! $discountCode->isValid()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode promo tidak valid atau sudah kedaluwarsa.',
+            ], 422);
+        }
+
+        $planPrice = (int) $plan->price;
+        $discountAmount = $discountCode->calculateDiscount($planPrice);
+        $finalPlanPrice = max(0, $planPrice - $discountAmount);
+
+        return response()->json([
+            'success' => true,
+            'code' => $discountCode->code,
+            'name' => $discountCode->name,
+            'discount_type' => $discountCode->discount_type,
+            'discount_value' => $discountCode->discount_value,
+            'discount_amount' => $discountAmount,
+            'original_price' => $planPrice,
+            'final_price' => $finalPlanPrice,
+            'is_free' => ($finalPlanPrice === 0),
+        ]);
+    }
+
+    /**
+     * Initiate payment checkout (DOKU Checkout or Direct VA) or Free Promo.
      */
     public function checkout(
         Request $request,
@@ -25,23 +62,66 @@ class DokuPaymentController extends Controller
         $validated = $request->validate([
             'plan_id' => ['required', 'integer', 'exists:membership_plans,id'],
             'channel' => ['nullable', 'string', 'in:all,bca,mandiri,bri,bni,permata'],
+            'promo_code' => ['nullable', 'string', 'max:50'],
         ]);
 
         $member = $request->user();
         $plan = MembershipPlan::where('is_active', true)->findOrFail($validated['plan_id']);
 
-        // Calculate pass-through admin fee to ensure merchant receives net Rp100.000/month
-        $adminFee = $doku->getAdminFee();
         $planPrice = (int) $plan->price;
-        $totalAmount = $planPrice + $adminFee;
+        $discountAmount = 0;
+        $discountCode = null;
 
-        // Create pending payment record with total amount (plan price + admin fee)
+        if (! empty($validated['promo_code'])) {
+            $discountCode = \App\Models\MembershipDiscountCode::where('code', strtoupper(trim($validated['promo_code'])))->first();
+            if ($discountCode && $discountCode->isValid()) {
+                $discountAmount = $discountCode->calculateDiscount($planPrice);
+            }
+        }
+
+        $finalPlanPrice = max(0, $planPrice - $discountAmount);
+
+        // Jika 100% Free: langsung aktivasi membership tanpa payment gateway
+        if ($finalPlanPrice === 0 && $discountAmount > 0) {
+            $payment = $payments->createPending($member, $plan);
+            $payment->forceFill([
+                'amount' => 0,
+                'notes' => "Aktivasi Promo 100% Bebas Biaya ({$discountCode->code})",
+            ])->save();
+
+            $payments->approve($payment, null, "Aktivasi Membership via Voucher {$discountCode->code}");
+            $discountCode->increment('used_count');
+
+            return response()->json([
+                'success' => true,
+                'type' => 'free_promo',
+                'payment_id' => $payment->id,
+                'invoice_number' => $payment->invoice_number,
+                'amount' => 0,
+                'message' => 'Selamat! Keanggotaan Anda telah aktif 100% gratis.',
+            ]);
+        }
+
+        // Calculate pass-through admin fee to ensure merchant receives net amount
+        $adminFee = $doku->getAdminFee();
+        $totalAmount = $finalPlanPrice + $adminFee;
+
+        // Create pending payment record with total amount (discounted price + admin fee)
         $payment = $payments->createPending($member, $plan);
-        $paymentNotes = "Harga Paket: Rp" . number_format($planPrice, 0, ',', '.') . " | Biaya Layanan Gateway: Rp" . number_format($adminFee, 0, ',', '.');
+        $paymentNotes = "Harga Paket: Rp" . number_format($planPrice, 0, ',', '.');
+        if ($discountAmount > 0) {
+            $paymentNotes .= " | Diskon ({$discountCode->code}): -Rp" . number_format($discountAmount, 0, ',', '.');
+        }
+        $paymentNotes .= " | Biaya Layanan Gateway: Rp" . number_format($adminFee, 0, ',', '.');
+
         $payment->forceFill([
             'amount' => $totalAmount,
             'notes' => $paymentNotes,
         ])->save();
+
+        if ($discountCode) {
+            $discountCode->increment('used_count');
+        }
 
         $channel = $validated['channel'] ?? 'all';
 
@@ -63,7 +143,8 @@ class DokuPaymentController extends Controller
                 'type' => 'va',
                 'payment_id' => $payment->id,
                 'invoice_number' => $payment->invoice_number,
-                'plan_price' => $planPrice,
+                'plan_price' => $finalPlanPrice,
+                'discount_amount' => $discountAmount,
                 'admin_fee' => $adminFee,
                 'amount' => $payment->amount,
                 'bank' => $result['bank'],
@@ -90,7 +171,8 @@ class DokuPaymentController extends Controller
             'type' => 'checkout',
             'payment_id' => $payment->id,
             'invoice_number' => $payment->invoice_number,
-            'plan_price' => $planPrice,
+            'plan_price' => $finalPlanPrice,
+            'discount_amount' => $discountAmount,
             'admin_fee' => $adminFee,
             'amount' => $payment->amount,
             'payment_url' => $result['url'],

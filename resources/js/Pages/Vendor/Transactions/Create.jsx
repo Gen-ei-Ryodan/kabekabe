@@ -69,7 +69,17 @@ export default function TransactionCreate({ member, is_completing = false }) {
 
     const submit = (e) => {
         e.preventDefault();
-        form.transform((data) => ({ ...data, member_code: member.member_code, scan_id: member.scan_id }));
+        form.transform((data) => ({
+            ...data,
+            member_code: member.member_code,
+            scan_id: member.scan_id,
+            discounts: [
+                {
+                    description: data.promo_name || 'Diskon Manual',
+                    amount: parseInt(data.discount_amount) || 0,
+                },
+            ],
+        }));
         form.post(route('vendor.transactions.store'), { preserveScroll: true });
     };
 
@@ -218,47 +228,124 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="promo_name">Promo / Benefit (manual)</label>
-                                    <input id="promo_name" type="text" className="input" value={form.data.promo_name} onChange={(e) => form.setData('promo_name', e.target.value)} placeholder="Tulis nama promo atau benefit" />
-                                    {errors.promo_name && <p className="mt-1 text-xs text-ember">{errors.promo_name}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="label" htmlFor="total">Total Belanja (Rp)</label>
-                                    <input id="total" type="number" min="1" className="input" value={form.data.total} onChange={(e) => form.setData('total', e.target.value)} />
+                                    <label className="label" htmlFor="total">Total Belanja (Rp) <span className="text-ember">*</span></label>
+                                    <input
+                                        id="total"
+                                        type="number"
+                                        min="1"
+                                        className="input"
+                                        value={form.data.total}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            form.setData((prev) => {
+                                                const totalNum = parseInt(val) || 0;
+                                                const discNum = parseInt(prev.discount_amount) || 0;
+                                                return {
+                                                    ...prev,
+                                                    total: val,
+                                                    net_amount: prev.net_amount ? prev.net_amount : (val ? Math.max(0, totalNum - discNum) : ''),
+                                                };
+                                            });
+                                        }}
+                                        placeholder="0"
+                                    />
                                     {errors.total && <p className="mt-1 text-xs text-ember">{errors.total}</p>}
                                 </div>
 
-                                <div className="space-y-4 rounded-xl border border-gold/30 bg-gold/10 p-4">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <p className="eyebrow">Diskon Manual</p>
-                                            <p className="mt-1 text-xs text-slate">Isi semua nominal secara manual. Sistem tidak menghitung otomatis.</p>
-                                        </div>
-                                        <button type="button" className="btn-ghost shrink-0 text-xs" onClick={() => form.setData('discounts', [...form.data.discounts, { description: '', amount: '' }])}>+ Tambah Diskon</button>
+                                <div className="rounded-xl border border-gold/30 bg-gold/10 p-4 sm:p-5">
+                                    <div className="mb-3">
+                                        <p className="eyebrow">Diskon Manual</p>
+                                        <p className="mt-0.5 text-xs text-slate">Isi rincian diskon secara sejajar: Nama Promo/Benefit, Diskon %, Diskon Rp, dan Penjualan Bersih.</p>
                                     </div>
-                                    {form.data.discounts.map((discount, index) => (
-                                        <div key={index} className="grid gap-3 sm:grid-cols-[1fr_10rem_auto]">
-                                            <input type="text" className="input" value={discount.description} onChange={(e) => updateDiscount(index, 'description', e.target.value)} placeholder={`Diskon ${index + 1}`} />
-                                            <input type="number" min="0" className="input" value={discount.amount} onChange={(e) => updateDiscount(index, 'amount', e.target.value)} placeholder="Nominal Rp" />
-                                            {form.data.discounts.length > 1 && <button type="button" className="btn-ghost" onClick={() => form.setData('discounts', form.data.discounts.filter((_, i) => i !== index))}>Hapus</button>}
-                                        </div>
-                                    ))}
-                                    {errors.discounts && <p className="text-xs text-ember">{errors.discounts}</p>}
-                                    <div className="grid gap-4 sm:grid-cols-3">
+
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                         <div>
-                                            <label className="label" htmlFor="discount_percent">Total diskon (%) manual</label>
-                                            <input id="discount_percent" type="number" min="0" className="input" value={form.data.discount_percent} onChange={(e) => form.setData('discount_percent', e.target.value)} />
+                                            <label className="label" htmlFor="promo_name">Nama</label>
+                                            <input
+                                                id="promo_name"
+                                                type="text"
+                                                className="input"
+                                                value={form.data.promo_name}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    form.setData((prev) => ({
+                                                        ...prev,
+                                                        promo_name: val,
+                                                        discounts: [{ description: val || 'Diskon', amount: prev.discount_amount || 0 }],
+                                                    }));
+                                                }}
+                                                placeholder="Contoh: Diskon Member"
+                                            />
+                                            {errors.promo_name && <p className="mt-1 text-xs text-ember">{errors.promo_name}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="label" htmlFor="discount_percent">Diskon %</label>
+                                            <input
+                                                id="discount_percent"
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                className="input"
+                                                value={form.data.discount_percent}
+                                                onChange={(e) => {
+                                                    const pct = e.target.value;
+                                                    const totalVal = parseInt(form.data.total) || 0;
+                                                    let discAmt = form.data.discount_amount;
+                                                    let netAmt = form.data.net_amount;
+                                                    if (pct && totalVal > 0) {
+                                                        discAmt = Math.round((totalVal * parseFloat(pct)) / 100);
+                                                        netAmt = Math.max(0, totalVal - discAmt);
+                                                    }
+                                                    form.setData((prev) => ({
+                                                        ...prev,
+                                                        discount_percent: pct,
+                                                        discount_amount: discAmt !== undefined ? String(discAmt) : prev.discount_amount,
+                                                        net_amount: netAmt !== undefined ? String(netAmt) : prev.net_amount,
+                                                        discounts: [{ description: prev.promo_name || 'Diskon', amount: discAmt || 0 }],
+                                                    }));
+                                                }}
+                                                placeholder="0"
+                                            />
                                             {errors.discount_percent && <p className="mt-1 text-xs text-ember">{errors.discount_percent}</p>}
                                         </div>
+
                                         <div>
-                                            <label className="label" htmlFor="discount_amount">Total diskon (Rp) manual <span className="text-ember">*</span></label>
-                                            <input id="discount_amount" type="number" min="0" className="input" value={form.data.discount_amount} onChange={(e) => form.setData('discount_amount', e.target.value)} />
+                                            <label className="label" htmlFor="discount_amount">Diskon Rp <span className="text-ember">*</span></label>
+                                            <input
+                                                id="discount_amount"
+                                                type="number"
+                                                min="0"
+                                                className="input"
+                                                value={form.data.discount_amount}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    const discAmt = parseInt(val) || 0;
+                                                    const totalVal = parseInt(form.data.total) || 0;
+                                                    const netAmt = totalVal > 0 ? Math.max(0, totalVal - discAmt) : form.data.net_amount;
+                                                    form.setData((prev) => ({
+                                                        ...prev,
+                                                        discount_amount: val,
+                                                        net_amount: netAmt ? String(netAmt) : prev.net_amount,
+                                                        discounts: [{ description: prev.promo_name || 'Diskon', amount: discAmt }],
+                                                    }));
+                                                }}
+                                                placeholder="0"
+                                            />
                                             {errors.discount_amount && <p className="mt-1 text-xs text-ember">{errors.discount_amount}</p>}
                                         </div>
+
                                         <div>
-                                            <label className="label" htmlFor="net_amount">Penjualan bersih (Rp) manual <span className="text-ember">*</span></label>
-                                            <input id="net_amount" type="number" min="0" className="input" value={form.data.net_amount} onChange={(e) => form.setData('net_amount', e.target.value)} />
+                                            <label className="label" htmlFor="net_amount">Penjualan Bersih <span className="text-ember">*</span></label>
+                                            <input
+                                                id="net_amount"
+                                                type="number"
+                                                min="0"
+                                                className="input font-semibold text-sage-deep"
+                                                value={form.data.net_amount}
+                                                onChange={(e) => form.setData('net_amount', e.target.value)}
+                                                placeholder="0"
+                                            />
                                             {errors.net_amount && <p className="mt-1 text-xs text-ember">{errors.net_amount}</p>}
                                         </div>
                                     </div>

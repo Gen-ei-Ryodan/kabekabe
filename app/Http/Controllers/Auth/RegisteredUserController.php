@@ -30,40 +30,73 @@ class RegisteredUserController extends Controller
         $roleInput = $request->input('role', 'member');
 
         if ($roleInput === 'partner') {
-            $request->validate([
+            $isMember = $request->boolean('is_member');
+
+            $rules = [
                 'role' => 'required|in:member,partner',
-                'name' => 'required|string|max:255',
-                'pic_name' => 'required|string|max:255',
-                'pic_phone' => 'required|string|max:30',
-                'category' => 'nullable|string|max:100',
-                'phone' => 'nullable|string|max:30',
+                'name' => 'required|string|max:255', // Nama Perusahaan
+                'trade_name' => 'required|string|max:255', // Nama Merk Dagang
+                'address' => 'required|string|max:500', // Alamat Usaha
+                'phone' => 'required|string|max:30', // Nomor Telfon
                 'email' => 'required|string|lowercase|email|max:255|unique:'.User::class.',email',
-                'address' => 'nullable|string|max:500',
+                'employee_count' => 'nullable|integer|min:0',
+                'established_since' => 'nullable|string|max:50',
+                'is_member' => 'required|boolean',
                 'district' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
+                'category' => 'nullable|string|max:100',
                 'industry' => 'nullable|string|max:150',
-                'employee_count' => 'nullable|integer|min:1',
-                'established_since' => 'nullable|string|max:4',
-                'is_member' => 'nullable|boolean',
-                'member_code' => 'nullable|string|max:50',
-                'member_name' => 'nullable|string|max:255',
-                'member_birth_date' => 'nullable|date',
-                'hobbies' => 'nullable|array',
-                'hobbies.*' => 'string|max:100',
-            ]);
+            ];
+
+            if ($isMember) {
+                $rules['member_id_number'] = 'required|string|max:100';
+                $rules['member_name'] = 'required|string|max:255';
+                $rules['member_birth_date'] = 'required|date';
+            } else {
+                $rules['pic_name'] = 'nullable|string|max:255';
+                $rules['nickname'] = 'nullable|string|max:100';
+                $rules['gender'] = 'nullable|string|max:50';
+                $rules['birth_date'] = 'nullable|date';
+                $rules['birth_place'] = 'nullable|string|max:100';
+                $rules['hobbies'] = 'nullable|array';
+                $rules['marital_status'] = 'nullable|string|max:50';
+                $rules['religion'] = 'nullable|string|max:100';
+                $rules['place_of_worship_address'] = 'nullable|string|max:500';
+                $rules['member_phone'] = 'nullable|string|max:30';
+                $rules['member_address'] = 'nullable|string|max:500';
+                $rules['member_district'] = 'nullable|string|max:100';
+                $rules['member_city'] = 'nullable|string|max:100';
+            }
+
+            $request->validate($rules);
 
             $generatedPassword = 'KBKB' . random_int(1000, 9999);
 
+            $userName = $isMember
+                ? $request->member_name
+                : ($request->pic_name ?: $request->trade_name ?: $request->name);
+
             $user = User::create([
-                'name' => $request->pic_name,
+                'name' => $userName,
+                'nickname' => $isMember ? null : $request->nickname,
                 'email' => $request->email,
-                'phone' => $request->pic_phone,
-                'whatsapp' => $request->pic_phone,
+                'phone' => $request->phone,
+                'whatsapp' => $request->phone,
                 'company' => $request->name,
-                'address' => $request->address,
-                'district' => $request->district,
-                'city' => $request->city,
+                'address' => $isMember ? $request->address : ($request->member_address ?: $request->address),
+                'district' => $isMember ? $request->district : ($request->member_district ?: $request->district),
+                'city' => $isMember ? $request->city : ($request->member_city ?: $request->city),
                 'industry' => $request->industry,
+                'gender' => $isMember ? null : $request->gender,
+                'birth_date' => $isMember ? $request->member_birth_date : $request->birth_date,
+                'birth_place' => $isMember ? null : $request->birth_place,
+                'hobbies' => $isMember ? null : $request->hobbies,
+                'marital_status' => $isMember ? null : $request->marital_status,
+                'religion' => $isMember ? null : $request->religion,
+                'place_of_worship_address' => $isMember ? null : $request->place_of_worship_address,
+                'business_address' => $request->address,
+                'business_district' => $request->district,
+                'business_city' => $request->city,
                 'password' => Hash::make($generatedPassword),
                 'role' => User::ROLE_VENDOR,
                 'approval_status' => User::APPROVAL_PENDING,
@@ -72,11 +105,12 @@ class RegisteredUserController extends Controller
 
             $user->partner()->create([
                 'name' => $request->name,
-                'slug' => Partner::slugFor($request->name),
-                'pic_name' => $request->pic_name,
-                'pic_phone' => $request->pic_phone,
+                'trade_name' => $request->trade_name,
+                'slug' => Partner::slugFor($request->trade_name ?: $request->name),
+                'pic_name' => $userName,
+                'pic_phone' => $request->phone,
                 'category' => $request->category ?: ($request->industry ?: 'Umum'),
-                'phone' => $request->phone ?: $request->pic_phone,
+                'phone' => $request->phone,
                 'email' => $request->email,
                 'address' => $request->address,
                 'district' => $request->district,
@@ -84,22 +118,14 @@ class RegisteredUserController extends Controller
                 'industry' => $request->industry,
                 'employee_count' => $request->employee_count,
                 'established_since' => $request->established_since,
-                'is_member' => $request->boolean('is_member'),
-                'member_code' => $request->member_code,
-                'hobbies' => $request->hobbies,
-                'date_of_birth' => $request->member_birth_date,
+                'is_member' => $isMember,
+                'member_id_number' => $isMember ? $request->member_id_number : null,
+                'member_name' => $isMember ? $request->member_name : $userName,
+                'member_birth_date' => $isMember ? $request->member_birth_date : $request->birth_date,
                 'joined_at' => now(),
                 'is_active' => false,
                 'status' => Partner::STATUS_INACTIVE,
             ]);
-
-            // If member info provided, optionally update user birth_date
-            if ($request->filled('member_birth_date')) {
-                $user->update(['birth_date' => $request->member_birth_date]);
-            }
-            if ($request->filled('member_name')) {
-                // keep pic_name as is, no extra action
-            }
         } else {
             $request->validate([
                 'role' => 'required|in:member,partner',

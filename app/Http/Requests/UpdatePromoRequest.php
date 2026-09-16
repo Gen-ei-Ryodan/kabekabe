@@ -19,7 +19,7 @@ class UpdatePromoRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'discount_type' => ['required', 'in:percent,nominal'],
+            'discount_type' => ['required', 'in:percent,nominal,free_item'],
             'discount_value' => ['required', 'integer', 'min:1', 'max:100000000'],
             'min_purchase' => ['required', 'integer', 'min:0'],
             'start_date' => ['required', 'date'],

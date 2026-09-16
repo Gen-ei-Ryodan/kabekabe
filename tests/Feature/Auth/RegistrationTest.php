@@ -56,7 +56,8 @@ class RegistrationTest extends TestCase
     {
         $response = $this->post('/register', [
             'role' => 'partner',
-            'name' => 'Test Partner Kafe',
+            'name' => 'PT Kopi Nikmat',
+            'trade_name' => 'Kopi Nikmat Senopati',
             'pic_name' => 'Budi Santoso',
             'pic_phone' => '081234567891',
             'email' => 'partner@example.com',
@@ -66,6 +67,10 @@ class RegistrationTest extends TestCase
             'city' => 'Badung',
             'category' => 'F&B',
             'industry' => 'Makanan & Minuman',
+            'is_member' => true,
+            'member_id_number' => 'KBKB-MEM-001',
+            'member_name' => 'Budi Santoso',
+            'member_birth_date' => '1990-01-01',
         ]);
 
         $response->assertStatus(200);
@@ -79,7 +84,10 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('partners', [
-            'name' => 'Test Partner Kafe',
+            'name' => 'PT Kopi Nikmat',
+            'trade_name' => 'Kopi Nikmat Senopati',
+            'is_member' => true,
+            'member_id_number' => 'KBKB-MEM-001',
             'pic_name' => 'Budi Santoso',
             'category' => 'F&B',
             'industry' => 'Makanan & Minuman',

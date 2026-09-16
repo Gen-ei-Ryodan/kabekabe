@@ -80,7 +80,7 @@ class PartnerController extends Controller
         $drawer = ['mode' => $mode];
 
         if ($mode === 'edit') {
-            $partner = Partner::query()->with('user:id,name,email,approval_status')->find($request->integer('id'));
+            $partner = Partner::query()->with('user:id,name,email,approval_status,birth_date,birth_place,hobbies,gender,marital_status,phone,address,city,district')->find($request->integer('id'));
 
             if ($partner) {
                 $drawer['partner'] = $partner;

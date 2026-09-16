@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['promo_id', 'image_path', 'is_active'])]
+#[Fillable(['promo_id', 'promo_title', 'image_path', 'is_active'])]
 class HomePopup extends Model
 {
     protected function casts(): array

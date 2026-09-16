@@ -52,11 +52,16 @@ export default function PromoEdit({ promo }) {
                             <select id="discount_type" className="input" value={form.data.discount_type} onChange={(e) => form.setData('discount_type', e.target.value)}>
                                 <option value="percent">Persentase (%)</option>
                                 <option value="nominal">Nominal (Rp)</option>
+                                <option value="free_item">Free Barang</option>
                             </select>
                         </div>
                         <div>
                             <label className="label" htmlFor="discount_value">
-                                {form.data.discount_type === 'percent' ? 'Besaran Diskon (%)' : 'Besaran Diskon (Rp)'}
+                                {form.data.discount_type === 'free_item'
+                                    ? 'Nilai Barang (Rp)'
+                                    : form.data.discount_type === 'percent'
+                                    ? 'Besaran Diskon (%)'
+                                    : 'Besaran Diskon (Rp)'}
                             </label>
                             <input id="discount_value" type="number" min="1" className="input" value={form.data.discount_value} onChange={(e) => form.setData('discount_value', e.target.value)} />
                             {form.errors.discount_value && <p className="mt-1 text-xs text-ember">{form.errors.discount_value}</p>}

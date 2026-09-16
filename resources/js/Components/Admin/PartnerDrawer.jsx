@@ -152,8 +152,11 @@ function CreatePartnerDrawer({ onClose }) {
 function EditPartnerDrawer({ partner, onClose }) {
     const form = useForm({
         name: partner.name,
+        trade_name: partner.trade_name || '',
         category: partner.category,
         industry: partner.industry || '',
+        employee_count: partner.employee_count || '',
+        established_since: partner.established_since || '',
         pic_name: partner.pic_name || '',
         pic_phone: partner.pic_phone || '',
         phone: partner.phone || '',
@@ -209,27 +212,38 @@ function EditPartnerDrawer({ partner, onClose }) {
                 </div>
             )}
 
-            {partner.user?.approval_status === 'rejected' && (
-                <div className="rounded-2xl border border-ember/30 bg-ember/10 p-4 flex items-center justify-between">
-                    <div>
-                        <p className="font-semibold text-ember text-sm">Pendaftaran Partner Ini Ditolak</p>
-                        <p className="text-xs text-ember/80 mt-0.5">Akun vendor partner dinonaktifkan.</p>
+            {/* KOTAK STATUS KEANGGOTAAN MEMBER */}
+            <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4 text-xs">
+                <p className="font-bold text-ink uppercase tracking-wider mb-1">
+                    Status Keanggotaan Member KBKB:
+                </p>
+                {partner.is_member ? (
+                    <div className="space-y-1 text-slate">
+                        <p><span className="font-semibold text-ink">Status:</span> <span className="text-sage-deep font-bold">Sudah Terdaftar Sebagai Member</span></p>
+                        <p><span className="font-semibold text-ink">ID Member:</span> <span className="font-mono">{partner.member_id_number || '-'}</span></p>
+                        <p><span className="font-semibold text-ink">Nama Member:</span> {partner.member_name || '-'}</p>
+                        <p><span className="font-semibold text-ink">Tgl Lahir:</span> {partner.member_birth_date ? toDateInput(partner.member_birth_date) : '-'}</p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => router.put(route('admin.partners.approve', partner.id), {}, { preserveScroll: true })}
-                        className="btn-gold text-xs"
-                    >
-                        Setujui Ulang
-                    </button>
-                </div>
-            )}
+                ) : (
+                    <div className="space-y-1 text-slate">
+                        <p><span className="font-semibold text-ink">Status:</span> <span className="text-gold-deep font-bold">Mendaftar Sekaligus Member</span></p>
+                        <p><span className="font-semibold text-ink">Nama Akun:</span> {partner.user?.name || partner.pic_name || '-'}</p>
+                        <p><span className="font-semibold text-ink">TTL:</span> {partner.user?.birth_place || '-'}, {partner.user?.birth_date ? toDateInput(partner.user.birth_date) : '-'}</p>
+                        <p><span className="font-semibold text-ink">Hobi:</span> {Array.isArray(partner.user?.hobbies) ? partner.user.hobbies.join(', ') : (partner.user?.hobbies || '-')}</p>
+                    </div>
+                )}
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <label className="label" htmlFor="name">Nama Usaha / Brand</label>
+                    <label className="label" htmlFor="name">Nama Perusahaan</label>
                     <input id="name" type="text" className="input" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required />
                     {form.errors.name && <p className="mt-1 text-xs text-ember">{form.errors.name}</p>}
+                </div>
+                <div>
+                    <label className="label" htmlFor="trade_name">Nama Merk Dagang</label>
+                    <input id="trade_name" type="text" className="input" value={form.data.trade_name} onChange={(e) => form.setData('trade_name', e.target.value)} placeholder="Nama brand toko / resto" />
+                    {form.errors.trade_name && <p className="mt-1 text-xs text-ember">{form.errors.trade_name}</p>}
                 </div>
                 <div>
                     <label className="label" htmlFor="category">Kategori</label>
@@ -245,6 +259,14 @@ function EditPartnerDrawer({ partner, onClose }) {
                         ))}
                     </select>
                     {form.errors.industry && <p className="mt-1 text-xs text-ember">{form.errors.industry}</p>}
+                </div>
+                <div>
+                    <label className="label" htmlFor="employee_count">Jumlah Karyawan</label>
+                    <input id="employee_count" type="number" min="0" className="input" value={form.data.employee_count} onChange={(e) => form.setData('employee_count', e.target.value)} placeholder="Misal: 10" />
+                </div>
+                <div>
+                    <label className="label" htmlFor="established_since">Berdiri Sejak</label>
+                    <input id="established_since" type="text" className="input" value={form.data.established_since} onChange={(e) => form.setData('established_since', e.target.value)} placeholder="Tahun atau bulan & tahun" />
                 </div>
                 <div>
                     <label className="label" htmlFor="email">Email Perusahaan</label>

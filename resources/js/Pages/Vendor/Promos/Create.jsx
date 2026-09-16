@@ -48,11 +48,16 @@ export default function PromoCreate() {
                             <select id="discount_type" className="input" value={data.discount_type} onChange={(e) => setData('discount_type', e.target.value)}>
                                 <option value="percent">Persentase (%)</option>
                                 <option value="nominal">Nominal (Rp)</option>
+                                <option value="free_item">Free Barang</option>
                             </select>
                         </div>
                         <div>
                             <label className="label" htmlFor="discount_value">
-                                {data.discount_type === 'percent' ? 'Besaran Diskon (%)' : 'Besaran Diskon (Rp)'}
+                                {data.discount_type === 'free_item'
+                                    ? 'Nilai Barang (Rp)'
+                                    : data.discount_type === 'percent'
+                                    ? 'Besaran Diskon (%)'
+                                    : 'Besaran Diskon (Rp)'}
                             </label>
                             <input id="discount_value" type="number" min="1" className="input" value={data.discount_value} onChange={(e) => setData('discount_value', e.target.value)} />
                             {errors.discount_value && <p className="mt-1 text-xs text-ember">{errors.discount_value}</p>}

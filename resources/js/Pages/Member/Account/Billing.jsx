@@ -14,6 +14,11 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
     const [activePayment, setActivePayment] = useState(null);
     const [vaDetails, setVaDetails] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [promoInput, setPromoInput] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [isCheckingPromo, setIsCheckingPromo] = useState(false);
+    const [promoMessage, setPromoMessage] = useState(null);
+    const [promoError, setPromoError] = useState(null);
     const pollingRef = useRef(null);
 
     // Selected plan calculations
@@ -21,8 +26,12 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
     const planPrice = selectedPlan
         ? (selectedPlan.price_raw ?? parseInt(String(selectedPlan.price).replace(/\D/g, ''), 10))
         : 100000;
-    const gatewayFee = admin_fee !== undefined && admin_fee !== null ? Number(admin_fee) : 0;
-    const totalBill = planPrice + gatewayFee;
+    const discountValue = appliedPromo
+        ? (appliedPromo.is_free ? planPrice : Math.min(planPrice, Math.round((planPrice * (appliedPromo.discount_value || 0)) / 100)))
+        : 0;
+    const discountedPlanPrice = Math.max(0, planPrice - discountValue);
+    const gatewayFee = discountedPlanPrice === 0 ? 0 : (admin_fee !== undefined && admin_fee !== null ? Number(admin_fee) : 0);
+    const totalBill = discountedPlanPrice === 0 ? 0 : discountedPlanPrice + gatewayFee;
 
     // Clean up polling interval
     useEffect(() => {
@@ -56,6 +65,46 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
         }, 3000);
     };
 
+    const applyPromoCode = async () => {
+        if (!promoInput.trim()) return;
+        setIsCheckingPromo(true);
+        setPromoError(null);
+        setPromoMessage(null);
+        try {
+            const res = await fetch(route('member.billing.doku.promo'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    plan_id: selectedPlanId,
+                    code: promoInput.trim(),
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                setPromoError(data.message || 'Kode promo tidak valid.');
+                setAppliedPromo(null);
+            } else {
+                setAppliedPromo(data);
+                setPromoMessage(`Voucher ${data.code} berhasil diterapkan! Potongan Rp${Number(data.discount_amount).toLocaleString('id-ID')}`);
+            }
+        } catch (e) {
+            setPromoError('Gagal memverifikasi kode promo.');
+        } finally {
+            setIsCheckingPromo(false);
+        }
+    };
+
+    const removePromoCode = () => {
+        setAppliedPromo(null);
+        setPromoInput('');
+        setPromoMessage(null);
+        setPromoError(null);
+    };
+
     const handlePayOnline = async () => {
         if (!selectedPlanId) {
             setErrorMessage('Silakan pilih salah satu paket membership terlebih dahulu.');
@@ -76,6 +125,7 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                 body: JSON.stringify({
                     plan_id: selectedPlanId,
                     channel: paymentChannel,
+                    promo_code: appliedPromo ? appliedPromo.code : null,
                 }),
             });
 
@@ -84,6 +134,13 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
             if (!response.ok || !result.success) {
                 setErrorMessage(result.message || 'Gagal memproses pembayaran DOKU.');
                 setIsLoading(false);
+                return;
+            }
+
+            if (result.type === 'free_promo') {
+                setIsLoading(false);
+                alert(result.message || 'Selamat! Keanggotaan Anda telah aktif gratis.');
+                router.reload({ only: ['membership'] });
                 return;
             }
 
@@ -282,12 +339,23 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
 
                             {/* 1. Pilihan Paket Membership */}
                             <div className="mt-6">
-                                <label className="mb-3 block text-sm font-semibold text-slate-800">
-                                    1. Pilih Durasi Langganan:
-                                </label>
+                                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                                    <label className="text-sm font-semibold text-slate-800">
+                                        1. Pilih Durasi Langganan:
+                                    </label>
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-0.5 text-[11px] font-bold text-gold-deep">
+                                        🔥 Promo Spesial: Okt & Nov 2026
+                                    </span>
+                                </div>
                                 <div className="grid gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                                     {plans.map((plan) => {
                                         const isSelected = selectedPlanId === plan.id;
+                                        const promoBadge =
+                                            plan.duration_months === 5 ? 'HEMAT 1 BLN' :
+                                            plan.duration_months === 10 ? 'HEMAT 2 BLN' :
+                                            plan.duration_months === 12 ? 'HEMAT 2 BLN' :
+                                            plan.duration_months === 15 ? 'HEMAT 3 BLN' : null;
+
                                         return (
                                             <button
                                                 key={plan.id}
@@ -299,6 +367,11 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                                                         : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
                                                 }`}
                                             >
+                                                {promoBadge && (
+                                                    <span className="absolute -top-2 right-2 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-extrabold text-ink shadow-xs">
+                                                        {promoBadge}
+                                                    </span>
+                                                )}
                                                 <div className="flex w-full items-center justify-between gap-1">
                                                     <span className="font-display text-sm font-bold text-slate-900">{plan.duration_months} Bulan</span>
                                                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
@@ -312,37 +385,81 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                                 </div>
                             </div>
 
-                            {/* 2. Pilihan Metode Bayar */}
-                            <div className="mt-6">
-                                <label className="mb-3 block text-sm font-semibold text-slate-800">
-                                    2. Pilih Metode Pembayaran:
+                            {/* 2. Input Kode Promo / Voucher */}
+                            <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                                    Punya Kode Promo / Voucher Diskon?
                                 </label>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                    {[
-                                        { id: 'all', label: 'DOKU All-in-One', sub: 'QRIS, E-Wallet, VA' },
-                                        { id: 'bca', label: 'BCA VA', sub: 'Virtual Account' },
-                                        { id: 'mandiri', label: 'Mandiri VA', sub: 'Virtual Account' },
-                                        { id: 'bri', label: 'BRI VA', sub: 'Virtual Account' },
-                                    ].map((method) => {
-                                        const isSelected = paymentChannel === method.id;
-                                        return (
-                                            <button
-                                                key={method.id}
-                                                type="button"
-                                                onClick={() => setPaymentChannel(method.id)}
-                                                className={`rounded-xl border p-3 text-center transition ${
-                                                    isSelected
-                                                        ? 'border-gold bg-gold/5 font-semibold text-gold ring-1 ring-gold'
-                                                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                                                }`}
-                                            >
-                                                <p className="text-sm font-bold">{method.label}</p>
-                                                <p className="text-[10px] text-slate-400 mt-0.5">{method.sub}</p>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                                {appliedPromo ? (
+                                    <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-emerald-700">✓ {appliedPromo.code}</span>
+                                            <span className="text-xs text-emerald-600 font-medium">({appliedPromo.name})</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={removePromoCode}
+                                            className="text-xs font-semibold text-rose-600 hover:underline"
+                                        >
+                                            Hapus Voucher
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={promoInput}
+                                            onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                                            placeholder="Contoh: KBKBFREE atau KBKB50"
+                                            className="block flex-1 rounded-xl border-slate-200 px-3 py-2 font-mono text-sm uppercase placeholder-slate-400 focus:border-gold focus:ring-1 focus:ring-gold"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={applyPromoCode}
+                                            disabled={isCheckingPromo || !promoInput.trim()}
+                                            className="btn-gold shrink-0 text-xs px-4"
+                                        >
+                                            {isCheckingPromo ? 'Memeriksa…' : 'Gunakan'}
+                                        </button>
+                                    </div>
+                                )}
+                                {promoMessage && <p className="mt-1.5 text-xs text-emerald-600 font-medium">{promoMessage}</p>}
+                                {promoError && <p className="mt-1.5 text-xs text-rose-600 font-medium">{promoError}</p>}
                             </div>
+
+                            {/* 3. Pilihan Metode Bayar (Hanya jika tagihan > 0) */}
+                            {totalBill > 0 && (
+                                <div className="mt-6">
+                                    <label className="mb-3 block text-sm font-semibold text-slate-800">
+                                        2. Pilih Metode Pembayaran:
+                                    </label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                        {[
+                                            { id: 'all', label: 'DOKU All-in-One', sub: 'QRIS, E-Wallet, VA' },
+                                            { id: 'bca', label: 'BCA VA', sub: 'Virtual Account' },
+                                            { id: 'mandiri', label: 'Mandiri VA', sub: 'Virtual Account' },
+                                            { id: 'bri', label: 'BRI VA', sub: 'Virtual Account' },
+                                        ].map((method) => {
+                                            const isSelected = paymentChannel === method.id;
+                                            return (
+                                                <button
+                                                    key={method.id}
+                                                    type="button"
+                                                    onClick={() => setPaymentChannel(method.id)}
+                                                    className={`rounded-xl border p-3 text-center transition ${
+                                                        isSelected
+                                                            ? 'border-gold bg-gold/5 font-semibold text-gold ring-1 ring-gold'
+                                                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                                                    }`}
+                                                >
+                                                    <p className="text-sm font-bold">{method.label}</p>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">{method.sub}</p>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Rincian Biaya Transparan */}
                             <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
@@ -351,36 +468,29 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                                         <span>Biaya Membership ({selectedPlan?.name || '-'})</span>
                                         <span className="font-medium text-slate-900">Rp{planPrice.toLocaleString('id-ID')}</span>
                                     </div>
-                                    {gatewayFee > 0 ? (
-                                        <>
-                                            <div className="flex justify-between text-slate-600">
-                                                <span>Biaya Layanan Gateway</span>
-                                                <span className="font-medium text-slate-900">Rp{gatewayFee.toLocaleString('id-ID')}</span>
-                                            </div>
-                                            <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
-                                                <span>Total Tagihan</span>
-                                                <span className="font-mono text-lg text-gold">Rp{totalBill.toLocaleString('id-ID')}</span>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="flex justify-between text-slate-600">
-                                                <span>Biaya Admin / Channel</span>
-                                                <span className="font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-xs">
-                                                    Ditanggung Pembeli (DOKU Checkout)
-                                                </span>
-                                            </div>
-                                            <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
-                                                <span>Total Tagihan Pokok</span>
-                                                <span className="font-mono text-lg text-gold">Rp{planPrice.toLocaleString('id-ID')}</span>
-                                            </div>
-                                        </>
+                                    {discountValue > 0 && (
+                                        <div className="flex justify-between text-emerald-700 font-medium">
+                                            <span>Potongan Voucher ({appliedPromo?.code})</span>
+                                            <span>-Rp{discountValue.toLocaleString('id-ID')}</span>
+                                        </div>
                                     )}
+                                    {totalBill > 0 && gatewayFee > 0 && (
+                                        <div className="flex justify-between text-slate-600">
+                                            <span>Biaya Layanan Gateway</span>
+                                            <span className="font-medium text-slate-900">Rp{gatewayFee.toLocaleString('id-ID')}</span>
+                                        </div>
+                                    )}
+                                    <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
+                                        <span>Total Pembayaran</span>
+                                        <span className="font-mono text-lg text-gold">Rp{totalBill.toLocaleString('id-ID')}</span>
+                                    </div>
                                 </div>
                                 <p className="mt-2 text-[11px] text-slate-400 italic">
-                                    {gatewayFee > 0
+                                    {totalBill === 0
+                                        ? 'Voucher 100% aktif! Tidak ada biaya yang perlu dibayarkan.'
+                                        : gatewayFee > 0
                                         ? '*Biaya layanan gateway dibebankan ke pembeli untuk memproses transaksi secara instan & otomatis.'
-                                        : '*Biaya transaksi/admin channel pembayaran akan dihitung dan ditambahkan otomatis pada halaman DOKU Checkout sesuai metode pembayaran pilihan Anda.'}
+                                        : '*Biaya transaksi channel pembayaran akan dihitung otomatis sesuai metode pembayaran pilihan Anda.'}
                                 </p>
                             </div>
 
@@ -401,7 +511,12 @@ export default function Billing({ membership, plans, admin_fee = 4500 }) {
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Menghubungkan ke DOKU...
+                                            Memproses Aktivasi...
+                                        </span>
+                                    ) : totalBill === 0 ? (
+                                        <span className="flex items-center gap-2">
+                                            <span>🎁</span>
+                                            Klaim & Aktivasi Membership Gratis (Rp0)
                                         </span>
                                     ) : (
                                         <span className="flex items-center gap-2">

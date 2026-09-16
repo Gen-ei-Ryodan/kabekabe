@@ -331,16 +331,16 @@ class AdminFlowTest extends TestCase
         ]);
     }
 
-    public function test_maximum_three_active_banners_is_enforced(): void
+    public function test_maximum_four_active_banners_is_enforced(): void
     {
         $admin = $this->admin();
 
-        $promos = Promo::factory()->count(4)->create([
+        $promos = Promo::factory()->count(5)->create([
             'status' => Promo::STATUS_APPROVED,
             'is_active' => true,
         ]);
 
-        foreach ($promos->take(3) as $i => $promo) {
+        foreach ($promos->take(4) as $i => $promo) {
             HomeBanner::create([
                 'type' => 'promo',
                 'promo_id' => $promo->id,
@@ -352,12 +352,12 @@ class AdminFlowTest extends TestCase
         $response = $this->actingAs($admin)->post(route('admin.banners.store'), [
             'type' => 'promo',
             'promo_id' => $promos->last()->id,
-            'sort_order' => 4,
+            'sort_order' => 5,
             'is_active' => 1,
         ]);
 
         $response->assertSessionHasErrors('is_active');
-        $this->assertDatabaseCount('home_banners', 3);
+        $this->assertDatabaseCount('home_banners', 4);
     }
 
     public function test_admin_can_toggle_banner_active_state(): void
@@ -384,16 +384,16 @@ class AdminFlowTest extends TestCase
         ]);
     }
 
-    public function test_admin_cannot_activate_a_fourth_banner_via_toggle(): void
+    public function test_admin_cannot_activate_a_fifth_banner_via_toggle(): void
     {
         $admin = $this->admin();
 
-        $promos = Promo::factory()->count(4)->create([
+        $promos = Promo::factory()->count(5)->create([
             'status' => Promo::STATUS_APPROVED,
             'is_active' => true,
         ]);
 
-        foreach ($promos->take(3) as $i => $promo) {
+        foreach ($promos->take(4) as $i => $promo) {
             HomeBanner::create([
                 'type' => 'promo',
                 'promo_id' => $promo->id,
@@ -405,7 +405,7 @@ class AdminFlowTest extends TestCase
         $inactive = HomeBanner::create([
             'type' => 'promo',
             'promo_id' => $promos->last()->id,
-            'sort_order' => 4,
+            'sort_order' => 5,
             'is_active' => false,
         ]);
 

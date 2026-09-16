@@ -60,6 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/account', [AccountController::class, 'update'])->name('account.update');
 
         Route::get('/billing', [\App\Http\Controllers\Member\BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/doku/check-promo', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkPromo'])->name('billing.doku.promo');
         Route::post('/billing/doku/checkout', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkout'])->name('billing.doku.checkout');
         Route::get('/billing/doku/{payment}/status', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkStatus'])->name('billing.doku.status');
     });
@@ -85,6 +86,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports', VendorReportController::class)->name('reports.index');
 
         Route::get('/billing', [\App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/ads', [\App\Http\Controllers\Vendor\BillingController::class, 'storeAd'])->name('billing.ads.store');
     });
 
     // ---------- ADMIN ----------
@@ -139,6 +141,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/banners/{banner}', [AdminHomeBannerController::class, 'update'])->name('banners.update');
         Route::put('/banners/{banner}/toggle', [AdminHomeBannerController::class, 'toggle'])->name('banners.toggle');
         Route::delete('/banners/{banner}', [AdminHomeBannerController::class, 'destroy'])->name('banners.destroy');
+        Route::put('/banners/ads/{ad}/approve', [AdminHomeBannerController::class, 'approveAd'])->name('banners.ads.approve');
+        Route::put('/banners/ads/{ad}/reject', [AdminHomeBannerController::class, 'rejectAd'])->name('banners.ads.reject');
 
         Route::get('/community', [AdminCommunityController::class, 'index'])->name('community.index');
         Route::get('/community/create', [AdminCommunityController::class, 'create'])->name('community.create');

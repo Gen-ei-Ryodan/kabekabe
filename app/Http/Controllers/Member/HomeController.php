@@ -49,6 +49,66 @@ class HomeController extends Controller
                 'total_amount' => (int) $t->total_amount,
             ]);
 
+        $activePopup = HomePopup::query()->with('promo.partner:id,name')->first();
+        $popupBanner = null;
+        if ($activePopup && $activePopup->is_active && $activePopup->promo && $activePopup->promo->isActive()) {
+            $popupBanner = [
+                'id' => 'popup-' . $activePopup->id,
+                'type' => HomeBanner::TYPE_PROMO,
+                'image_url' => $activePopup->imageUrl(),
+                'promo' => [
+                    'id' => $activePopup->promo->id,
+                    'title' => $activePopup->promo_title ?: $activePopup->promo->title,
+                    'discount_type' => $activePopup->promo->discount_type,
+                    'discount_value' => $activePopup->promo->discount_value,
+                    'min_purchase' => $activePopup->promo->min_purchase,
+                    'start_date' => $activePopup->promo->start_date?->toISOString(),
+                    'end_date' => $activePopup->promo->end_date?->toISOString(),
+                    'partner' => ['name' => $activePopup->promo->partner?->name],
+                ],
+            ];
+        }
+
+        $adminBanners = HomeBanner::query()
+            ->active()
+            ->where('type', HomeBanner::TYPE_PROMO)
+            ->with('promo.partner:id,name')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (HomeBanner $banner) => [
+                'id' => $banner->id,
+                'type' => $banner->type,
+                'image_url' => $banner->imageUrl(),
+                'promo' => $banner->type === HomeBanner::TYPE_PROMO && $banner->promo && $banner->promo->isActive()
+                    ? [
+                        'id' => $banner->promo->id,
+                        'title' => $banner->promo_title ?: $banner->promo->title,
+                        'discount_type' => $banner->promo->discount_type,
+                        'discount_value' => $banner->promo->discount_value,
+                        'min_purchase' => $banner->promo->min_purchase,
+                        'start_date' => $banner->promo->start_date?->toISOString(),
+                        'end_date' => $banner->promo->end_date?->toISOString(),
+                        'partner' => ['name' => $banner->promo->partner?->name],
+                    ]
+                    : null,
+            ])
+            ->filter(fn (array $banner) => $banner['promo'] !== null)
+            ->values();
+
+        $allBanners = collect();
+        if ($popupBanner) {
+            $allBanners->push($popupBanner);
+        }
+        foreach ($adminBanners as $b) {
+            if ($allBanners->count() >= 5) {
+                break;
+            }
+            if ($popupBanner && isset($b['promo']['id']) && $b['promo']['id'] === $popupBanner['promo']['id']) {
+                continue;
+            }
+            $allBanners->push($b);
+        }
+
         return Inertia::render('Member/Home', [
             'member' => [
                 'id' => $user->id,
@@ -67,32 +127,7 @@ class HomeController extends Controller
             'vendor_ranking' => $vendorRankingByCount,
             'vendor_ranking_by_count' => $vendorRankingByCount,
             'vendor_ranking_by_amount' => $vendorRankingByAmount,
-            'banners' => HomeBanner::query()
-                ->active()
-                ->where('type', HomeBanner::TYPE_PROMO)
-                ->with('promo.partner:id,name')
-                ->orderBy('sort_order')
-                ->get()
-                ->map(fn (HomeBanner $banner) => [
-                    'id' => $banner->id,
-                    'type' => $banner->type,
-                    'image_url' => $banner->imageUrl(),
-                    'promo' => $banner->type === HomeBanner::TYPE_PROMO && $banner->promo && $banner->promo->isActive()
-                        ? [
-                            'id' => $banner->promo->id,
-                            'title' => $banner->promo->title,
-                            'discount_type' => $banner->promo->discount_type,
-                            'discount_value' => $banner->promo->discount_value,
-                            'min_purchase' => $banner->promo->min_purchase,
-                            'start_date' => $banner->promo->start_date?->toISOString(),
-                            'end_date' => $banner->promo->end_date?->toISOString(),
-                            'partner' => ['name' => $banner->promo->partner?->name],
-                        ]
-                        : null,
-                ])
-                ->filter(fn (array $banner) => $banner['promo'] !== null)
-                ->take(3)
-                ->values(),
+            'banners' => $allBanners,
             'agendas' => CommunityInfo::query()
                 ->published()
                 ->whereIn('type', CommunityInfo::TYPES)

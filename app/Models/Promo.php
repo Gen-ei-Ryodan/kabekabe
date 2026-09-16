@@ -23,6 +23,7 @@ class Promo extends Model
 
     public const TYPE_PERCENT = 'percent';
     public const TYPE_NOMINAL = 'nominal';
+    public const TYPE_FREE_ITEM = 'free_item';
 
     protected function casts(): array
     {

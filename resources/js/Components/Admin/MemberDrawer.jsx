@@ -300,13 +300,21 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
             </section>
 
             <section className="rounded-2xl border border-ink/10 p-5">
-                <h2 className="font-display text-lg font-bold">Informasi Kontak</h2>
+                <h2 className="font-display text-lg font-bold">Biodata Lengkap Anggota</h2>
                 <dl className="mt-3 grid gap-3 sm:grid-cols-2">
                     {[
-                        ['Telepon', member.phone || '-'],
+                        ['Nama Lengkap', member.name || '-'],
+                        ['Nama Panggilan', member.nickname || '-'],
+                        ['Jenis Kelamin', member.gender || '-'],
+                        ['Status Pernikahan', member.marital_status || '-'],
+                        ['Tempat Lahir', member.birth_place || '-'],
+                        ['Tanggal Lahir', member.birth_date ? formatDate(member.birth_date) : '-'],
+                        ['Agama', member.religion || '-'],
+                        ['Alamat Tempat Ibadah', member.place_of_worship_address || '-'],
+                        ['Telepon / HP', member.phone || '-'],
                         ['WhatsApp', member.whatsapp || '-'],
-                        ['Perusahaan', member.company || '-'],
-                        ['Bergabung', member.created_at],
+                        ['Email', member.email || '-'],
+                        ['Bergabung', member.created_at || '-'],
                     ].map(([label, value]) => (
                         <div key={label} className="rounded-xl bg-paper p-3">
                             <dt className="eyebrow">{label}</dt>
@@ -314,6 +322,61 @@ function ShowMemberDrawer({ drawer, onClose, onEdit }) {
                         </div>
                     ))}
                 </dl>
+
+                {/* Hobi */}
+                <div className="mt-4 rounded-xl bg-paper p-3">
+                    <dt className="eyebrow">Minat & Hobi</dt>
+                    <dd className="mt-1 text-sm font-medium">
+                        {Array.isArray(member.hobbies) && member.hobbies.length > 0 ? (
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                                {member.hobbies.map((h, i) => (
+                                    <span key={i} className="rounded-md bg-gold/15 px-2 py-0.5 text-xs font-semibold text-gold-deep">
+                                        {h}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            member.hobbies || '-'
+                        )}
+                    </dd>
+                </div>
+
+                {/* Alamat Domisili */}
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-xl bg-paper p-3 sm:col-span-3">
+                        <dt className="eyebrow">Alamat Rumah Tinggal</dt>
+                        <dd className="mt-1 text-sm font-medium">{member.address || '-'}</dd>
+                    </div>
+                    <div className="rounded-xl bg-paper p-3">
+                        <dt className="eyebrow">Kecamatan</dt>
+                        <dd className="mt-1 text-sm font-medium">{member.district || '-'}</dd>
+                    </div>
+                    <div className="rounded-xl bg-paper p-3 sm:col-span-2">
+                        <dt className="eyebrow">Kota / Kabupaten</dt>
+                        <dd className="mt-1 text-sm font-medium">{member.city || '-'}</dd>
+                    </div>
+                </div>
+
+                {/* Profil Usaha / Pekerjaan */}
+                <div className="mt-4 border-t border-ink/10 pt-4">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-gold-deep mb-3">Pekerjaan & Usaha</h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-xl bg-paper p-3">
+                            <dt className="eyebrow">Perusahaan / Usaha</dt>
+                            <dd className="mt-1 text-sm font-medium">{member.company || '-'}</dd>
+                        </div>
+                        <div className="rounded-xl bg-paper p-3">
+                            <dt className="eyebrow">Bidang Industri</dt>
+                            <dd className="mt-1 text-sm font-medium">{member.industry || '-'}</dd>
+                        </div>
+                        {member.business_address && (
+                            <div className="rounded-xl bg-paper p-3 sm:col-span-2">
+                                <dt className="eyebrow">Alamat Usaha</dt>
+                                <dd className="mt-1 text-sm font-medium">{member.business_address}</dd>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </section>
 
             <section className="rounded-2xl border border-ink/10 p-5">

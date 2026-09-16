@@ -14,6 +14,7 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
 
     const form = useForm({
         target_id: resolveTargetId(banner, promos),
+        promo_title: banner?.promo_title || '',
         sort_order: banner?.sort_order ?? nextSortOrder,
         is_active: banner ? Boolean(banner.is_active) : true,
         image: null,
@@ -26,6 +27,7 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
 
     form.transform((data) => ({
         type: 'promo',
+        promo_title: data.promo_title || null,
         sort_order: Number(data.sort_order),
         is_active: Boolean(data.is_active),
         promo_id: data.target_id || null,
@@ -48,6 +50,18 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
 
     return (
         <form id="home-banner-form" onSubmit={submit} className="space-y-5">
+            <div>
+                <label className="label" htmlFor="banner-promo-title">Judul Promo (opsional override)</label>
+                <input
+                    id="banner-promo-title"
+                    type="text"
+                    className="input"
+                    value={form.data.promo_title}
+                    onChange={(e) => form.setData('promo_title', e.target.value)}
+                    placeholder="Kosongkan jika menggunakan judul asli promo"
+                />
+                {form.errors.promo_title && <p className="mt-1 text-xs text-ember">{form.errors.promo_title}</p>}
+            </div>
             <div>
                 <label className="label" htmlFor="banner-target">Target Promo</label>
                 <select

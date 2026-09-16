@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HomeBanner;
 use App\Models\HomePopup;
+use App\Models\PartnerAd;
 use App\Models\Promo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,8 @@ class HomeBannerController extends Controller
             ->map(fn (HomeBanner $banner) => [
                 'id' => $banner->id,
                 'image_url' => $banner->imageUrl(),
-                'target_title' => $banner->promo?->title,
+                'target_title' => $banner->promo_title ?: $banner->promo?->title,
+                'promo_title' => $banner->promo_title,
                 'promo_id' => $banner->promo_id,
                 'sort_order' => $banner->sort_order,
                 'is_active' => $banner->is_active,
@@ -42,10 +44,30 @@ class HomeBannerController extends Controller
             ])
             ->all();
 
+        $partnerAds = PartnerAd::query()
+            ->with(['partner:id,name', 'promo:id,title'])
+            ->latest('created_at')
+            ->get()
+            ->map(fn (PartnerAd $ad) => [
+                'id' => $ad->id,
+                'partner_name' => $ad->partner?->name,
+                'type' => $ad->type,
+                'type_label' => $ad->type === PartnerAd::TYPE_POPUP ? 'Pop-up Pembuka (3 Hari)' : 'Banner Beranda (5 Hari)',
+                'promo_title' => $ad->promo_title ?: $ad->promo?->title,
+                'image_url' => $ad->imageUrl(),
+                'start_date' => $ad->start_date?->format('d M Y'),
+                'end_date' => $ad->end_date?->format('d M Y'),
+                'status' => $ad->status,
+                'notes' => $ad->notes,
+                'admin_feedback' => $ad->admin_feedback,
+                'created_at' => $ad->created_at?->format('d M Y H:i'),
+            ]);
+
         $drawer = $this->drawerPayload($request);
 
         return Inertia::render('Admin/Banners/Index', [
             'banners' => $banners,
+            'partner_ads' => $partnerAds,
             'filters' => ['status' => $status],
             'promos' => $this->promoSelect(),
             'drawer' => $drawer,
@@ -129,9 +151,9 @@ class HomeBannerController extends Controller
                 ->where('id', '!=', $banner->id)
                 ->count();
 
-            if ($active >= 3) {
+            if ($active >= 4) {
                 throw ValidationException::withMessages([
-                    'is_active' => 'Maximum of 3 active banners.',
+                    'is_active' => 'Maksimal 4 banner aktif dikelola admin (Slot 1 otomatis dari Pop-up Pembuka).',
                 ]);
             }
         }
@@ -154,6 +176,7 @@ class HomeBannerController extends Controller
     {
         $validated = $request->validate([
             'promo_id' => ['required', 'integer', Rule::exists('promos', 'id')],
+            'promo_title' => ['nullable', 'string', 'max:255'],
             'is_active' => ['required', 'boolean'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=2000,max_height=2000'],
             'remove_image' => ['nullable', 'boolean'],
@@ -162,6 +185,7 @@ class HomeBannerController extends Controller
         $popup = HomePopup::query()->first();
         $data = [
             'promo_id' => $validated['promo_id'],
+            'promo_title' => $validated['promo_title'] ?? null,
             'is_active' => $validated['is_active'],
         ];
 
@@ -189,6 +213,7 @@ class HomeBannerController extends Controller
         return $popup ? [
             'id' => $popup->id,
             'promo_id' => $popup->promo_id,
+            'promo_title' => $popup->promo_title,
             'image_path' => $popup->image_path,
             'image_url' => $popup->imageUrl(),
             'is_active' => $popup->is_active,
@@ -203,6 +228,7 @@ class HomeBannerController extends Controller
     {
         $validated = $request->validate([
             'promo_id' => ['required', 'integer', Rule::exists('promos', 'id')],
+            'promo_title' => ['nullable', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['required', 'boolean'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -234,14 +260,34 @@ class HomeBannerController extends Controller
                 $active->where('id', '!=', $banner->id);
             }
 
-            if ($active->count() >= 3) {
+            if ($active->count() >= 4) {
                 throw ValidationException::withMessages([
-                    'is_active' => 'Maximum of 3 active banners.',
+                    'is_active' => 'Maksimal 4 banner aktif dikelola admin (Slot 1 otomatis dari Pop-up Pembuka).',
                 ]);
             }
         }
 
         return $validated;
+    }
+
+    public function approveAd(PartnerAd $ad): RedirectResponse
+    {
+        $ad->update([
+            'status' => PartnerAd::STATUS_APPROVED,
+            'approved_at' => now(),
+        ]);
+
+        return back()->with('success', 'Pengajuan iklan partner disetujui.');
+    }
+
+    public function rejectAd(Request $request, PartnerAd $ad): RedirectResponse
+    {
+        $ad->update([
+            'status' => PartnerAd::STATUS_REJECTED,
+            'admin_feedback' => $request->input('reason'),
+        ]);
+
+        return back()->with('success', 'Pengajuan iklan partner ditolak.');
     }
 
     private function promoSelect(): array

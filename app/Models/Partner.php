@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['user_id', 'name', 'slug', 'category', 'description', 'address', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'pic_name', 'pic_phone', 'district', 'city', 'industry', 'joined_at', 'employee_count', 'established_since', 'is_member', 'member_code', 'hobbies', 'date_of_birth'])]
+#[Fillable(['user_id', 'name', 'trade_name', 'slug', 'category', 'description', 'address', 'employee_count', 'established_since', 'is_member', 'member_id_number', 'member_name', 'member_birth_date', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'pic_name', 'pic_phone', 'district', 'city', 'industry', 'joined_at'])]
 #[Appends('logo_url')]
 class Partner extends Model
 {
@@ -24,11 +24,10 @@ class Partner extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_member' => 'boolean',
             'expires_at' => 'datetime',
             'joined_at' => 'datetime',
-            'is_member' => 'boolean',
-            'hobbies' => 'array',
-            'date_of_birth' => 'date',
+            'member_birth_date' => 'date',
         ];
     }
 
@@ -45,6 +44,11 @@ class Partner extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'partner_id');
+    }
+
+    public function ads(): HasMany
+    {
+        return $this->hasMany(PartnerAd::class, 'partner_id');
     }
 
     public function logoUrl(): ?string

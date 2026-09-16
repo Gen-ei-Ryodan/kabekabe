@@ -18,8 +18,11 @@ class UpdatePartnerRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'trade_name' => ['nullable', 'string', 'max:255'],
             'category' => ['required', 'string', 'max:50'],
             'industry' => ['nullable', 'string', 'max:150'],
+            'employee_count' => ['nullable', 'integer', 'min:0'],
+            'established_since' => ['nullable', 'string', 'max:50'],
             'pic_name' => ['nullable', 'string', 'max:255'],
             'pic_phone' => ['nullable', 'string', 'max:30'],
             'district' => ['nullable', 'string', 'max:100'],

@@ -209,7 +209,7 @@ class MemberFlowTest extends TestCase
             );
     }
 
-    public function test_member_home_returns_at_most_three_banners(): void
+    public function test_member_home_returns_at_most_five_banners(): void
     {
         $member = $this->activeMember();
 
@@ -226,7 +226,7 @@ class MemberFlowTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Member/Home')
-                ->has('banners', 3)
+                ->has('banners', 5)
             );
     }
 
