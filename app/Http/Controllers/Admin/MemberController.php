@@ -73,6 +73,21 @@ class MemberController extends Controller
         $validTo = $request->string('valid_to')->toString();
         $joinedFrom = $request->string('joined_from')->toString();
         $joinedTo = $request->string('joined_to')->toString();
+        $expiring = $request->string('expiring')->toString();
+
+        if ($expiring === 'next_month') {
+            $query->where('approval_status', User::APPROVAL_APPROVED)
+                ->whereHas('membership', function ($q) {
+                    $q->where('status', 'active')
+                        ->whereBetween('expires_at', [now(), now()->addMonth()]);
+                });
+        } elseif ($expiring === 'next_2_months') {
+            $query->where('approval_status', User::APPROVAL_APPROVED)
+                ->whereHas('membership', function ($q) {
+                    $q->where('status', 'active')
+                        ->whereBetween('expires_at', [now(), now()->addMonths(2)]);
+                });
+        }
 
         if ($validFrom !== '' || $validTo !== '') {
             $query->whereHas('membership', function ($q) use ($validFrom, $validTo) {
@@ -109,6 +124,7 @@ class MemberController extends Controller
                 'valid_to' => $validTo,
                 'joined_from' => $joinedFrom,
                 'joined_to' => $joinedTo,
+                'expiring' => $expiring,
             ],
             'drawer' => $drawer,
         ]);

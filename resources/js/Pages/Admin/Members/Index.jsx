@@ -105,6 +105,21 @@ export default function MemberIndex({ members, filters, drawer, pending_count = 
                     </button>
                 </div>
 
+                {filters.expiring && (
+                    <div className="flex items-center justify-between rounded-xl border border-ember/30 bg-ember/10 p-4 text-sm text-ember-deep">
+                        <div className="flex items-center gap-2 font-medium">
+                            <span className="text-base">⏳</span>
+                            <span>
+                                Menampilkan member dengan masa berlaku kadaluarsa dalam{' '}
+                                <strong>{filters.expiring === 'next_month' ? '1 bulan ke depan' : '2 bulan ke depan'}</strong>.
+                            </span>
+                        </div>
+                        <button type="button" onClick={clearFilter} className="rounded-lg bg-white/80 px-3 py-1 text-xs font-bold text-ember hover:bg-white shadow-xs">
+                            Hapus Filter ✕
+                        </button>
+                    </div>
+                )}
+
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-4 p-4">
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <div>
@@ -126,6 +141,14 @@ export default function MemberIndex({ members, filters, drawer, pending_count = 
                                 <option value="pending">Menunggu Persetujuan</option>
                                 <option value="active">Aktif</option>
                                 <option value="inactive">Tidak Aktif</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="label">Kadaluarsa</label>
+                            <select className="input" value={filter.data.expiring || ''} onChange={(e) => filter.setData('expiring', e.target.value)}>
+                                <option value="">Semua Masa Berlaku</option>
+                                <option value="next_month">Kadaluarsa 1 Bulan ke Depan</option>
+                                <option value="next_2_months">Kadaluarsa 2 Bulan ke Depan</option>
                             </select>
                         </div>
                         <div>

@@ -120,7 +120,11 @@ export default function PromoIndex({ promos, filters, drawer }) {
                                                 status={promo.status}
                                                 label={promo.status === 'pending' ? 'Menunggu Persetujuan' : promo.status === 'approved' ? 'Disetujui' : 'Ditolak'}
                                             />
-                                            {promo.is_active && <StatusChip status="active" label="Aktif" />}
+                                            {promo.is_active ? (
+                                                <StatusChip status="active" label="Aktif" />
+                                            ) : (
+                                                <StatusChip status="inactive" label="Nonaktif" />
+                                            )}
                                         </div>
                                         <h3 className="mt-2 font-display text-lg font-bold">{promo.title}</h3>
                                         <p className="mt-1 line-clamp-2 text-sm text-slate">{promo.description}</p>

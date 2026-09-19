@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import VendorLayout from '@/Layouts/VendorLayout';
 import Reveal from '@/Components/Reveal';
 import StatusChip from '@/Components/StatusChip';
@@ -7,6 +7,12 @@ import { formatRupiah } from '@/Utils/format';
 
 export default function BillingIndex({ partner, ads = [], promos = [], history = [] }) {
     const [isApplyingAd, setIsApplyingAd] = useState(false);
+
+    const confirmPayment = (adId) => {
+        if (confirm('Konfirmasi bahwa Anda telah membayar biaya iklan ini? Admin akan diberitahu untuk segera mengatur penayangan iklan.')) {
+            router.post(route('vendor.billing.ads.pay', adId), {}, { preserveScroll: true });
+        }
+    };
 
     const form = useForm({
         type: 'popup',
@@ -328,6 +334,7 @@ export default function BillingIndex({ partner, ads = [], promos = [], history =
                                         <th className="px-5 py-3.5 font-semibold">Judul Promo</th>
                                         <th className="px-5 py-3.5 font-semibold">Periode Tayang</th>
                                         <th className="px-5 py-3.5 font-semibold">Status</th>
+                                        <th className="px-5 py-3.5 font-semibold">Aksi Pembayaran</th>
                                         <th className="px-5 py-3.5 font-semibold">Catatan Admin</th>
                                     </tr>
                                 </thead>
@@ -359,10 +366,43 @@ export default function BillingIndex({ partner, ads = [], promos = [], history =
                                                 {ad.start_date} — {ad.end_date}
                                             </td>
                                             <td className="px-5 py-4">
-                                                <StatusChip
-                                                    status={ad.status}
-                                                    label={ad.status === 'pending' ? 'Menunggu Review' : ad.status === 'approved' ? 'Disetujui' : 'Ditolak'}
-                                                />
+                                                {ad.status === 'paid' && (
+                                                    <span className="rounded-md bg-gold-deep/15 text-gold-deep px-2 py-0.5 text-xs font-bold">
+                                                        Sudah Dibayar
+                                                    </span>
+                                                )}
+                                                {ad.status === 'active' && (
+                                                    <span className="rounded-md bg-sage/15 text-sage-deep px-2 py-0.5 text-xs font-bold">
+                                                        Tayang Aktif
+                                                    </span>
+                                                )}
+                                                {ad.status !== 'paid' && ad.status !== 'active' && (
+                                                    <StatusChip
+                                                        status={ad.status}
+                                                        label={ad.status === 'pending' ? 'Menunggu Review' : ad.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                                                    />
+                                                )}
+                                            </td>
+                                            <td className="px-5 py-4">
+                                                {(ad.status === 'pending' || ad.status === 'approved') && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => confirmPayment(ad.id)}
+                                                        className="rounded-lg bg-gold px-3 py-1.5 text-xs font-bold text-ink hover:bg-gold/90 transition shadow-xs whitespace-nowrap"
+                                                    >
+                                                        Konfirmasi Bayar
+                                                    </button>
+                                                )}
+                                                {ad.status === 'paid' && (
+                                                    <span className="text-xs font-medium text-slate">
+                                                        Menunggu Setting Admin
+                                                    </span>
+                                                )}
+                                                {ad.status === 'active' && (
+                                                    <span className="text-xs font-semibold text-sage">
+                                                        ✓ Sedang Tayang
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-5 py-4 text-xs text-slate">
                                                 {ad.admin_feedback ? (

@@ -83,9 +83,60 @@ export default function AdminDashboard({ stats, recent_transactions }) {
                     </div>
                 )}
 
+                {stats.paid_ads > 0 && (
+                    <div className="flex flex-col gap-3 rounded-2xl border border-gold/40 bg-gold-light/25 p-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-3.5">
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gold font-bold text-ink text-lg shadow-xs">
+                                📢
+                            </span>
+                            <div>
+                                <h3 className="font-display font-bold text-ink">
+                                    Iklan Partner Telah Dibayar ({stats.paid_ads})
+                                </h3>
+                                <p className="mt-0.5 text-xs text-slate">
+                                    Terdapat <strong>{stats.paid_ads}</strong> slot iklan yang sudah dibayar oleh partner. Harap pasang dan tayangkan banner / popup iklan tersebut.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                            <Link
+                                href={route('admin.banners.index', { tab: 'partner_ads' })}
+                                className="rounded-xl bg-gold-deep px-4 py-2 text-xs font-semibold text-paper hover:bg-gold-deep/90 transition-colors shadow-xs"
+                            >
+                                Atur Iklan Sekarang →
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard label="Total Member" value={stats.total_members} tone="ink" sub={`${stats.active_members} aktif · ${stats.inactive_members} tidak aktif`} />
-                    <StatCard label="Kadaluarsa Bulan Depan" value={stats.expired_next_month} tone="ember" sub={`${stats.expired_next_2_months} dalam 2 bulan`} />
+                    <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-ember to-ember-deep p-5 text-white shadow-lift">
+                        <div className="flex items-center justify-between">
+                            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] opacity-80">
+                                Kadaluarsa Member
+                            </span>
+                            <span className="text-[11px] text-white/70">Klik untuk lihat</span>
+                        </div>
+                        <div className="mt-3 flex flex-col gap-2">
+                            <Link
+                                href={route('admin.members.index', { expiring: 'next_month' })}
+                                className="group flex items-center justify-between rounded-xl bg-white/15 px-3.5 py-2 text-white transition hover:bg-white/25 hover:shadow-sm"
+                            >
+                                <div>
+                                    <p className="text-[11px] text-white/80">Bulan Depan</p>
+                                    <p className="font-display text-xl font-bold">{stats.expired_next_month} <span className="text-xs font-normal opacity-80">Member</span></p>
+                                </div>
+                                <span className="text-xs font-semibold text-white/80 transition-transform group-hover:translate-x-1">Lihat →</span>
+                            </Link>
+                            <Link
+                                href={route('admin.members.index', { expiring: 'next_2_months' })}
+                                className="group flex items-center justify-between rounded-xl bg-white/10 px-3.5 py-1.5 text-white transition hover:bg-white/20"
+                            >
+                                <span className="text-xs text-white/90">{stats.expired_next_2_months} dalam 2 bulan</span>
+                                <span className="text-xs font-semibold text-white/80 transition-transform group-hover:translate-x-1">Lihat →</span>
+                            </Link>
+                        </div>
+                    </div>
                     <StatCard label="Partner" value={stats.total_partners} tone="paper" sub={`${stats.total_vendors} vendor`} />
                     <StatCard label="Total Promo" value={stats.total_promos} tone="paper" sub={`${stats.active_promos} Aktif`} />
                 </section>

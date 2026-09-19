@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
@@ -32,6 +35,9 @@ class ReportController extends Controller
     {
         $from = $request->string('from')->toString() ?: now()->startOfMonth()->toDateString();
         $to = $request->string('to')->toString() ?: now()->toDateString();
+        $birthdayFrom = $request->string('birthday_from')->toString();
+        $birthdayTo = $request->string('birthday_to')->toString();
+        $birthdayMonth = $request->string('birthday_month')->toString();
 
         $summary = Transaction::query()
             ->whereDate('transacted_at', '>=', $from)
@@ -47,7 +53,7 @@ class ReportController extends Controller
         $byPartner = $this->transactionsByVendor($from, $to);
         $byMember = $this->transactionsByMember($from, $to);
         $memberStats = $this->memberStatistics($months);
-        $birthdays = $this->birthdays();
+        $birthdays = $this->birthdays($birthdayFrom, $birthdayTo, $birthdayMonth);
 
         $transactions = Transaction::query()
             ->with(['partner:id,name', 'member:id,name,member_code'])
@@ -63,7 +69,13 @@ class ReportController extends Controller
             'transactions' => $transactions,
             'member_stats' => $memberStats,
             'birthdays' => $birthdays,
-            'filters' => compact('from', 'to'),
+            'filters' => [
+                'from' => $from,
+                'to' => $to,
+                'birthday_from' => $birthdayFrom,
+                'birthday_to' => $birthdayTo,
+                'birthday_month' => $birthdayMonth,
+            ],
         ]);
     }
 
@@ -311,15 +323,28 @@ class ReportController extends Controller
         return array_map(fn ($month) => (int) ($counts[$month] ?? 0), $months);
     }
 
-    private function birthdays(): array
+    private function birthdays(?string $birthdayFrom = null, ?string $birthdayTo = null, ?string $birthdayMonth = null): array
     {
         $monthExpr = $this->datePartExpr('birth_date', 'month');
         $dayExpr = $this->datePartExpr('birth_date', 'day');
 
-        $members = User::query()
+        $query = User::query()
             ->where('role', User::ROLE_MEMBER)
-            ->whereNotNull('birth_date')
-            ->orderByRaw($monthExpr)
+            ->whereNotNull('birth_date');
+
+        if ($birthdayMonth) {
+            $query->whereRaw("{$monthExpr} = ?", [(int) $birthdayMonth]);
+        }
+
+        if ($birthdayFrom) {
+            $query->whereDate('birth_date', '>=', $birthdayFrom);
+        }
+
+        if ($birthdayTo) {
+            $query->whereDate('birth_date', '<=', $birthdayTo);
+        }
+
+        $members = $query->orderByRaw($monthExpr)
             ->orderByRaw($dayExpr)
             ->get(['id', 'name', 'member_code', 'birth_date']);
 
@@ -335,9 +360,197 @@ class ReportController extends Controller
 
         return $grouped->map(fn ($group, $month) => [
             'month' => (int) $month,
-            'month_label' => self::INDONESIAN_MONTHS[(int) $month],
+            'month_label' => self::INDONESIAN_MONTHS[(int) $month] ?? 'Bulan ' . $month,
             'members' => $group->sortBy('day')->values(),
         ])->values()->toArray();
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $type = $request->string('type')->toString() ?: 'transaction';
+        $from = $request->string('from')->toString() ?: now()->startOfMonth()->toDateString();
+        $to = $request->string('to')->toString() ?: now()->toDateString();
+
+        if ($type === 'birthday') {
+            return $this->exportBirthdays($request);
+        }
+
+        if ($type === 'member_stats') {
+            return $this->exportMemberStats($from, $to);
+        }
+
+        return $this->exportTransactions($from, $to);
+    }
+
+    private function exportTransactions(string $from, string $to): StreamedResponse
+    {
+        $transactions = Transaction::query()
+            ->with(['partner:id,name', 'member:id,name,member_code'])
+            ->whereDate('transacted_at', '>=', $from)
+            ->whereDate('transacted_at', '<=', $to)
+            ->orderBy('transacted_at')
+            ->get();
+
+        $filename = "laporan-transaksi-{$from}-sd-{$to}.xlsx";
+
+        return response()->streamDownload(function () use ($transactions): void {
+            $writer = new XlsxWriter();
+            $writer->openToFile('php://output');
+            $writer->getCurrentSheet()->setName('Transaksi');
+
+            $writer->addRow(Row::fromValues([
+                'No',
+                'Tanggal',
+                'No. Transaksi',
+                'Nama Member',
+                'Kode Member',
+                'Partner / Vendor',
+                'Total Belanja (Rp)',
+                'Diskon (Rp)',
+                'Penjualan Bersih (Rp)',
+            ]));
+
+            $totalAmount = 0;
+            $totalDiscount = 0;
+            $totalNet = 0;
+
+            foreach ($transactions as $i => $t) {
+                $totalAmount += $t->total_amount;
+                $totalDiscount += $t->discount_amount;
+                $totalNet += $t->net_amount;
+
+                $writer->addRow(Row::fromValues([
+                    $i + 1,
+                    $t->transacted_at?->format('Y-m-d H:i') ?? '-',
+                    $t->transaction_number,
+                    $t->member?->name ?? '-',
+                    $t->member?->member_code ?? '-',
+                    $t->partner?->name ?? '-',
+                    $t->total_amount,
+                    $t->discount_amount,
+                    $t->net_amount,
+                ]));
+            }
+
+            // Summary Row
+            $writer->addRow(Row::fromValues([
+                'TOTAL',
+                '',
+                '',
+                '',
+                '',
+                count($transactions) . ' Transaksi',
+                $totalAmount,
+                $totalDiscount,
+                $totalNet,
+            ]));
+
+            $writer->close();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    private function exportMemberStats(string $from, string $to): StreamedResponse
+    {
+        $months = $this->monthsBetween($from, $to);
+        $stats = $this->memberStatistics($months);
+        $filename = "laporan-statistik-member-{$from}-sd-{$to}.xlsx";
+
+        return response()->streamDownload(function () use ($stats): void {
+            $writer = new XlsxWriter();
+            $writer->openToFile('php://output');
+            $writer->getCurrentSheet()->setName('Statistik Member');
+
+            $writer->addRow(Row::fromValues([
+                'No',
+                'Periode Bulan',
+                'Total Member Terdaftar',
+                'Member Baru',
+                'Member Aktif',
+                'Member Nonaktif',
+                'Kehadiran Event Komunitas',
+            ]));
+
+            foreach ($stats['months'] as $i => $month) {
+                $writer->addRow(Row::fromValues([
+                    $i + 1,
+                    $this->monthLabel($month),
+                    $stats['registered_members'][$i] ?? 0,
+                    $stats['new_members'][$i] ?? 0,
+                    $stats['active_members'][$i] ?? 0,
+                    $stats['inactive_members'][$i] ?? 0,
+                    $stats['attendances'][$i] ?? 0,
+                ]));
+            }
+
+            $writer->close();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    private function exportBirthdays(Request $request): StreamedResponse
+    {
+        $bFrom = $request->string('birthday_from')->toString() ?: null;
+        $bTo = $request->string('birthday_to')->toString() ?: null;
+        $bMonth = $request->string('birthday_month')->toString() ?: null;
+
+        $monthExpr = $this->datePartExpr('birth_date', 'month');
+        $dayExpr = $this->datePartExpr('birth_date', 'day');
+
+        $query = User::query()
+            ->where('role', User::ROLE_MEMBER)
+            ->whereNotNull('birth_date');
+
+        if ($bMonth) {
+            $query->whereRaw("{$monthExpr} = ?", [(int) $bMonth]);
+        }
+        if ($bFrom) {
+            $query->whereDate('birth_date', '>=', $bFrom);
+        }
+        if ($bTo) {
+            $query->whereDate('birth_date', '<=', $bTo);
+        }
+
+        $members = $query->orderByRaw($monthExpr)
+            ->orderByRaw($dayExpr)
+            ->get(['id', 'name', 'member_code', 'birth_date', 'phone']);
+
+        $filename = 'laporan-ulang-tahun-member.xlsx';
+
+        return response()->streamDownload(function () use ($members): void {
+            $writer = new XlsxWriter();
+            $writer->openToFile('php://output');
+            $writer->getCurrentSheet()->setName('Ulang Tahun Member');
+
+            $writer->addRow(Row::fromValues([
+                'No',
+                'Nama Member',
+                'ID / Kode Member',
+                'No. Telepon / WA',
+                'Tanggal Lahir',
+                'Bulan Lahir',
+                'Usia (Tahun)',
+            ]));
+
+            foreach ($members as $i => $m) {
+                $monthNum = $m->birth_date ? (int) $m->birth_date->format('n') : 0;
+                $writer->addRow(Row::fromValues([
+                    $i + 1,
+                    $m->name,
+                    $m->member_code ?? '-',
+                    $m->phone ?? '-',
+                    $m->birth_date?->format('d/m/Y') ?? '-',
+                    self::INDONESIAN_MONTHS[$monthNum] ?? '-',
+                    $m->birth_date ? now()->diffInYears($m->birth_date) : '-',
+                ]));
+            }
+
+            $writer->close();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     private function monthExpr(string $column): string

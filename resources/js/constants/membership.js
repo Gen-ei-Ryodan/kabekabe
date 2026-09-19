@@ -88,6 +88,7 @@ export const HOBBY_LIST = [
     'Wine Tasting',
     'Dancing',
     'Tennis',
+    'Padel',
     'Makeup/Cosmetic',
     'Rafting',
     'Golf',

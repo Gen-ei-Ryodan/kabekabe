@@ -15,7 +15,7 @@ class UpdateAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
             'religion' => ['nullable', 'string', 'in:islam,kristen,katolik,hindu,buddha,konghucu,lainnya'],
             'address' => ['nullable', 'string', 'max:500'],

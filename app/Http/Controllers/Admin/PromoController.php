@@ -20,6 +20,8 @@ class PromoController extends Controller
 
     public function index(Request $request): Response
     {
+        $this->promos->deactivateExpired();
+
         $query = Promo::query()->with('partner:id,name,category,logo');
 
         $status = $request->string('status')->toString();

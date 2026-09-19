@@ -14,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'nickname', 'email', 'password', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'birth_place', 'hobbies', 'marital_status', 'place_of_worship_address', 'city', 'address', 'district', 'business_fields', 'business_address', 'business_district', 'business_city', 'industry'])]
+#[Fillable(['name', 'nickname', 'email', 'password', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'avatar_changes_count', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'birth_place', 'hobbies', 'marital_status', 'place_of_worship_address', 'city', 'address', 'district', 'business_fields', 'business_address', 'business_district', 'business_city', 'industry'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

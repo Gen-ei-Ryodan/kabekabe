@@ -113,4 +113,17 @@ class BillingController extends Controller
 
         return back()->with('success', 'Pengajuan iklan berhasil dikirim! Menunggu persetujuan admin.');
     }
+
+    public function payAd(PartnerAd $ad): RedirectResponse
+    {
+        $partner = auth()->user()->partner;
+        abort_if(! $partner || $ad->partner_id !== $partner->id, 403);
+
+        $ad->update([
+            'status' => PartnerAd::STATUS_PAID,
+            'paid_at' => now(),
+        ]);
+
+        return back()->with('success', 'Konfirmasi pembayaran berhasil dicatat! Admin telah diberitahu untuk segera mengatur penayangan iklan Anda.');
+    }
 }

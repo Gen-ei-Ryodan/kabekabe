@@ -36,6 +36,7 @@ class RegistrationTest extends TestCase
             'company' => 'PT Maju Bersama',
             'hobbies' => ['Bulutangkis', 'Golf'],
             'business_fields' => ['Retail', 'F&B'],
+            'industry' => ['Makanan & Minuman', 'Retail'],
         ]);
 
         $response->assertStatus(200);

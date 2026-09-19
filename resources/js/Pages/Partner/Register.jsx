@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -26,7 +27,7 @@ export default function Register() {
         password_confirmation: '',
         phone: '',
         date_of_birth: '',
-        industry: '',
+        industry: [],
         hobbies: [],
         custom_hobby: '',
     });
@@ -44,8 +45,12 @@ export default function Register() {
     );
 
     const handleIndustryChange = (industry) => {
-        setData('industry', industry);
-        setIndustrySearch('');
+        const current = Array.isArray(data.industry) ? data.industry : (data.industry ? [data.industry] : []);
+        if (current.includes(industry)) {
+            setData('industry', current.filter((i) => i !== industry));
+        } else {
+            setData('industry', [...current, industry]);
+        }
     };
 
     const handleHobbyChange = (hobby) => {
@@ -69,6 +74,10 @@ export default function Register() {
 
     const submit = (e) => {
         e.preventDefault();
+        if (Array.isArray(data.industry) && data.industry.length === 0) {
+            alert('Pilih minimal 1 bidang industri');
+            return;
+        }
         post(route('partner.register.store'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -116,7 +125,7 @@ export default function Register() {
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="industry" value="Bidang Industri *" />
+                            <InputLabel htmlFor="industry" value="Bidang Industri * (Pilih minimal 1)" />
                             <div className="space-y-2">
                                 <div className="flex gap-2">
                                     <TextInput
@@ -136,10 +145,32 @@ export default function Register() {
                                         </button>
                                     )}
                                 </div>
+                                {Array.isArray(data.industry) && data.industry.length > 0 && (
+                                    <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-xl bg-gold/10 border border-gold/20">
+                                        <span className="text-xs text-gold-deep font-medium mr-1">Terpilih:</span>
+                                        {data.industry.map((ind) => (
+                                            <span
+                                                key={ind}
+                                                className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-0.5 text-xs font-semibold text-gold-deep shadow-xs border border-gold/30"
+                                            >
+                                                {ind}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleIndustryChange(ind)}
+                                                    className="text-slate hover:text-ember ml-0.5"
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                                 <div className="max-h-48 overflow-y-auto rounded-xl border border-ink/10 bg-white/80 p-3">
                                     <div className="flex flex-wrap gap-1.5">
                                         {filteredIndustries.map((ind) => {
-                                            const isSelected = data.industry === ind;
+                                            const isSelected = Array.isArray(data.industry)
+                                                ? data.industry.includes(ind)
+                                                : data.industry === ind;
                                             return (
                                                 <button
                                                     key={ind}

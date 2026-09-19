@@ -61,13 +61,17 @@ class HomeBannerController extends Controller
                 'notes' => $ad->notes,
                 'admin_feedback' => $ad->admin_feedback,
                 'created_at' => $ad->created_at?->format('d M Y H:i'),
+                'paid_at' => $ad->paid_at?->format('d M Y H:i'),
             ]);
 
         $drawer = $this->drawerPayload($request);
+        $paidAdsCount = PartnerAd::query()->where('status', 'paid')->count();
 
         return Inertia::render('Admin/Banners/Index', [
             'banners' => $banners,
             'partner_ads' => $partnerAds,
+            'paid_ads_count' => $paidAdsCount,
+            'initial_tab' => $request->string('tab')->toString() ?: 'banners',
             'filters' => ['status' => $status],
             'promos' => $this->promoSelect(),
             'drawer' => $drawer,
@@ -288,6 +292,49 @@ class HomeBannerController extends Controller
         ]);
 
         return back()->with('success', 'Pengajuan iklan partner ditolak.');
+    }
+
+    public function markPaidAd(PartnerAd $ad): RedirectResponse
+    {
+        $ad->update([
+            'status' => PartnerAd::STATUS_PAID,
+            'paid_at' => now(),
+        ]);
+
+        return back()->with('success', 'Status iklan diperbarui menjadi Sudah Dibayar.');
+    }
+
+    public function publishAd(PartnerAd $ad): RedirectResponse
+    {
+        if ($ad->type === PartnerAd::TYPE_POPUP) {
+            $popup = HomePopup::first() ?? new HomePopup();
+            $popup->fill([
+                'promo_id' => $ad->promo_id,
+                'promo_title' => $ad->promo_title,
+                'image_path' => $ad->image_path,
+                'is_active' => true,
+            ]);
+            $popup->save();
+
+            $ad->update(['status' => 'active']);
+
+            return back()->with('success', 'Iklan partner berhasil ditayangkan sebagai Popup Pembuka Beranda!');
+        }
+
+        $maxOrder = HomeBanner::query()->max('sort_order') ?? 0;
+        HomeBanner::create([
+            'promo_id' => $ad->promo_id,
+            'agenda_id' => null,
+            'type' => HomeBanner::TYPE_PROMO,
+            'promo_title' => $ad->promo_title,
+            'image_path' => $ad->image_path,
+            'sort_order' => $maxOrder + 1,
+            'is_active' => true,
+        ]);
+
+        $ad->update(['status' => 'active']);
+
+        return back()->with('success', 'Iklan partner berhasil ditayangkan sebagai Banner Beranda!');
     }
 
     private function promoSelect(): array

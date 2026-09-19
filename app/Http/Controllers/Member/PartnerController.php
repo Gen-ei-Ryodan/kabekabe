@@ -24,8 +24,17 @@ class PartnerController extends Controller
         }
 
         if ($search !== '') {
-            $query->where('name', 'like', "%{$search}%");
-            $promoQuery->where('title', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('trade_name', 'like', "%{$search}%");
+            });
+            $promoQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhereHas('partner', function ($p) use ($search) {
+                        $p->where('name', 'like', "%{$search}%")
+                            ->orWhere('trade_name', 'like', "%{$search}%");
+                    });
+            });
         }
 
         $partners = $query->orderByRaw('COALESCE(sort_number, 999999) ASC')

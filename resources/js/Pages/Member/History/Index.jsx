@@ -13,7 +13,7 @@ const TABS = [
     { key: 'attendance', label: 'Kehadiran' },
 ];
 
-export default function HistoryIndex({ payments, transactions, total_benefit, total_payment_made, attendances, membership }) {
+export default function HistoryIndex({ payments, transactions, total_benefit, total_payment_made, attendances, membership, filters = {} }) {
     const [tab, setTab] = useState(
         () => {
             const urlTab = new URLSearchParams(window.location.search).get('tab');
@@ -22,11 +22,41 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
         },
     );
 
+    const [from, setFrom] = useState(filters?.from || '');
+    const [to, setTo] = useState(filters?.to || '');
+
     const switchTab = (next) => {
         setTab(next);
         router.get(
             route('member.history.index'),
-            { tab: next === 'payments' ? undefined : next },
+            {
+                tab: next === 'payments' ? undefined : next,
+                from: from || undefined,
+                to: to || undefined,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
+
+    const applyDateFilter = (e) => {
+        if (e) e.preventDefault();
+        router.get(
+            route('member.history.index'),
+            {
+                tab: tab === 'payments' ? undefined : tab,
+                from: from || undefined,
+                to: to || undefined,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
+
+    const resetDateFilter = () => {
+        setFrom('');
+        setTo('');
+        router.get(
+            route('member.history.index'),
+            { tab: tab === 'payments' ? undefined : tab },
             { preserveState: true, preserveScroll: true, replace: true },
         );
     };
@@ -59,6 +89,42 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         ))}
                     </div>
                 </header>
+
+                {/* Filter Periode Tanggal */}
+                <form onSubmit={applyDateFilter} className="card-surface flex flex-wrap items-end gap-3 p-4">
+                    <div className="flex-1 min-w-[140px]">
+                        <label className="label text-xs mb-1">Dari Tanggal</label>
+                        <input
+                            type="date"
+                            value={from}
+                            onChange={(e) => setFrom(e.target.value)}
+                            className="input text-xs py-1.5"
+                        />
+                    </div>
+                    <div className="flex-1 min-w-[140px]">
+                        <label className="label text-xs mb-1">Sampai Tanggal</label>
+                        <input
+                            type="date"
+                            value={to}
+                            onChange={(e) => setTo(e.target.value)}
+                            className="input text-xs py-1.5"
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <button type="submit" className="btn-ink text-xs px-4 py-2">
+                            Filter
+                        </button>
+                        {(from || to) && (
+                            <button
+                                type="button"
+                                onClick={resetDateFilter}
+                                className="btn-ghost text-xs px-3 py-2"
+                            >
+                                Reset
+                            </button>
+                        )}
+                    </div>
+                </form>
 
                 {tab === 'payments' ? (
                     <>

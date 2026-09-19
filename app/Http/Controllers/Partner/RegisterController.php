@@ -36,10 +36,18 @@ class RegisterController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:30'],
             'date_of_birth' => ['nullable', 'date'],
-            'industry' => ['nullable', 'string', 'max:255'],
+            'industry' => ['required'],
             'hobbies' => ['nullable', 'array'],
             'hobbies.*' => ['string', 'max:255'],
+        ], [
+            'industry.required' => 'Bidang industri wajib dipilih minimal 1.',
         ]);
+
+        $industryInput = $request->input('industry');
+        $industryString = is_array($industryInput) ? implode(', ', array_filter($industryInput)) : (string) $industryInput;
+        if (empty(trim($industryString))) {
+            return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
+        }
 
         if ($validated['is_member'] && ! empty($validated['member_code'])) {
             $memberExists = User::where('role', User::ROLE_MEMBER)
@@ -65,7 +73,7 @@ class RegisterController extends Controller
             $partner = $user->partner()->create([
                 'name' => $validated['company_name'],
                 'slug' => Partner::slugFor($validated['company_name']),
-                'category' => $validated['industry'] ?? 'General',
+                'category' => $industryString ?: 'General',
                 'address' => $validated['company_address'] ?? null,
                 'phone' => $validated['company_phone'] ?? null,
                 'email' => $validated['email'],
@@ -75,7 +83,7 @@ class RegisterController extends Controller
                 'pic_phone' => $validated['pic_phone'],
                 'is_member' => $validated['is_member'],
                 'member_code' => $validated['is_member'] ? ($validated['member_code'] ?? null) : null,
-                'industry' => $validated['industry'] ?? null,
+                'industry' => $industryString,
                 'hobbies' => $validated['hobbies'] ?? null,
                 'date_of_birth' => $validated['date_of_birth'] ?? null,
                 'is_active' => true,

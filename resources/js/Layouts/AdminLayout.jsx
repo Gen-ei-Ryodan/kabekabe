@@ -34,6 +34,9 @@ export default function AdminLayout({ children }) {
         if (routeName === 'admin.partners.index' && pending_approvals?.partners > 0) {
             return pending_approvals.partners;
         }
+        if (routeName === 'admin.banners.index' && pending_approvals?.paid_ads > 0) {
+            return pending_approvals.paid_ads;
+        }
         return null;
     };
 

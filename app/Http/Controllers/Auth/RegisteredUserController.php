@@ -45,8 +45,14 @@ class RegisteredUserController extends Controller
                 'district' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
                 'category' => 'nullable|string|max:100',
-                'industry' => 'nullable|string|max:150',
+                'industry' => 'required',
             ];
+
+            $industryInput = $request->input('industry');
+            $industryString = is_array($industryInput) ? implode(', ', array_filter($industryInput)) : (string) $industryInput;
+            if (empty(trim($industryString))) {
+                return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
+            }
 
             if ($isMember) {
                 $rules['member_id_number'] = 'required|string|max:100';
@@ -68,7 +74,9 @@ class RegisteredUserController extends Controller
                 $rules['member_city'] = 'nullable|string|max:100';
             }
 
-            $request->validate($rules);
+            $request->validate($rules, [
+                'industry.required' => 'Bidang industri wajib dipilih minimal 1.',
+            ]);
 
             $generatedPassword = 'KBKB' . random_int(1000, 9999);
 
@@ -86,7 +94,7 @@ class RegisteredUserController extends Controller
                 'address' => $isMember ? $request->address : ($request->member_address ?: $request->address),
                 'district' => $isMember ? $request->district : ($request->member_district ?: $request->district),
                 'city' => $isMember ? $request->city : ($request->member_city ?: $request->city),
-                'industry' => $request->industry,
+                'industry' => $industryString,
                 'gender' => $isMember ? null : $request->gender,
                 'birth_date' => $isMember ? $request->member_birth_date : $request->birth_date,
                 'birth_place' => $isMember ? null : $request->birth_place,
@@ -109,13 +117,13 @@ class RegisteredUserController extends Controller
                 'slug' => Partner::slugFor($request->trade_name ?: $request->name),
                 'pic_name' => $userName,
                 'pic_phone' => $request->phone,
-                'category' => $request->category ?: ($request->industry ?: 'Umum'),
+                'category' => $request->category ?: ($industryString ?: 'Umum'),
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'address' => $request->address,
                 'district' => $request->district,
                 'city' => $request->city,
-                'industry' => $request->industry,
+                'industry' => $industryString,
                 'employee_count' => $request->employee_count,
                 'established_since' => $request->established_since,
                 'is_member' => $isMember,
@@ -143,13 +151,24 @@ class RegisteredUserController extends Controller
                 'address' => 'nullable|string|max:500',
                 'district' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
-                'business_fields' => 'nullable|array',
+                'business_fields' => 'required|array|min:1',
+                'business_fields.*' => 'required|string|max:100',
                 'company' => 'nullable|string|max:255',
                 'business_address' => 'nullable|string|max:500',
                 'business_district' => 'nullable|string|max:100',
                 'business_city' => 'nullable|string|max:100',
-                'industry' => 'nullable|string|max:150',
+                'industry' => 'required',
+            ], [
+                'business_fields.required' => 'Bidang usaha wajib diisi minimal 1.',
+                'business_fields.min' => 'Bidang usaha wajib diisi minimal 1.',
+                'industry.required' => 'Bidang industri wajib dipilih minimal 1.',
             ]);
+
+            $industryInput = $request->input('industry');
+            $industryString = is_array($industryInput) ? implode(', ', array_filter($industryInput)) : (string) $industryInput;
+            if (empty(trim($industryString))) {
+                return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
+            }
 
             $generatedPassword = 'KBKB' . random_int(1000, 9999);
 
@@ -174,7 +193,7 @@ class RegisteredUserController extends Controller
                 'business_address' => $request->business_address,
                 'business_district' => $request->business_district,
                 'business_city' => $request->business_city,
-                'industry' => $request->industry,
+                'industry' => $industryString,
                 'password' => Hash::make($generatedPassword),
                 'role' => User::ROLE_MEMBER,
                 'approval_status' => User::APPROVAL_PENDING,

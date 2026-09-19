@@ -77,11 +77,12 @@ function PopupSettings({ popup, promos = [] }) {
     );
 }
 
-export default function BannersIndex({ banners = [], partner_ads = [], filters = {}, promos = [], drawer = null, popup = null, popup_promos = [] }) {
+export default function BannersIndex({ banners = [], partner_ads = [], filters = {}, promos = [], drawer = null, popup = null, popup_promos = [], initial_tab = 'banners', paid_ads_count = 0 }) {
     const filter = useForm(filters);
-    const [tab, setTab] = useState('banners');
+    const [tab, setTab] = useState(initial_tab || 'banners');
 
     const pendingAdsCount = partner_ads.filter((a) => a.status === 'pending').length;
+    const paidAdsCount = partner_ads.filter((a) => a.status === 'paid').length;
 
     const applyFilter = (e) => {
         e.preventDefault();
@@ -117,6 +118,18 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
     const approveAd = (adId) => {
         if (confirm('Setujui pengajuan iklan ini?')) {
             router.put(route('admin.banners.ads.approve', adId), {}, { preserveScroll: true });
+        }
+    };
+
+    const markPaidAd = (adId) => {
+        if (confirm('Tandai pengajuan iklan ini sebagai sudah dibayar oleh partner?')) {
+            router.put(route('admin.banners.ads.mark_paid', adId), {}, { preserveScroll: true });
+        }
+    };
+
+    const publishAd = (adId, typeLabel) => {
+        if (confirm(`Pasang iklan ini sekarang dan tayangkan ke ${typeLabel}?`)) {
+            router.post(route('admin.banners.ads.publish', adId), {}, { preserveScroll: true });
         }
     };
 
@@ -188,7 +201,12 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
                         }`}
                     >
                         Pengajuan Iklan Partner
-                        {pendingAdsCount > 0 && (
+                        {paidAdsCount > 0 && (
+                            <span className="ml-2 rounded-full bg-gold-deep px-2 py-0.5 text-[10px] font-bold text-paper shadow-xs">
+                                {paidAdsCount} Perlu Diset
+                            </span>
+                        )}
+                        {paidAdsCount === 0 && pendingAdsCount > 0 && (
                             <span className="ml-2 rounded-full bg-ember px-2 py-0.5 text-[10px] font-bold text-paper">
                                 {pendingAdsCount}
                             </span>
@@ -200,10 +218,22 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
 
                 {tab === 'partner_ads' && (
                     <div className="space-y-6">
+                        {paidAdsCount > 0 && (
+                            <div className="flex items-center gap-3.5 rounded-2xl border border-gold-deep/30 bg-gold-light/40 p-4 text-ink shadow-xs">
+                                <span className="text-2xl">📢</span>
+                                <div>
+                                    <h4 className="font-display font-bold text-ink">Ada {paidAdsCount} Iklan Sudah Dibayar — Perlu Diset Admin</h4>
+                                    <p className="text-xs text-slate">
+                                        Partner telah melakukan pembayaran iklan. Klik tombol <strong>"⚡ Pasang ke Banner/Popup"</strong> pada iklan di bawah untuk langsung menayangkannya ke aplikasi.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="card-surface p-5 border-l-4 border-gold">
                             <h3 className="font-display text-base font-bold text-ink">Ketentuan Pengajuan Iklan Partner</h3>
                             <p className="mt-1 text-xs text-slate">
-                                Partner dapat mengajukan 2 jenis slot promosi: <strong>Pop-up Pembuka (durasi 3 hari)</strong> dan <strong>Banner Beranda (durasi 5 hari)</strong>. Setiap pengajuan memerlukan persetujuan admin sebelum ditayangkan.
+                                Partner dapat mengajukan 2 jenis slot promosi: <strong>Pop-up Pembuka (durasi 3 hari)</strong> dan <strong>Banner Beranda (durasi 5 hari)</strong>. Setelah partner membayar iklan, admin dapat menayangkan iklan dengan satu kali klik.
                             </p>
                         </div>
 
@@ -237,14 +267,27 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
                                                         }`}>
                                                             {ad.type_label}
                                                         </span>
-                                                        <StatusChip
-                                                            status={ad.status}
-                                                            label={ad.status === 'pending' ? 'Menunggu Persetujuan' : ad.status === 'approved' ? 'Disetujui' : 'Ditolak'}
-                                                        />
+                                                        {ad.status === 'paid' && (
+                                                            <span className="rounded-md bg-gold-deep px-2 py-0.5 text-xs font-bold text-paper shadow-xs">
+                                                                Sudah Dibayar — Perlu Diset
+                                                            </span>
+                                                        )}
+                                                        {ad.status === 'active' && (
+                                                            <span className="rounded-md bg-sage px-2 py-0.5 text-xs font-bold text-white">
+                                                                ✓ Sedang Tayang
+                                                            </span>
+                                                        )}
+                                                        {ad.status !== 'paid' && ad.status !== 'active' && (
+                                                            <StatusChip
+                                                                status={ad.status}
+                                                                label={ad.status === 'pending' ? 'Menunggu Persetujuan' : ad.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                                                            />
+                                                        )}
                                                     </div>
                                                     <h3 className="mt-1.5 font-display text-base font-bold text-ink">{ad.promo_title}</h3>
                                                     <p className="text-xs text-slate mt-0.5">
                                                         Partner: <strong>{ad.partner_name}</strong> · Diajukan pada {ad.created_at}
+                                                        {ad.paid_at && <span className="text-gold-deep font-semibold"> · Dibayar {ad.paid_at}</span>}
                                                     </p>
                                                     <p className="text-xs font-mono text-slate-soft mt-1">
                                                         Periode tayang: {ad.start_date} — {ad.end_date}
@@ -262,14 +305,37 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
                                                 </div>
                                             </div>
 
-                                            <div className="flex shrink-0 gap-2 sm:self-center">
+                                            <div className="flex shrink-0 flex-wrap items-center gap-2 sm:self-center">
+                                                {ad.status === 'paid' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => publishAd(ad.id, ad.type_label)}
+                                                            className="btn-gold text-xs font-bold shadow-xs flex items-center gap-1"
+                                                        >
+                                                            ⚡ Pasang ke {ad.type === 'popup' ? 'Popup Pembuka' : 'Banner Beranda'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => rejectAd(ad.id)}
+                                                            className="btn-ghost text-xs text-ember"
+                                                        >
+                                                            Tolak
+                                                        </button>
+                                                    </>
+                                                )}
                                                 {ad.status === 'pending' && (
                                                     <>
                                                         <button
-                                                            onClick={() => approveAd(ad.id)}
+                                                            onClick={() => markPaidAd(ad.id)}
                                                             className="btn-gold text-xs"
+                                                            title="Tandai pembayaran telah diterima dan siap diset"
                                                         >
-                                                            Setujui Iklan
+                                                            Tandai Sudah Dibayar
+                                                        </button>
+                                                        <button
+                                                            onClick={() => approveAd(ad.id)}
+                                                            className="btn-ghost text-xs"
+                                                        >
+                                                            Setujui
                                                         </button>
                                                         <button
                                                             onClick={() => rejectAd(ad.id)}
@@ -280,8 +346,24 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
                                                     </>
                                                 )}
                                                 {ad.status === 'approved' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => publishAd(ad.id, ad.type_label)}
+                                                            className="btn-gold text-xs flex items-center gap-1 font-bold"
+                                                        >
+                                                            ⚡ Pasang Langsung
+                                                        </button>
+                                                        <button
+                                                            onClick={() => markPaidAd(ad.id)}
+                                                            className="btn-ghost text-xs"
+                                                        >
+                                                            Tandai Sudah Dibayar
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {ad.status === 'active' && (
                                                     <span className="text-xs font-semibold text-sage-deep flex items-center gap-1">
-                                                        ✓ Disetujui
+                                                        ✓ Tayang Aktif
                                                     </span>
                                                 )}
                                             </div>

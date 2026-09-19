@@ -37,7 +37,7 @@ export default function AccountEdit({ account }) {
                         <section className="card-surface p-6 sm:p-8">
                             <h2 className="font-display text-lg font-bold text-ink">Profil Member</h2>
 
-                            <div className="mt-6 flex items-center gap-5">
+                            <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
                                 <Avatar
                                     src={account.avatar_url}
                                     name={account.name}
@@ -45,27 +45,60 @@ export default function AccountEdit({ account }) {
                                     className="h-20 w-20 rounded-full border-2 border-gold text-2xl"
                                 />
                                 <div>
-                                    <label className="btn-ghost cursor-pointer text-xs">
-                                        {data.avatar ? 'Foto dipilih ✓' : 'Ganti Foto Profil'}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={(e) => setData('avatar', e.target.files[0])}
-                                        />
-                                    </label>
-                                    {errors.avatar && <p className="mt-1 text-xs text-ember">{errors.avatar}</p>}
-                                    <p className="mt-1.5 text-[11px] text-slate-soft">
-                                        Pilih foto wajah yang jelas agar mudah dikenali. Format rasio 1:1, minimal 400×400px (maks 2MB).
-                                    </p>
+                                    {account.can_change_avatar ? (
+                                        <>
+                                            <label className="btn-ghost cursor-pointer text-xs">
+                                                {data.avatar ? 'Foto dipilih ✓' : 'Pilih Foto Profil'}
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => setData('avatar', e.target.files[0])}
+                                                />
+                                            </label>
+                                            {errors.avatar && <p className="mt-1 text-xs text-ember">{errors.avatar}</p>}
+                                            <p className="mt-1.5 text-[11px] text-slate-soft">
+                                                Foto profil hanya boleh diganti 1 kali di awal. Format rasio 1:1, maks 2MB.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <div className="space-y-1.5">
+                                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink/5 px-2.5 py-1 text-xs font-medium text-slate">
+                                                🔒 Foto profil terkunci
+                                            </span>
+                                            <p className="text-[11px] text-slate">
+                                                Foto profil hanya boleh diganti 1 kali di awal. Untuk penggantian foto selanjutnya, silakan ajukan ke Admin.
+                                            </p>
+                                            <a
+                                                href={`https://wa.me/628113888888?text=${encodeURIComponent(`Halo Admin KBKB, saya ingin mengajukan penggantian foto profil member:\nNama: ${account.name}\nNo. Member: ${account.member_code || '-'}`)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-xs font-semibold text-gold-deep hover:underline"
+                                            >
+                                                Ajukan Perubahan Foto ke Admin via WhatsApp →
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
-                                    <label className="label" htmlFor="name">Nama Lengkap</label>
-                                    <input id="name" type="text" className="input" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
-                                    {errors.name && <p className="mt-1 text-xs text-ember">{errors.name}</p>}
+                                    <div className="flex items-center justify-between">
+                                        <label className="label" htmlFor="name">Nama Lengkap</label>
+                                        <span className="text-[10px] text-slate-soft font-mono">Terkunci (Hanya Admin)</span>
+                                    </div>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        className="input bg-ink/5 text-slate cursor-not-allowed"
+                                        value={account.name || ''}
+                                        disabled
+                                        readOnly
+                                    />
+                                    <p className="mt-1 text-[11px] text-slate-soft">
+                                        Nama member tidak dapat diubah sendiri. Hubungi admin jika terdapat kesalahan penulisan nama.
+                                    </p>
                                 </div>
 
                                 <div className="sm:col-span-2">

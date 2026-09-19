@@ -11,6 +11,15 @@ class PromoService
         private readonly NotificationService $notifications,
     ) {}
 
+    public function deactivateExpired(): int
+    {
+        return Promo::query()
+            ->where('is_active', true)
+            ->whereNotNull('end_date')
+            ->whereDate('end_date', '<', now()->toDateString())
+            ->update(['is_active' => false]);
+    }
+
     public function submit(Promo $promo, User $vendor): Promo
     {
         $promo->forceFill([

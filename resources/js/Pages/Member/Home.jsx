@@ -7,52 +7,9 @@ import Reveal from '@/Components/Reveal';
 import Modal from '@/Components/Modal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
-function RankingCard({ title, subtitle, items, valueKey, formatValue, emptyText }) {
+function VendorRanking({ items = [] }) {
+    if (!items || items.length === 0) return null;
     const medals = ['🥇', '🥈', '🥉'];
-
-    return (
-        <div className="card-surface flex flex-col p-2.5 sm:p-4">
-            <div className="flex flex-col border-b border-ink/5 pb-2 sm:pb-3">
-                <h4 className="truncate font-display text-xs font-bold leading-tight text-ink sm:text-base" title={title}>
-                    {title}
-                </h4>
-                {subtitle && (
-                    <p className="mt-0.5 truncate font-mono text-[8px] uppercase tracking-wider text-slate sm:text-[10px]">
-                        {subtitle}
-                    </p>
-                )}
-            </div>
-
-            <div className="divide-y divide-ink/5 pt-1">
-                {items && items.length > 0 ? (
-                    items.map((v, i) => (
-                        <div key={v.partner_id || i} className="flex items-center gap-1.5 py-1.5 first:pt-1.5 last:pb-0 sm:gap-3 sm:py-2.5">
-                            <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs sm:h-7 sm:w-7 sm:text-base">
-                                {medals[i] || `${i + 1}.`}
-                            </span>
-                            <p className="min-w-0 flex-1 truncate font-display text-[11px] font-bold text-ink sm:text-sm" title={v.name}>
-                                {v.name || '—'}
-                            </p>
-                            <div className="shrink-0">
-                                {formatValue ? formatValue(v[valueKey]) : (
-                                    <span className="font-mono text-[10px] font-semibold text-ink sm:text-xs">
-                                        {v[valueKey]}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p className="py-3 text-center text-[10px] italic text-slate sm:text-xs">{emptyText || 'Belum ada data'}</p>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function VendorRanking({ byCount = [], byAmount = [] }) {
-    const hasData = (byCount && byCount.length > 0) || (byAmount && byAmount.length > 0);
-    if (!hasData) return null;
 
     return (
         <section aria-label="Vendor Ranking" className="flex flex-col gap-2.5 sm:gap-3">
@@ -64,31 +21,24 @@ function VendorRanking({ byCount = [], byAmount = [] }) {
             </Reveal>
 
             <Reveal delay={0.05}>
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                    <RankingCard
-                        title="Jumlah Transaksi"
-                        subtitle="Berdasarkan Frekuensi"
-                        items={byCount}
-                        valueKey="total"
-                        formatValue={(val) => (
-                            <span className="rounded bg-gold/10 px-1 py-0.5 font-mono text-[10px] font-semibold text-gold-dark sm:px-2 sm:text-xs">
-                                {val} <span className="text-[8px] font-normal text-slate sm:text-[10px]">trx</span>
-                            </span>
-                        )}
-                        emptyText="Belum ada transaksi"
-                    />
-                    <RankingCard
-                        title="Rupiah Belanja"
-                        subtitle="Berdasarkan Nominal"
-                        items={byAmount}
-                        valueKey="total_amount"
-                        formatValue={(val) => (
-                            <span className="font-mono text-[10px] font-semibold text-ink sm:text-xs">
-                                {formatRupiah(val)}
-                            </span>
-                        )}
-                        emptyText="Belum ada belanja"
-                    />
+                <div className="card-surface p-3 sm:p-5">
+                    <div className="divide-y divide-ink/5">
+                        {items.map((v, i) => (
+                            <div key={v.partner_id || i} className="flex items-center gap-2.5 py-2 first:pt-0 last:pb-0 sm:gap-4 sm:py-3">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center font-display text-sm font-bold sm:h-8 sm:w-8 sm:text-lg">
+                                    {medals[i] || `${i + 1}.`}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate font-display text-xs font-bold text-ink sm:text-base" title={v.name}>
+                                        {v.name || '—'}
+                                    </p>
+                                </div>
+                                <span className="rounded-full bg-gold/10 px-2.5 py-0.5 font-mono text-[9px] font-semibold text-gold-deep sm:text-xs">
+                                    Rank #{i + 1}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </Reveal>
         </section>
@@ -466,7 +416,7 @@ export default function Home({
                     <MemberCard member={member} />
                 </section>
 
-                <VendorRanking byCount={countRanking} byAmount={amountRanking} />
+                <VendorRanking items={countRanking} />
 
                 {(bannerList.length > 0 || agendas.length > 0) && <BannerZone banners={bannerList} agendas={agendas} />}
             </div>

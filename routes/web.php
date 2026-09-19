@@ -87,6 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/billing', [\App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
         Route::post('/billing/ads', [\App\Http\Controllers\Vendor\BillingController::class, 'storeAd'])->name('billing.ads.store');
+        Route::post('/billing/ads/{ad}/pay', [\App\Http\Controllers\Vendor\BillingController::class, 'payAd'])->name('billing.ads.pay');
     });
 
     // ---------- ADMIN ----------
@@ -144,6 +145,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/banners/{banner}', [AdminHomeBannerController::class, 'destroy'])->name('banners.destroy');
         Route::put('/banners/ads/{ad}/approve', [AdminHomeBannerController::class, 'approveAd'])->name('banners.ads.approve');
         Route::put('/banners/ads/{ad}/reject', [AdminHomeBannerController::class, 'rejectAd'])->name('banners.ads.reject');
+        Route::put('/banners/ads/{ad}/mark-paid', [AdminHomeBannerController::class, 'markPaidAd'])->name('banners.ads.mark_paid');
+        Route::post('/banners/ads/{ad}/publish', [AdminHomeBannerController::class, 'publishAd'])->name('banners.ads.publish');
 
         Route::get('/community', [AdminCommunityController::class, 'index'])->name('community.index');
         Route::get('/community/create', [AdminCommunityController::class, 'create'])->name('community.create');
@@ -163,6 +166,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
         Route::get('/transactions/{transaction}', [AdminTransactionController::class, 'show'])->name('transactions.show');
 
+        Route::get('/reports/export', [AdminReportController::class, 'export'])->name('reports.export');
         Route::get('/reports', AdminReportController::class)->name('reports.index');
     });
 });

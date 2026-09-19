@@ -165,7 +165,7 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
                 <form onSubmit={handleSearch} className="flex gap-2">
                     <input
                         type="text"
-                        placeholder="Search promos or partners..."
+                        placeholder="Cari promo atau nama partner..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="input flex-1"

@@ -253,11 +253,26 @@ function MemberStatisticsTable({ data, genderFilter, religionFilter }) {
     );
 }
 
-function BirthdayReport({ birthdays, monthFilter }) {
+function BirthdayReport({ birthdays, monthFilter, dateFrom, dateTo }) {
     const filtered = useMemo(() => {
-        if (!monthFilter) return birthdays;
-        return birthdays.filter((group) => String(group.month) === monthFilter);
-    }, [birthdays, monthFilter]);
+        let list = birthdays;
+        if (monthFilter) {
+            list = list.filter((group) => String(group.month) === monthFilter);
+        }
+        if (!dateFrom && !dateTo) {
+            return list;
+        }
+
+        return list.map((group) => {
+            const members = group.members.filter((m) => {
+                if (!m.birth_date) return false;
+                if (dateFrom && m.birth_date < dateFrom) return false;
+                if (dateTo && m.birth_date > dateTo) return false;
+                return true;
+            });
+            return { ...group, members };
+        }).filter((group) => group.members.length > 0);
+    }, [birthdays, monthFilter, dateFrom, dateTo]);
 
     if (filtered.length === 0) {
         return <p className="text-sm text-slate">Tidak ada data ulang tahun untuk filter ini.</p>;
@@ -301,7 +316,9 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
     const [transactionMember, setTransactionMember] = useState('');
     const [statsGender, setStatsGender] = useState('');
     const [statsReligion, setStatsReligion] = useState('');
-    const [birthdayMonth, setBirthdayMonth] = useState('');
+    const [birthdayMonth, setBirthdayMonth] = useState(filters.birthday_month || '');
+    const [birthdayFrom, setBirthdayFrom] = useState(filters.birthday_from || '');
+    const [birthdayTo, setBirthdayTo] = useState(filters.birthday_to || '');
 
     const applyFilter = (e) => {
         e.preventDefault();
@@ -331,17 +348,34 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
                         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Laporan & Statistik</h1>
                     </div>
 
-                    <form onSubmit={applyFilter} className="flex flex-wrap items-end gap-2">
-                        <div>
-                            <label className="label">Dari</label>
-                            <input type="date" className="input" value={filter.data.from} onChange={(e) => filter.setData('from', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="label">Sampai</label>
-                            <input type="date" className="input" value={filter.data.to} onChange={(e) => filter.setData('to', e.target.value)} />
-                        </div>
-                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
-                    </form>
+                    <div className="flex flex-wrap items-end gap-2">
+                        <form onSubmit={applyFilter} className="flex flex-wrap items-end gap-2">
+                            <div>
+                                <label className="label">Dari</label>
+                                <input type="date" className="input" value={filter.data.from} onChange={(e) => filter.setData('from', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="label">Sampai</label>
+                                <input type="date" className="input" value={filter.data.to} onChange={(e) => filter.setData('to', e.target.value)} />
+                            </div>
+                            <button type="submit" className="btn-ink text-xs">Terapkan</button>
+                        </form>
+                        <a
+                            href={route('admin.reports.export', {
+                                type: activeTab,
+                                from: filter.data.from,
+                                to: filter.data.to,
+                                birthday_from: birthdayFrom,
+                                birthday_to: birthdayTo,
+                                birthday_month: birthdayMonth,
+                            })}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
+                            title="Export data tab aktif ke Excel"
+                        >
+                            <span>📊</span>
+                            <span>Export Excel</span>
+                        </a>
+                    </div>
                 </header>
 
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -441,20 +475,62 @@ export default function ReportIndex({ summary, by_partner, by_member, transactio
 
                 {activeTab === 'birthday' && (
                     <section className="card-surface p-6">
-                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-                            <div className="sm:w-64">
-                                <label className="label">Filter Bulan</label>
-                                <select className="input" value={birthdayMonth} onChange={(e) => setBirthdayMonth(e.target.value)}>
-                                    {MONTH_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
+                        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                            <div className="flex flex-wrap items-end gap-3">
+                                <div className="w-full sm:w-48">
+                                    <label className="label">Filter Bulan</label>
+                                    <select className="input" value={birthdayMonth} onChange={(e) => setBirthdayMonth(e.target.value)}>
+                                        {MONTH_OPTIONS.map((opt) => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="w-full sm:w-44">
+                                    <label className="label">Dari Tanggal Lahir</label>
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={birthdayFrom}
+                                        onChange={(e) => setBirthdayFrom(e.target.value)}
+                                    />
+                                </div>
+                                <div className="w-full sm:w-44">
+                                    <label className="label">Sampai Tanggal Lahir</label>
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={birthdayTo}
+                                        onChange={(e) => setBirthdayTo(e.target.value)}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setBirthdayMonth('');
+                                        setBirthdayFrom('');
+                                        setBirthdayTo('');
+                                    }}
+                                    className="btn-ghost text-xs"
+                                >
+                                    Atur Ulang
+                                </button>
                             </div>
-                            <button type="button" onClick={() => setBirthdayMonth('')} className="btn-ghost text-xs">Atur Ulang</button>
+                            <a
+                                href={route('admin.reports.export', {
+                                    type: 'birthday',
+                                    birthday_month: birthdayMonth,
+                                    birthday_from: birthdayFrom,
+                                    birthday_to: birthdayTo,
+                                })}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition self-start sm:self-end"
+                            >
+                                <span>📊</span>
+                                <span>Export Excel (.xlsx)</span>
+                            </a>
                         </div>
                         <SectionTitle>Laporan Ulang Tahun (HUT)</SectionTitle>
                         <div className="mt-4">
-                            <BirthdayReport birthdays={birthdays} monthFilter={birthdayMonth} />
+                            <BirthdayReport birthdays={birthdays} monthFilter={birthdayMonth} dateFrom={birthdayFrom} dateTo={birthdayTo} />
                         </div>
                     </section>
                 )}

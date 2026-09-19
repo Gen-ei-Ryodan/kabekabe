@@ -26,6 +26,8 @@ class AccountController extends Controller
                 'company' => $user->company,
                 'avatar_url' => $user->avatarUrl(),
                 'member_code' => $user->member_code,
+                'avatar_changes_count' => (int) ($user->avatar_changes_count ?? 0),
+                'can_change_avatar' => ((int) ($user->avatar_changes_count ?? 0)) < 1,
             ],
         ]);
     }
@@ -39,22 +41,33 @@ class AccountController extends Controller
             $user->update(['password' => $request->input('password')]);
         }
 
+        $avatarPath = $user->avatar;
+        $changesCount = (int) ($user->avatar_changes_count ?? 0);
+
         if ($request->hasFile('avatar')) {
+            if ($changesCount >= 1) {
+                return back()->withErrors([
+                    'avatar' => 'Foto profil hanya boleh diganti satu kali di awal. Untuk penggantian selanjutnya, silakan lakukan pengajuan ke Admin.',
+                ]);
+            }
+
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $changesCount++;
         }
 
         $user->update([
-            'name' => $validated['name'],
+            // Nama tidak dapat diubah sendiri oleh member
             'email' => $validated['email'],
             'religion' => $validated['religion'] ?? null,
             'address' => $validated['address'] ?? null,
             'whatsapp' => $validated['whatsapp'] ?? null,
             'company' => $validated['company'] ?? null,
-            'avatar' => $validated['avatar'] ?? $user->avatar,
+            'avatar' => $avatarPath,
+            'avatar_changes_count' => $changesCount,
         ]);
 
         return back()->with('success', 'Profil berhasil diperbarui.');

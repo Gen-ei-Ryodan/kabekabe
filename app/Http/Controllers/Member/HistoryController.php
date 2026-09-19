@@ -7,25 +7,53 @@ use App\Models\CommunityInfo;
 use App\Models\EventAttendance;
 use App\Models\Payment;
 use App\Models\Transaction;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class HistoryController extends Controller
 {
-    public function __invoke(): Response
+    public function __invoke(Request $request): Response
     {
         $user = auth()->user();
         $user->load('membership');
 
-        $transactions = Transaction::query()
+        $from = $request->string('from')->toString();
+        $to = $request->string('to')->toString();
+
+        $transactionQuery = Transaction::query()
             ->where('member_id', $user->id)
-            ->with(['partner:id,name,category,logo', 'promo:id,title'])
+            ->with(['partner:id,name,category,logo', 'promo:id,title']);
+
+        if ($from !== '') {
+            $transactionQuery->whereDate('transacted_at', '>=', $from);
+        }
+        if ($to !== '') {
+            $transactionQuery->whereDate('transacted_at', '<=', $to);
+        }
+
+        $transactions = $transactionQuery
             ->orderByDesc('transacted_at')
             ->paginate(12)
             ->withQueryString();
 
-        $payments = $user->payments()
-            ->with(['plan:id,name,duration_months', 'event:id,title,event_date,location'])
+        $paymentQuery = $user->payments()
+            ->with(['plan:id,name,duration_months', 'event:id,title,event_date,location']);
+
+        if ($from !== '') {
+            $paymentQuery->where(function ($q) use ($from) {
+                $q->whereDate('paid_at', '>=', $from)
+                    ->orWhere(fn ($sub) => $sub->whereNull('paid_at')->whereDate('created_at', '>=', $from));
+            });
+        }
+        if ($to !== '') {
+            $paymentQuery->where(function ($q) use ($to) {
+                $q->whereDate('paid_at', '<=', $to)
+                    ->orWhere(fn ($sub) => $sub->whereNull('paid_at')->whereDate('created_at', '<=', $to));
+            });
+        }
+
+        $payments = $paymentQuery
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -59,9 +87,18 @@ class HistoryController extends Controller
 
         $totalPaymentMade = $payments->sum('amount');
 
-        $attendances = EventAttendance::query()
+        $attendanceQuery = EventAttendance::query()
             ->where('member_id', $user->id)
-            ->with(['event:id,title,event_date,location'])
+            ->with(['event:id,title,event_date,location']);
+
+        if ($from !== '') {
+            $attendanceQuery->whereDate('scanned_at', '>=', $from);
+        }
+        if ($to !== '') {
+            $attendanceQuery->whereDate('scanned_at', '<=', $to);
+        }
+
+        $attendances = $attendanceQuery
             ->orderByDesc('scanned_at')
             ->get()
             ->map(fn (EventAttendance $a) => [
@@ -74,12 +111,24 @@ class HistoryController extends Controller
                 'scanned_at_human' => $a->scanned_at?->diffForHumans(),
             ]);
 
+        $benefitQuery = $user->memberTransactions();
+        if ($from !== '') {
+            $benefitQuery->whereDate('transacted_at', '>=', $from);
+        }
+        if ($to !== '') {
+            $benefitQuery->whereDate('transacted_at', '<=', $to);
+        }
+
         return Inertia::render('Member/History/Index', [
             'transactions' => $transactions,
-            'total_benefit' => $user->memberTransactions()->sum('discount_amount'),
+            'total_benefit' => $benefitQuery->sum('discount_amount'),
             'payments' => $payments,
             'total_payment_made' => $totalPaymentMade,
             'attendances' => $attendances,
+            'filters' => [
+                'from' => $from,
+                'to' => $to,
+            ],
             'membership' => [
                 'status' => $user->hasActiveMembership() ? 'active' : 'inactive',
                 'status_label' => $user->hasActiveMembership() ? 'ACTIVE' : 'INACTIVE',
