@@ -19,11 +19,6 @@ function PromoCard({ promo }) {
         >
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 bg-ink px-3 py-2 text-paper">
-                    {typeof promo.sort_number === 'number' && (
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-gold text-[10px] font-bold text-ink">
-                            {promo.sort_number}
-                        </span>
-                    )}
                     <span className="font-display text-base font-bold text-gold-light">
                         {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)}
                     </span>
@@ -60,11 +55,6 @@ function PartnerCard({ partner }) {
         >
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                    {typeof partner.sort_number === 'number' && (
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-ink text-[10px] font-bold text-gold-light">
-                            {partner.sort_number}
-                        </span>
-                    )}
                     <h3 className="truncate font-display text-sm font-bold leading-snug text-ink">{partner.name}</h3>
                 </div>
                 <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-gold-deep">{partner.category}</p>

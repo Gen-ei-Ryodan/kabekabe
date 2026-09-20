@@ -16,12 +16,6 @@ class BillingController extends Controller
         $membership = $user->membership;
         $isActive = $user->hasActiveMembership();
 
-        $pendingPayment = \App\Models\Payment::where('member_id', $user->id)
-            ->where('status', \App\Models\Payment::STATUS_PENDING)
-            ->with('plan')
-            ->latest()
-            ->first();
-
         return Inertia::render('Member/Account/Billing', [
             'membership' => [
                 'status' => $isActive ? 'active' : 'inactive',
@@ -36,18 +30,6 @@ class BillingController extends Controller
                 ] : null,
             ],
             'admin_fee' => (int) config('services.doku.admin_fee', 0),
-            'pending_payment' => $pendingPayment ? [
-                'id' => $pendingPayment->id,
-                'invoice_number' => $pendingPayment->invoice_number,
-                'amount' => (int) $pendingPayment->amount,
-                'plan_name' => $pendingPayment->plan?->name,
-                'duration_months' => $pendingPayment->period_months,
-                'proof_path' => $pendingPayment->proof_path,
-                'payment_proof_url' => $pendingPayment->proofUrl(),
-                'paid_at' => $pendingPayment->paid_at?->format('d M Y H:i'),
-                'created_at' => $pendingPayment->created_at?->format('d M Y H:i'),
-                'notes' => $pendingPayment->notes,
-            ] : null,
             'plans' => \App\Models\MembershipPlan::where('is_active', true)
                 ->orderBy('duration_months')
                 ->get()

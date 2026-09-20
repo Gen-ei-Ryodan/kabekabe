@@ -5,14 +5,14 @@ import Reveal from '@/Components/Reveal';
 import StatusChip from '@/Components/StatusChip';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-export default function Billing({ membership, plans, admin_fee = 0, pending_payment = null }) {
+export default function Billing({ membership, plans, admin_fee = 0 }) {
     const isActive = membership.status === 'active';
     const [selectedPlanId, setSelectedPlanId] = useState(plans[0]?.id || null);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
 
-    // Active pending payment
-    const [activePayment, setActivePayment] = useState(pending_payment);
+    // Active checkout payment (only set when member clicks checkout)
+    const [activePayment, setActivePayment] = useState(null);
     const [showModal, setShowModal] = useState(false);
 
     // Clipboard copy feedback
@@ -308,55 +308,7 @@ export default function Billing({ membership, plans, admin_fee = 0, pending_paym
                         </section>
                     </Reveal>
 
-                    {/* Banner Transaksi Pending (Jika Ada) */}
-                    {activePayment && (
-                        <Reveal>
-                            <section className="rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-white to-amber-50/50 p-5 sm:p-6 shadow-sm">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div className="flex items-start gap-3.5">
-                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold text-white font-bold shadow-xs">
-                                            💳
-                                        </span>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold uppercase tracking-wider text-gold-deep">
-                                                    Tagihan Pembayaran Menunggu
-                                                </span>
-                                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-                                                    {activePayment.payment_proof_url ? 'Bukti Terkirim' : 'Belum Bayar'}
-                                                </span>
-                                            </div>
-                                            <h3 className="font-display text-lg font-bold text-ink mt-0.5">
-                                                Invoice #{activePayment.invoice_number}
-                                            </h3>
-                                            <p className="text-xs text-slate mt-0.5">
-                                                Total: <strong className="font-mono text-gold-deep">Rp{Number(activePayment.amount).toLocaleString('id-ID')}</strong> ({activePayment.plan_name || `${activePayment.duration_months} Bulan`})
-                                            </p>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowModal(true)}
-                                            className="btn-gold text-xs px-4 py-2 font-bold shadow-xs"
-                                        >
-                                            {activePayment.payment_proof_url ? 'Lihat Bukti & QRIS' : 'Bayar QRIS & Upload Bukti'}
-                                        </button>
-                                        {!activePayment.payment_proof_url && (
-                                            <button
-                                                type="button"
-                                                onClick={handleCancelPayment}
-                                                className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition"
-                                            >
-                                                Batalkan
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </section>
-                        </Reveal>
-                    )}
 
                     {/* Pembayaran Membership QRIS */}
                     <Reveal>
