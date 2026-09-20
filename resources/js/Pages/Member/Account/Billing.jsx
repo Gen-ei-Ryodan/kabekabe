@@ -1,19 +1,57 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import StatusChip from '@/Components/StatusChip';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-export default function Billing({ membership, plans, admin_fee = 0 }) {
+export default function Billing({ membership, plans, admin_fee = 0, active_bill = null }) {
     const isActive = membership.status === 'active';
-    const [selectedPlanId, setSelectedPlanId] = useState(plans[0]?.id || null);
+    const [selectedPlanId, setSelectedPlanId] = useState(active_bill?.plan_id || plans[0]?.id || null);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
 
-    // Active checkout payment (only set when member clicks checkout)
-    const [activePayment, setActivePayment] = useState(null);
+    // Active checkout payment (single order persistence)
+    const [activePayment, setActivePayment] = useState(active_bill);
     const [showModal, setShowModal] = useState(false);
+
+    // Sync activePayment if active_bill prop changes
+    useEffect(() => {
+        setActivePayment(active_bill);
+    }, [active_bill]);
+
+    // 24-hour expiration countdown timer for unpaid active payment
+    const [timeLeft, setTimeLeft] = useState(() => {
+        if (!active_bill?.expires_at_timestamp) return null;
+        const nowSec = Math.floor(Date.now() / 1000);
+        return Math.max(0, active_bill.expires_at_timestamp - nowSec);
+    });
+
+    useEffect(() => {
+        if (!activePayment?.expires_at_timestamp || activePayment.stage !== 'unpaid') {
+            setTimeLeft(null);
+            return;
+        }
+
+        const update = () => {
+            const nowSec = Math.floor(Date.now() / 1000);
+            const rem = Math.max(0, activePayment.expires_at_timestamp - nowSec);
+            setTimeLeft(rem);
+        };
+
+        update();
+        const interval = setInterval(update, 1000);
+        return () => clearInterval(interval);
+    }, [activePayment?.expires_at_timestamp, activePayment?.stage]);
+
+    const formatCountdown = (seconds) => {
+        if (seconds === null || seconds === undefined) return '';
+        if (seconds <= 0) return 'Kedaluwarsa (24 Jam Habis)';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h.toString().padStart(2, '0')} jam ${m.toString().padStart(2, '0')} mnt ${s.toString().padStart(2, '0')} dtk`;
+    };
 
     // Clipboard copy feedback
     const [copiedInvoice, setCopiedInvoice] = useState(false);
@@ -90,6 +128,12 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
             return;
         }
 
+        // Jika tagihan aktif paket ini sudah ada dan belum dibayar, langsung buka modal QRIS
+        if (activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id === selectedPlanId) {
+            setShowModal(true);
+            return;
+        }
+
         setIsLoading(true);
         setErrorMessage(null);
 
@@ -118,7 +162,7 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
             if (result.is_free) {
                 setIsLoading(false);
                 alert(result.message || 'Selamat! Keanggotaan Anda telah aktif gratis.');
-                router.reload({ only: ['membership', 'pending_payment'] });
+                router.reload({ only: ['membership', 'active_bill'] });
                 return;
             }
 
@@ -127,11 +171,16 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                 id: result.payment_id,
                 invoice_number: result.invoice_number,
                 amount: result.amount,
+                plan_id: result.plan_id || selectedPlanId,
                 plan_name: result.plan_name,
                 duration_months: result.duration_months,
+                stage: result.stage || 'unpaid',
+                stage_label: result.stage_label || 'Belum Dibayar',
                 qris_image_url: result.qris_image_url || '/images/qris-kbkb.svg',
                 payment_proof_url: null,
                 created_at: result.created_at,
+                expires_at_timestamp: result.expires_at_timestamp,
+                remaining_seconds: result.remaining_seconds,
             });
             setShowModal(true);
             setIsLoading(false);
@@ -196,15 +245,17 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
             setUploadSuccess(result.message || 'Bukti pembayaran berhasil diunggah! Menunggu konfirmasi admin.');
             setActivePayment((prev) => ({
                 ...prev,
+                stage: 'paid',
+                stage_label: 'Sudah Dibayar (Menunggu Verifikasi Admin)',
                 payment_proof_url: result.proof_url || result.payment?.payment_proof_url,
-                paid_at: 'Baru saja',
+                paid_at: result.payment?.paid_at || 'Baru saja',
             }));
             setProofFile(null);
             setProofPreview(null);
             setIsUploadingProof(false);
 
             // Sync with backend props
-            router.reload({ only: ['pending_payment'] });
+            router.reload({ only: ['active_bill', 'membership'] });
         } catch (err) {
             console.error(err);
             setUploadError('Terjadi kesalahan saat mengunggah file bukti transfer.');
@@ -230,7 +281,7 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
             if (result.success) {
                 setActivePayment(null);
                 setShowModal(false);
-                router.reload({ only: ['pending_payment'] });
+                router.reload({ only: ['active_bill', 'membership'] });
             } else {
                 alert(result.message || 'Gagal membatalkan pembayaran.');
             }
@@ -308,7 +359,250 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                         </section>
                     </Reveal>
 
+                    {/* ========================================================= */}
+                    {/* STATUS TAGIHAN AKTIF ("ADA TAGIHAN" - 3 TAHAPAN & 24 JAM) */}
+                    {/* ========================================================= */}
+                    {activePayment && (
+                        <Reveal>
+                            <section className={`card-surface p-6 sm:p-8 border-2 transition-all ${
+                                activePayment.stage === 'processed'
+                                    ? 'border-emerald-500/40 bg-gradient-to-br from-white via-white to-emerald-50/30'
+                                    : activePayment.stage === 'paid'
+                                    ? 'border-sky-500/40 bg-gradient-to-br from-white via-white to-sky-50/30'
+                                    : 'border-gold/60 bg-gradient-to-br from-white via-white to-amber-50/40 shadow-sm'
+                            }`}>
+                                {/* Header Tagihan */}
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-ink/10 pb-5">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`h-2.5 w-2.5 rounded-full ${
+                                                activePayment.stage === 'processed'
+                                                    ? 'bg-emerald-500'
+                                                    : activePayment.stage === 'paid'
+                                                    ? 'bg-sky-500'
+                                                    : 'bg-gold animate-ping'
+                                            }`} />
+                                            <span className="text-xs font-bold uppercase tracking-wider text-gold-deep">
+                                                Tagihan Anda (Order #1)
+                                            </span>
+                                        </div>
+                                        <h2 className="mt-1 font-display text-xl font-bold text-ink">
+                                            {activePayment.plan_name}
+                                        </h2>
+                                        <p className="text-xs text-slate">
+                                            Nomor Referensi: <span className="font-mono font-bold text-ink">{activePayment.invoice_number}</span>
+                                        </p>
+                                    </div>
 
+                                    <div className="flex items-center gap-2">
+                                        {activePayment.stage === 'unpaid' && (
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3.5 py-1 text-xs font-bold text-amber-800 border border-amber-300">
+                                                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                                                1. Belum Dibayar
+                                            </span>
+                                        )}
+                                        {activePayment.stage === 'paid' && (
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 px-3.5 py-1 text-xs font-bold text-sky-800 border border-sky-300">
+                                                <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+                                                2. Menunggu Verifikasi Admin
+                                            </span>
+                                        )}
+                                        {activePayment.stage === 'processed' && (
+                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-bold text-emerald-800 border border-emerald-300">
+                                                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                                                3. Sudah Diproses (Lunas)
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Stepper 3 Tahapan */}
+                                <div className="mt-6 px-2 sm:px-6">
+                                    <div className="relative">
+                                        <div className="absolute top-4 left-0 right-0 h-1 bg-ink/10 -z-0" />
+                                        <div
+                                            className="absolute top-4 left-0 h-1 bg-gold transition-all duration-500 -z-0"
+                                            style={{
+                                                width:
+                                                    activePayment.stage === 'processed'
+                                                        ? '100%'
+                                                        : activePayment.stage === 'paid'
+                                                        ? '50%'
+                                                        : '10%',
+                                            }}
+                                        />
+                                        <div className="relative z-10 flex justify-between">
+                                            {/* Tahap 1: Belum Dibayar */}
+                                            <div className="flex flex-col items-center">
+                                                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all shadow-sm ${
+                                                    activePayment.stage === 'unpaid'
+                                                        ? 'bg-amber-500 text-white ring-4 ring-amber-100'
+                                                        : 'bg-emerald-600 text-white ring-4 ring-emerald-100'
+                                                }`}>
+                                                    {activePayment.stage === 'unpaid' ? '1' : '✓'}
+                                                </div>
+                                                <span className={`mt-2 text-xs font-bold ${activePayment.stage === 'unpaid' ? 'text-amber-800' : 'text-emerald-700'}`}>
+                                                    Belum Dibayar
+                                                </span>
+                                                <span className="text-[10px] text-slate hidden sm:block">QRIS Siap Bayar</span>
+                                            </div>
+
+                                            {/* Tahap 2: Sudah Dibayar */}
+                                            <div className="flex flex-col items-center">
+                                                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all shadow-sm ${
+                                                    activePayment.stage === 'paid'
+                                                        ? 'bg-sky-600 text-white ring-4 ring-sky-100'
+                                                        : activePayment.stage === 'processed'
+                                                        ? 'bg-emerald-600 text-white ring-4 ring-emerald-100'
+                                                        : 'bg-paper text-slate border border-ink/20'
+                                                }`}>
+                                                    {activePayment.stage === 'processed' ? '✓' : '2'}
+                                                </div>
+                                                <span className={`mt-2 text-xs font-bold ${
+                                                    activePayment.stage === 'paid'
+                                                        ? 'text-sky-800'
+                                                        : activePayment.stage === 'processed'
+                                                        ? 'text-emerald-700'
+                                                        : 'text-slate'
+                                                }`}>
+                                                    Sudah Dibayar
+                                                </span>
+                                                <span className="text-[10px] text-slate hidden sm:block">Bukti Diunggah</span>
+                                            </div>
+
+                                            {/* Tahap 3: Sudah Diproses */}
+                                            <div className="flex flex-col items-center">
+                                                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all shadow-sm ${
+                                                    activePayment.stage === 'processed'
+                                                        ? 'bg-emerald-600 text-white ring-4 ring-emerald-100'
+                                                        : 'bg-paper text-slate border border-ink/20'
+                                                }`}>
+                                                    {activePayment.stage === 'processed' ? '✓' : '3'}
+                                                </div>
+                                                <span className={`mt-2 text-xs font-bold ${
+                                                    activePayment.stage === 'processed' ? 'text-emerald-700' : 'text-slate'
+                                                }`}>
+                                                    Sudah Diproses
+                                                </span>
+                                                <span className="text-[10px] text-slate hidden sm:block">Membership Aktif</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Rincian & Aksi Tagihan */}
+                                <div className="mt-8 rounded-2xl border border-ink/10 bg-white/90 p-5 shadow-xs">
+                                    <div className="grid gap-4 sm:grid-cols-3">
+                                        <div>
+                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">Total Tagihan</p>
+                                            <p className="mt-1 font-mono text-xl font-extrabold text-gold-deep">
+                                                Rp{Number(activePayment.amount).toLocaleString('id-ID')}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">Metode Pembayaran</p>
+                                            <p className="mt-1 font-medium text-ink flex items-center gap-1.5 text-sm">
+                                                <span>📱</span> QRIS Resmi KBKB
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">
+                                                {activePayment.stage === 'unpaid' ? 'Batas Waktu (24 Jam)' : 'Waktu Transaksi'}
+                                            </p>
+                                            {activePayment.stage === 'unpaid' ? (
+                                                <div className="mt-1">
+                                                    {timeLeft !== null && timeLeft > 0 ? (
+                                                        <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
+                                                            <span>Tersisa {formatCountdown(timeLeft)}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs font-bold text-rose-600">Kedaluwarsa (24 Jam Habis)</span>
+                                                    )}
+                                                </div>
+                                            ) : activePayment.stage === 'paid' ? (
+                                                <p className="mt-1 text-xs font-medium text-slate">
+                                                    Bukti Dikirim: <span className="text-ink font-semibold">{activePayment.paid_at || '-'}</span>
+                                                </p>
+                                            ) : (
+                                                <p className="mt-1 text-xs font-medium text-emerald-700">
+                                                    Lunas Disetujui: <span className="font-semibold">{activePayment.approved_at || '-'}</span>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Bar Berdasarkan Tahap */}
+                                    {activePayment.stage === 'unpaid' && (
+                                        <div className="mt-5 pt-4 border-t border-ink/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <p className="text-xs text-slate">
+                                                QRIS tetap tersimpan meskipun Anda menutup halaman. Klik tombol untuk membuka QRIS dan mengirim bukti transfer.
+                                            </p>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCancelPayment}
+                                                    className="px-3 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition"
+                                                >
+                                                    Batalkan Tagihan
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowModal(true)}
+                                                    className="btn-gold px-4 py-2 text-xs font-bold shadow-md shadow-gold/20 flex items-center gap-1.5"
+                                                >
+                                                    <span>📱</span>
+                                                    <span>Bayar QRIS & Unggah Bukti</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activePayment.stage === 'paid' && (
+                                        <div className="mt-5 pt-4 border-t border-ink/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div className="text-xs text-slate flex items-start gap-2">
+                                                <span className="text-base text-sky-600">ℹ️</span>
+                                                <div>
+                                                    <span className="font-semibold text-ink">Bukti transfer telah berhasil dikirim.</span>
+                                                    <p className="mt-0.5">Admin KBKB sedang memverifikasi pembayaran Anda. Tidak perlu transfer ulang.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowModal(true)}
+                                                className="btn-ink px-4 py-2 text-xs font-semibold shrink-0 flex items-center gap-1.5"
+                                            >
+                                                <span>👁️</span>
+                                                <span>Lihat Bukti Transfer & QRIS</span>
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {activePayment.stage === 'processed' && (
+                                        <div className="mt-5 pt-4 border-t border-ink/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <div className="text-xs text-slate flex items-start gap-2">
+                                                <span className="text-base text-emerald-600">🎉</span>
+                                                <div>
+                                                    <span className="font-semibold text-emerald-800">Pembayaran selesai & membership telah aktif!</span>
+                                                    <p className="mt-0.5">Masa aktif kartu anggota Anda telah berhasil diperpanjang.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowModal(true)}
+                                                className="btn-ink px-4 py-2 text-xs font-semibold shrink-0 flex items-center gap-1.5"
+                                            >
+                                                <span>📄</span>
+                                                <span>Lihat Bukti & Detail Tagihan</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        </Reveal>
+                    )}
 
                     {/* Pembayaran Membership QRIS */}
                     <Reveal>
@@ -341,6 +635,17 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                     <div>{errorMessage}</div>
+                                </div>
+                            )}
+
+                            {/* Active Unpaid Notice */}
+                            {activePayment && activePayment.stage === 'unpaid' && (
+                                <div className="mt-4 rounded-xl border border-gold/40 bg-gold/10 p-3.5 text-xs text-ink flex items-start gap-2.5">
+                                    <span className="text-base">💡</span>
+                                    <div>
+                                        <span className="font-bold">Tagihan Anda ({activePayment.invoice_number}) untuk paket {activePayment.plan_name} sedang aktif.</span>
+                                        <p className="mt-0.5 text-slate">Anda dapat membuka QRIS di atas untuk membayar, atau memilih paket lain di bawah untuk memperbarui tagihan Anda.</p>
+                                    </div>
                                 </div>
                             )}
 
@@ -483,6 +788,16 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                                             <span>🎁</span>
                                             Klaim & Aktivasi Membership Gratis (Rp0)
                                         </span>
+                                    ) : activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id === selectedPlanId ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="text-base">📱</span>
+                                            Buka QRIS Tagihan Aktif (Rp{totalBill.toLocaleString('id-ID')})
+                                        </span>
+                                    ) : activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id !== selectedPlanId ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="text-base">🔄</span>
+                                            Ganti Paket & Buat QRIS Baru (Rp{totalBill.toLocaleString('id-ID')})
+                                        </span>
                                     ) : (
                                         <span className="flex items-center gap-2">
                                             <span className="text-base">📱</span>
@@ -505,11 +820,25 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                         {/* Header Modal */}
                         <div className="flex items-center justify-between border-b border-ink/10 pb-4">
                             <div>
-                                <span className="inline-block rounded-full bg-gold/15 px-2.5 py-0.5 text-[11px] font-bold text-gold-deep mb-1">
-                                    Pembayaran QRIS Nasional
+                                <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold mb-1 ${
+                                    activePayment.stage === 'processed'
+                                        ? 'bg-emerald-100 text-emerald-800'
+                                        : activePayment.stage === 'paid'
+                                        ? 'bg-sky-100 text-sky-800'
+                                        : 'bg-gold/15 text-gold-deep'
+                                }`}>
+                                    {activePayment.stage === 'processed'
+                                        ? 'Pembayaran Lunas & Selesai'
+                                        : activePayment.stage === 'paid'
+                                        ? 'Menunggu Verifikasi Admin'
+                                        : 'Pembayaran QRIS Nasional'}
                                 </span>
                                 <h3 className="font-display text-xl font-bold text-ink">
-                                    Pembayaran Membership KBKB
+                                    {activePayment.stage === 'processed'
+                                        ? 'Detail Pembayaran Membership'
+                                        : activePayment.stage === 'paid'
+                                        ? 'Status Pembayaran Membership'
+                                        : 'Pembayaran Membership KBKB'}
                                 </h3>
                             </div>
                             <button
@@ -521,21 +850,38 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                             </button>
                         </div>
 
-                        {/* Status Alert */}
-                        {activePayment.payment_proof_url ? (
+                        {/* Status Alert Berdasarkan Tahap */}
+                        {activePayment.stage === 'processed' ? (
                             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-800 flex items-start gap-2.5">
+                                <span className="text-base">🎉</span>
+                                <div>
+                                    <p className="font-bold">Pembayaran Telah Diverifikasi & Lunas</p>
+                                    <p className="mt-0.5">
+                                        Pembayaran membership Anda telah disetujui admin pada {activePayment.approved_at || 'hari ini'}. Kartu anggota Anda telah aktif.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : activePayment.stage === 'paid' || activePayment.payment_proof_url ? (
+                            <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs text-sky-800 flex items-start gap-2.5">
                                 <span className="text-base">✅</span>
                                 <div>
                                     <p className="font-bold">Bukti Transfer Berhasil Dikirim</p>
                                     <p className="mt-0.5">
-                                        Data Anda sudah tercatat di sistem kami. Admin sedang melakukan verifikasi untuk segera mengaktifkan status membership Anda.
+                                        Data Anda sudah tercatat di sistem kami. Admin sedang memverifikasi pembayaran Anda untuk segera mengaktifkan status membership.
                                     </p>
                                 </div>
                             </div>
                         ) : (
-                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 flex items-center gap-2">
-                                <span className="text-base">⏳</span>
-                                <span>Permintaan pembayaran Anda telah tercatat di Admin. Silakan selesaikan pembayaran dan unggah bukti transfer.</span>
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-base">⏳</span>
+                                    <span>Menunggu pembayaran & unggah bukti transfer.</span>
+                                </div>
+                                {timeLeft !== null && timeLeft > 0 && (
+                                    <span className="font-mono font-bold text-[11px] text-amber-900 shrink-0 bg-amber-200/80 px-2 py-0.5 rounded-md">
+                                        Sisa {formatCountdown(timeLeft)}
+                                    </span>
+                                )}
                             </div>
                         )}
 
@@ -574,29 +920,37 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                             </div>
                         </div>
 
-                        {/* QRIS Card Image */}
-                        <div className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-paper/40 p-4">
-                            <div className="relative w-full max-w-xs overflow-hidden rounded-xl shadow-md border border-slate-200">
-                                <img
-                                    src={activePayment.qris_image_url || '/images/qris-kbkb.svg'}
-                                    alt="QRIS Pembayaran KBKB"
-                                    className="w-full h-auto object-contain block"
-                                />
+                        {/* QRIS Card Image (Hanya ditampilkan aktif pada tahap Belum Dibayar) */}
+                        {activePayment.stage === 'unpaid' ? (
+                            <div className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-paper/40 p-4">
+                                <div className="relative w-full max-w-xs overflow-hidden rounded-xl shadow-md border border-slate-200">
+                                    <img
+                                        src={activePayment.qris_image_url || '/images/qris-kbkb.svg'}
+                                        alt="QRIS Pembayaran KBKB"
+                                        className="w-full h-auto object-contain block"
+                                    />
+                                </div>
+                                <p className="mt-2.5 text-[11px] text-center text-slate font-medium">
+                                    Scan dengan BCA Mobile, Livin Mandiri, BRImo, GoPay, OVO, Dana, ShopeePay
+                                </p>
                             </div>
-                            <p className="mt-2.5 text-[11px] text-center text-slate font-medium">
-                                Scan dengan BCA Mobile, Livin Mandiri, BRImo, GoPay, OVO, Dana, ShopeePay
-                            </p>
-                        </div>
+                        ) : null}
 
                         {/* Upload Bukti Pembayaran Section */}
                         <div className="rounded-2xl border border-ink/15 bg-white p-4 space-y-3">
                             <div className="flex items-center justify-between">
                                 <h4 className="font-display text-sm font-bold text-ink">
-                                    {activePayment.payment_proof_url ? 'Bukti Pembayaran Terunggah' : 'Unggah Bukti Pembayaran'}
+                                    {activePayment.stage === 'processed'
+                                        ? 'Bukti Pembayaran Terverifikasi'
+                                        : activePayment.payment_proof_url
+                                        ? 'Bukti Pembayaran Terunggah'
+                                        : 'Unggah Bukti Pembayaran'}
                                 </h4>
-                                {activePayment.payment_proof_url && (
-                                    <span className="text-[11px] font-semibold text-emerald-600">✓ Terverifikasi terkirim</span>
-                                )}
+                                {activePayment.stage === 'processed' ? (
+                                    <span className="text-[11px] font-semibold text-emerald-600">✓ Selesai & Lunas</span>
+                                ) : activePayment.payment_proof_url ? (
+                                    <span className="text-[11px] font-semibold text-sky-600">✓ Berhasil dikirim</span>
+                                ) : null}
                             </div>
 
                             {activePayment.payment_proof_url ? (
@@ -608,16 +962,18 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                                             className="max-h-48 w-full object-contain rounded-lg mx-auto"
                                         />
                                     </div>
-                                    <p className="text-[11px] text-slate text-center">
-                                        Perlu mengganti foto bukti pembayaran?
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="ml-1 text-gold-deep font-bold underline"
-                                        >
-                                            Unggah Ulang
-                                        </button>
-                                    </p>
+                                    {activePayment.stage !== 'processed' && (
+                                        <p className="text-[11px] text-slate text-center">
+                                            Perlu mengganti foto bukti pembayaran?
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="ml-1 text-gold-deep font-bold underline"
+                                            >
+                                                Unggah Ulang
+                                            </button>
+                                        </p>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -649,13 +1005,15 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
                                 </div>
                             )}
 
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="hidden"
-                            />
+                            {activePayment.stage !== 'processed' && (
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
+                            )}
 
                             {uploadError && (
                                 <p className="text-xs text-red-600 font-medium">{uploadError}</p>
@@ -678,13 +1036,13 @@ export default function Billing({ membership, plans, admin_fee = 0 }) {
 
                         {/* Modal Actions */}
                         <div className="flex items-center justify-between pt-2">
-                            {!activePayment.payment_proof_url ? (
+                            {activePayment.stage === 'unpaid' ? (
                                 <button
                                     type="button"
                                     onClick={handleCancelPayment}
                                     className="text-xs font-medium text-red-600 hover:underline"
                                 >
-                                    Batalkan Transaksi
+                                    Batalkan Tagihan
                                 </button>
                             ) : <div />}
 

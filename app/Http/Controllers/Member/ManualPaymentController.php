@@ -65,6 +65,42 @@ class ManualPaymentController extends Controller
             ]);
         }
 
+        // Cek order pending sebelumnya agar order tetap 1 dalam 24 jam
+        $existing = Payment::where('member_id', $member->id)
+            ->where('status', Payment::STATUS_PENDING)
+            ->whereNull('proof_path')
+            ->where('created_at', '>=', now()->subHours(24))
+            ->latest()
+            ->first();
+
+        if ($existing) {
+            if ($existing->plan_id === $plan->id && (int) $existing->amount === (int) $finalPrice) {
+                $expiresAt = $existing->created_at->addHours(24);
+                return response()->json([
+                    'success' => true,
+                    'is_free' => false,
+                    'payment_id' => $existing->id,
+                    'invoice_number' => $existing->invoice_number,
+                    'amount' => (int) $existing->amount,
+                    'plan_id' => $existing->plan_id,
+                    'plan_name' => $plan->name,
+                    'duration_months' => $plan->duration_months,
+                    'stage' => 'unpaid',
+                    'stage_label' => 'Belum Dibayar',
+                    'qris_image_url' => asset('images/qris-kbkb.svg'),
+                    'created_at' => $existing->created_at->translatedFormat('d M Y H:i'),
+                    'expires_at_timestamp' => $expiresAt->timestamp,
+                    'remaining_seconds' => max(0, now()->diffInSeconds($expiresAt, false)),
+                ]);
+            }
+
+            // Jika member memilih paket berbeda, expire order lama agar order tetap 1
+            $existing->update([
+                'status' => Payment::STATUS_EXPIRED,
+                'notes' => ($existing->notes ? $existing->notes . ' | ' : '') . 'Diganti dengan order baru oleh member.',
+            ]);
+        }
+
         // Buat record pembayaran pending untuk verifikasi manual
         $payment = $this->payments->createPending($member, $plan);
         $notes = "Manual QRIS Payment | Paket: {$plan->name}";
@@ -82,16 +118,23 @@ class ManualPaymentController extends Controller
             $discountCode->increment('used_count');
         }
 
+        $expiresAt = $payment->created_at->addHours(24);
+
         return response()->json([
             'success' => true,
             'is_free' => false,
             'payment_id' => $payment->id,
             'invoice_number' => $payment->invoice_number,
             'amount' => (int) $payment->amount,
+            'plan_id' => $payment->plan_id,
             'plan_name' => $plan->name,
             'duration_months' => $plan->duration_months,
+            'stage' => 'unpaid',
+            'stage_label' => 'Belum Dibayar',
             'qris_image_url' => asset('images/qris-kbkb.svg'),
             'created_at' => $payment->created_at->translatedFormat('d M Y H:i'),
+            'expires_at_timestamp' => $expiresAt->timestamp,
+            'remaining_seconds' => max(0, now()->diffInSeconds($expiresAt, false)),
         ]);
     }
 
@@ -138,6 +181,8 @@ class ManualPaymentController extends Controller
                 'amount' => $payment->amount,
                 'paid_at' => $payment->paid_at?->translatedFormat('d M Y H:i'),
                 'payment_proof_url' => $payment->proofUrl(),
+                'stage' => 'paid',
+                'stage_label' => 'Sudah Dibayar (Menunggu Verifikasi Admin)',
             ],
         ]);
     }
