@@ -13,7 +13,7 @@ export default function Billing({ membership, plans, admin_fee = 0, pending_paym
 
     // Active pending payment
     const [activePayment, setActivePayment] = useState(pending_payment);
-    const [showModal, setShowModal] = useState(Boolean(pending_payment));
+    const [showModal, setShowModal] = useState(false);
 
     // Clipboard copy feedback
     const [copiedInvoice, setCopiedInvoice] = useState(false);

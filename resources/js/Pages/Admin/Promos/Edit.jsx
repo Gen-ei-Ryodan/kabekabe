@@ -13,7 +13,6 @@ export default function PromoEdit({ promo }) {
         start_date: promo.start_date,
         end_date: promo.end_date,
         terms: promo.terms || '',
-        sort_number: promo.sort_number !== null && promo.sort_number !== undefined ? String(promo.sort_number) : '',
     });
 
     const submit = (e) => {
@@ -36,17 +35,10 @@ export default function PromoEdit({ promo }) {
                 </header>
 
                 <form onSubmit={submit} className="card-surface mt-8 space-y-6 p-6 sm:p-8">
-                    <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="sm:col-span-2">
-                            <label className="label" htmlFor="title">Judul Promo</label>
-                            <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                            {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
-                        </div>
-                        <div>
-                            <label className="label" htmlFor="sort_number">Nomor Urut Tampil</label>
-                            <input id="sort_number" type="number" min="1" placeholder="Contoh: 1" className="input" value={form.data.sort_number} onChange={(e) => form.setData('sort_number', e.target.value)} />
-                            {form.errors.sort_number && <p className="mt-1 text-xs text-ember">{form.errors.sort_number}</p>}
-                        </div>
+                    <div>
+                        <label className="label" htmlFor="title">Judul Promo</label>
+                        <input id="title" type="text" className="input" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                        {form.errors.title && <p className="mt-1 text-xs text-ember">{form.errors.title}</p>}
                     </div>
                     <div>
                         <label className="label" htmlFor="description">Deskripsi</label>
