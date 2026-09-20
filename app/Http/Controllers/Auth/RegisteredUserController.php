@@ -135,6 +135,33 @@ class RegisteredUserController extends Controller
                 'status' => Partner::STATUS_INACTIVE,
             ]);
         } else {
+            $companiesInput = $request->input('companies');
+            if (is_array($companiesInput) && count($companiesInput) > 0) {
+                $formattedCompanyParts = [];
+                $extractedIndustries = [];
+                $extractedFields = [];
+
+                foreach ($companiesInput as $c) {
+                    $cName = trim($c['company'] ?? '');
+                    $cInd = trim($c['industry'] ?? '');
+                    if ($cName !== '') {
+                        $formattedCompanyParts[] = $cInd !== '' ? "{$cName} ({$cInd})" : $cName;
+                        $extractedFields[] = $cName;
+                    }
+                    if ($cInd !== '') {
+                        $extractedIndustries[] = $cInd;
+                    }
+                }
+
+                if (! empty($formattedCompanyParts)) {
+                    $request->merge([
+                        'company' => implode(', ', $formattedCompanyParts),
+                        'industry' => $extractedIndustries,
+                        'business_fields' => ! empty($extractedFields) ? $extractedFields : ['Lainnya'],
+                    ]);
+                }
+            }
+
             $request->validate([
                 'role' => 'required|in:member,partner',
                 'email' => 'required|string|lowercase|email|max:255|unique:'.User::class.',email',

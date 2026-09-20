@@ -21,6 +21,13 @@ class Payment extends Model
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_EXPIRED = 'expired';
 
+    protected $appends = ['payment_proof_url'];
+
+    public function getPaymentProofUrlAttribute(): ?string
+    {
+        return $this->proofUrl();
+    }
+
     protected function casts(): array
     {
         return [

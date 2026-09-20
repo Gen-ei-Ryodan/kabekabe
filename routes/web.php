@@ -60,6 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/account', [AccountController::class, 'update'])->name('account.update');
 
         Route::get('/billing', [\App\Http\Controllers\Member\BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/manual/checkout', [\App\Http\Controllers\Member\ManualPaymentController::class, 'checkout'])->name('billing.manual.checkout');
+        Route::post('/billing/manual/payments/{payment}/proof', [\App\Http\Controllers\Member\ManualPaymentController::class, 'uploadProof'])->name('billing.manual.proof');
+        Route::post('/billing/manual/payments/{payment}/cancel', [\App\Http\Controllers\Member\ManualPaymentController::class, 'cancel'])->name('billing.manual.cancel');
         Route::post('/billing/doku/check-promo', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkPromo'])->name('billing.doku.promo');
         Route::post('/billing/doku/checkout', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkout'])->name('billing.doku.checkout');
         Route::get('/billing/doku/{payment}/status', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkStatus'])->name('billing.doku.status');
@@ -119,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/partners/{partner}', [AdminPartnerController::class, 'destroy'])->name('partners.destroy');
 
         Route::get('/promos', [AdminPromoController::class, 'index'])->name('promos.index');
+        Route::put('/promos/reorder', [AdminPromoController::class, 'reorder'])->name('promos.reorder');
         Route::get('/promos/{promo}/edit', [AdminPromoController::class, 'edit'])->name('promos.edit');
         Route::put('/promos/{promo}', [AdminPromoController::class, 'update'])->name('promos.update');
         Route::put('/promos/{promo}/sort', [AdminPromoController::class, 'updateSort'])->name('promos.sort');

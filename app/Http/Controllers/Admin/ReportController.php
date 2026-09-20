@@ -285,7 +285,7 @@ class ReportController extends Controller
             $monthBuckets = ['<21' => 0, '21-30' => 0, '30-40' => 0, '40-50' => 0, '>50' => 0];
 
             foreach ($members as $member) {
-                $age = $endOfMonth->diffInYears(Carbon::parse($member->birth_date));
+                $age = Carbon::parse($member->birth_date)->diffInYears($endOfMonth);
 
                 if ($age < 21) {
                     $bucket = '<21';
@@ -353,7 +353,7 @@ class ReportController extends Controller
             'name' => $u->name,
             'member_code' => $u->member_code,
             'birth_date' => $u->birth_date?->toDateString(),
-            'age' => $u->birth_date ? now()->diffInYears($u->birth_date) : null,
+            'age' => $u->birth_date ? Carbon::parse($u->birth_date)->age : null,
             'month' => $u->birth_date ? (int) $u->birth_date->format('n') : null,
             'day' => $u->birth_date ? (int) $u->birth_date->format('j') : null,
         ])->groupBy('month')->sortKeys();
@@ -543,7 +543,7 @@ class ReportController extends Controller
                     $m->phone ?? '-',
                     $m->birth_date?->format('d/m/Y') ?? '-',
                     self::INDONESIAN_MONTHS[$monthNum] ?? '-',
-                    $m->birth_date ? now()->diffInYears($m->birth_date) : '-',
+                    $m->birth_date ? Carbon::parse($m->birth_date)->age : '-',
                 ]));
             }
 

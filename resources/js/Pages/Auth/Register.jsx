@@ -26,6 +26,7 @@ export default function Register() {
         religion: '',
         place_of_worship_address: '',
         company: '',
+        companies: [{ company: '', industry: '' }],
         business_fields: [],
         business_address: '',
         business_district: '',
@@ -85,6 +86,25 @@ export default function Register() {
         setData('industry', data.industry.filter((c) => c !== categoryToRemove));
     };
 
+    const addCompany = () => {
+        setData('companies', [...data.companies, { company: '', industry: '' }]);
+    };
+
+    const removeCompany = (index) => {
+        if (data.companies.length <= 1) return;
+        setData('companies', data.companies.filter((_, i) => i !== index));
+    };
+
+    const updateCompany = (index, field, value) => {
+        const updated = data.companies.map((item, i) => {
+            if (i === index) {
+                return { ...item, [field]: value };
+            }
+            return item;
+        });
+        setData('companies', updated);
+    };
+
     const filteredHobbies = HOBBY_LIST.filter((h) =>
         h.toLowerCase().includes(hobbySearch.toLowerCase())
     );
@@ -92,12 +112,11 @@ export default function Register() {
     const submit = (e) => {
         e.preventDefault();
         if (data.role === 'member') {
-            if (data.business_fields.length === 0) {
-                alert('Silakan isi dan tambahkan minimal 1 bidang usaha.');
-                return;
-            }
-            if (!data.industry || data.industry.length === 0) {
-                alert('Silakan pilih minimal 1 bidang industri.');
+            const validCompanies = (data.companies || []).filter(
+                (c) => c.company && c.company.trim() && c.industry && c.industry.trim()
+            );
+            if (validCompanies.length === 0) {
+                alert('Silakan isi minimal 1 Nama Perusahaan beserta Bidang Industri.');
                 return;
             }
         }
@@ -380,113 +399,77 @@ export default function Register() {
                                 <p className="text-xs text-slate mt-0.5">Bidang bisnis atau instansi tempat Anda beraktivitas.</p>
                             </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <InputLabel htmlFor="company" value="Nama Perusahaan / Tempat Kerja" />
-                                    <TextInput
-                                        id="company"
-                                        value={data.company}
-                                        onChange={(e) => setData('company', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="Contoh: PT Sukses Mandiri / Usaha Mandiri"
-                                    />
-                                    <InputError message={errors.company} className="mt-1" />
-                                </div>
-
-                                <div className="sm:col-span-2">
-                                    <InputLabel value="Bidang Industri * (Minimal 1, dapat memilih beberapa)" />
-                                    <div className="mt-1.5 flex gap-2">
-                                        <select
-                                            id="industry_select"
-                                            value=""
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                if (val && !data.industry.includes(val)) {
-                                                    setData('industry', [...data.industry, val]);
-                                                }
-                                            }}
-                                            className="block w-full rounded-xl border-ink/20 bg-white/90 px-3 py-2.5 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+                            <div className="space-y-4">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <InputLabel value="Perusahaan & Bidang Industri * (Minimal 1)" />
+                                        <button
+                                            type="button"
+                                            onClick={addCompany}
+                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gold-deep hover:text-ink transition-colors"
                                         >
-                                            <option value="">+ Pilih & Tambah Bidang Industri...</option>
-                                            {INDUSTRY_CATEGORIES.filter((cat) => !data.industry.includes(cat)).map((cat) => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))}
-                                        </select>
+                                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold/20 text-xs font-bold">+</span>
+                                            Tambah Perusahaan
+                                        </button>
                                     </div>
-                                    {data.industry.length > 0 ? (
-                                        <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                            {data.industry.map((ind) => (
-                                                <span
-                                                    key={ind}
-                                                    className="inline-flex items-center gap-1.5 rounded-lg bg-gold/15 border border-gold/30 px-3 py-1 text-xs font-semibold text-gold-deep"
-                                                >
-                                                    {ind}
+
+                                    {data.companies.map((comp, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="relative rounded-xl border border-ink/15 bg-white/80 p-4 shadow-sm space-y-3"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-ink/70">
+                                                    Perusahaan #{idx + 1}
+                                                </span>
+                                                {data.companies.length > 1 && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => removeIndustry(ind)}
-                                                        className="text-gold-deep hover:text-ember font-bold"
+                                                        onClick={() => removeCompany(idx)}
+                                                        className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors"
                                                     >
-                                                        ✕
+                                                        ✕ Hapus
                                                     </button>
-                                                </span>
-                                            ))}
+                                                )}
+                                            </div>
+
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <div>
+                                                    <InputLabel htmlFor={`company_${idx}`} value="Nama Perusahaan / Tempat Kerja *" />
+                                                    <TextInput
+                                                        id={`company_${idx}`}
+                                                        value={comp.company}
+                                                        onChange={(e) => updateCompany(idx, 'company', e.target.value)}
+                                                        className="mt-1 block w-full"
+                                                        placeholder="Contoh: PT Sukses Mandiri"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <InputLabel htmlFor={`industry_${idx}`} value="Bidang Industri *" />
+                                                    <select
+                                                        id={`industry_${idx}`}
+                                                        value={comp.industry}
+                                                        onChange={(e) => updateCompany(idx, 'industry', e.target.value)}
+                                                        className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 px-3 py-2.5 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+                                                        required
+                                                    >
+                                                        <option value="">Pilih Bidang Industri...</option>
+                                                        {INDUSTRY_CATEGORIES.map((cat) => (
+                                                            <option key={cat} value={cat}>{cat}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <p className="mt-1.5 text-xs text-amber-700 font-medium">
-                                            ⚠️ Wajib memilih minimal 1 bidang industri.
-                                        </p>
-                                    )}
+                                    ))}
+
+                                    <InputError message={errors.company} className="mt-1" />
                                     <InputError message={errors.industry} className="mt-1" />
                                 </div>
 
-                                <div className="sm:col-span-2">
-                                    <InputLabel value="Bidang Usaha * (Minimal 1, dapat menambah beberapa)" />
-                                    <div className="mt-1.5 flex gap-2">
-                                        <TextInput
-                                            value={businessFieldInput}
-                                            onChange={(e) => setBusinessFieldInput(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    e.preventDefault();
-                                                    addBusinessField();
-                                                }
-                                            }}
-                                            placeholder="Ketik bidang usaha (misal: Retail, Ekspedisi, Katering)..."
-                                            className="flex-1"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={addBusinessField}
-                                            className="btn-ink text-xs px-4 py-2"
-                                        >
-                                            + Tambah
-                                        </button>
-                                    </div>
-                                    {data.business_fields.length > 0 ? (
-                                        <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                            {data.business_fields.map((bf) => (
-                                                <span
-                                                    key={bf}
-                                                    className="inline-flex items-center gap-1.5 rounded-lg bg-ink/10 px-2.5 py-1 text-xs font-medium text-ink"
-                                                >
-                                                    {bf}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeBusinessField(bf)}
-                                                        className="text-slate hover:text-ember font-bold"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                </span>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="mt-1.5 text-xs text-amber-700 font-medium">
-                                            ⚠️ Wajib menambahkan minimal 1 bidang usaha.
-                                        </p>
-                                    )}
-                                    <InputError message={errors.business_fields} className="mt-1" />
-                                </div>
+                                <div className="grid gap-4 sm:grid-cols-2">
 
                                 <div className="sm:col-span-2">
                                     <InputLabel htmlFor="business_address" value="Alamat Kantor / Usaha" />
@@ -524,6 +507,7 @@ export default function Register() {
                                     />
                                     <InputError message={errors.business_city} className="mt-1" />
                                 </div>
+                            </div>
                             </div>
                         </section>
 

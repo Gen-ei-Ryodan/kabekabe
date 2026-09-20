@@ -93,6 +93,23 @@ class PromoController extends Controller
             ->with('success', 'Promo updated successfully.');
     }
 
+    public function reorder(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.id' => ['required', 'integer', 'exists:promos,id'],
+            'items.*.sort_number' => ['required', 'integer', 'min:1'],
+        ]);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            foreach ($validated['items'] as $item) {
+                Promo::where('id', $item['id'])->update(['sort_number' => $item['sort_number']]);
+            }
+        });
+
+        return back()->with('success', 'Urutan promo berhasil diperbarui.');
+    }
+
     public function updateSort(Request $request, Promo $promo): RedirectResponse
     {
         $validated = $request->validate([

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
@@ -51,6 +51,15 @@ function InlineSortNumber({ promo }) {
 
 export default function PromoIndex({ promos, filters, drawer }) {
     const filter = useForm(filters);
+    const [items, setItems] = useState(promos.data);
+    const [draggedIndex, setDraggedIndex] = useState(null);
+    const [dragOverIndex, setDragOverIndex] = useState(null);
+    const [isReordering, setIsReordering] = useState(false);
+
+    // Sync items if promos.data changes via pagination / filter
+    useEffect(() => {
+        setItems(promos.data);
+    }, [promos.data]);
 
     const applyFilter = (e) => {
         e.preventDefault();
@@ -69,14 +78,75 @@ export default function PromoIndex({ promos, filters, drawer }) {
         router.get(route('admin.promos.index'), { status: filters.status || undefined }, { only: ['drawer'], preserveState: true, preserveScroll: true });
     };
 
+    const handleDragStart = (e, index) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = 'move';
+        // Transparent drag ghost if needed
+    };
+
+    const handleDragOver = (e, index) => {
+        e.preventDefault();
+        if (dragOverIndex !== index) {
+            setDragOverIndex(index);
+        }
+    };
+
+    const handleDrop = (e, dropIndex) => {
+        e.preventDefault();
+        setDragOverIndex(null);
+        if (draggedIndex === null || draggedIndex === dropIndex) {
+            setDraggedIndex(null);
+            return;
+        }
+
+        const newItems = [...items];
+        const [draggedItem] = newItems.splice(draggedIndex, 1);
+        newItems.splice(dropIndex, 0, draggedItem);
+
+        // Assign continuous sort numbers (1-indexed)
+        const updatedPayload = newItems.map((p, idx) => ({
+            id: p.id,
+            sort_number: idx + 1,
+        }));
+
+        const itemsWithNewSort = newItems.map((p, idx) => ({
+            ...p,
+            sort_number: idx + 1,
+        }));
+
+        setItems(itemsWithNewSort);
+        setDraggedIndex(null);
+        setIsReordering(true);
+
+        router.put(
+            route('admin.promos.reorder'),
+            { items: updatedPayload },
+            {
+                preserveScroll: true,
+                onFinish: () => setIsReordering(false),
+            }
+        );
+    };
+
     return (
         <>
             <Head title="Promo" />
 
             <div className="flex flex-col gap-8">
-                <header>
-                    <p className="eyebrow">Manajemen Promo</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo & Penawaran</h1>
+                <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <p className="eyebrow">Manajemen Promo</p>
+                        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Promo & Penawaran</h1>
+                        <p className="mt-1 text-xs text-slate">
+                            💡 Tarik (drag & drop) ikon <span className="font-bold text-ink">⋮⋮</span> untuk mengubah urutan promo.
+                        </p>
+                    </div>
+                    {isReordering && (
+                        <div className="flex items-center gap-2 rounded-xl bg-gold/15 px-3 py-1.5 text-xs font-semibold text-gold-deep border border-gold/30">
+                            <span className="h-2 w-2 rounded-full bg-gold animate-ping" />
+                            Menyimpan urutan baru...
+                        </div>
+                    )}
                 </header>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
@@ -101,61 +171,169 @@ export default function PromoIndex({ promos, filters, drawer }) {
                     </div>
                 </form>
 
-                {promos.data.length === 0 ? (
+                {items.length === 0 ? (
                     <EmptyState title="Promo tidak ditemukan" description="Belum ada promo yang sesuai dengan filter ini." />
                 ) : (
-                    <div className="space-y-4">
-                        {promos.data.map((promo) => (
-                            <div key={promo.id} className="card-surface p-5">
-                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            {typeof promo.sort_number === 'number' && (
-                                                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink text-xs font-bold text-gold-light">
-                                                    #{promo.sort_number}
-                                                </span>
-                                            )}
-                                            <InlineSortNumber promo={promo} />
-                                            <StatusChip
-                                                status={promo.status}
-                                                label={promo.status === 'pending' ? 'Menunggu Persetujuan' : promo.status === 'approved' ? 'Disetujui' : 'Ditolak'}
-                                            />
-                                            {promo.is_active ? (
-                                                <StatusChip status="active" label="Aktif" />
-                                            ) : (
-                                                <StatusChip status="inactive" label="Nonaktif" />
-                                            )}
-                                        </div>
-                                        <h3 className="mt-2 font-display text-lg font-bold">{promo.title}</h3>
-                                        <p className="mt-1 line-clamp-2 text-sm text-slate">{promo.description}</p>
-                                        <p className="mt-2 text-xs text-slate">
-                                            {promo.partner?.name} · {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
-                                        </p>
-                                        {promo.rejection_reason && (
-                                            <p className="mt-2 rounded-lg bg-ember/10 px-3 py-2 text-xs text-ember">Alasan penolakan: {promo.rejection_reason}</p>
-                                        )}
-                                    </div>
+                    <div className="overflow-hidden rounded-2xl border border-ink/10 bg-white/70 shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead>
+                                    <tr className="border-b border-ink/10 bg-ink/5 font-display text-xs uppercase tracking-wider text-slate">
+                                        <th scope="col" className="w-10 px-3 py-3.5 text-center"></th>
+                                        <th scope="col" className="w-28 px-3 py-3.5">Urutan</th>
+                                        <th scope="col" className="min-w-[220px] px-4 py-3.5">Promo & Mitra</th>
+                                        <th scope="col" className="min-w-[140px] px-3 py-3.5">Periode</th>
+                                        <th scope="col" className="min-w-[120px] px-3 py-3.5">Status</th>
+                                        <th scope="col" className="px-4 py-3.5 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-ink/5 bg-white/60">
+                                    {items.map((promo, index) => {
+                                        const isDragging = draggedIndex === index;
+                                        const isOver = dragOverIndex === index;
 
-                                    <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
-                                        {promo.status === 'pending' && (
-                                            <>
-                                                <button onClick={() => router.put(route('admin.promos.approve', promo.id), {}, { preserveScroll: true })} className="btn-gold text-xs">Setujui</button>
-                                                <button onClick={() => {
-                                                    const reason = window.prompt('Alasan penolakan:');
-                                                    if (reason) router.put(route('admin.promos.reject', promo.id), { reason }, { preserveScroll: true });
-                                                }} className="btn-danger text-xs">Tolak</button>
-                                            </>
-                                        )}
-                                        <button onClick={() => openEdit(promo.id)} className="btn-ghost text-xs">Detail / Edit</button>
-                                        {promo.status === 'approved' && (
-                                            <button onClick={() => router.put(route('admin.promos.toggle', promo.id), {}, { preserveScroll: true })} className="btn-ghost text-xs">
-                                                {promo.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                                        return (
+                                            <tr
+                                                key={promo.id}
+                                                draggable
+                                                onDragStart={(e) => handleDragStart(e, index)}
+                                                onDragOver={(e) => handleDragOver(e, index)}
+                                                onDrop={(e) => handleDrop(e, index)}
+                                                onDragEnd={() => {
+                                                    setDraggedIndex(null);
+                                                    setDragOverIndex(null);
+                                                }}
+                                                className={`transition-colors ${
+                                                    isDragging
+                                                        ? 'opacity-40 bg-gold/10'
+                                                        : isOver
+                                                        ? 'bg-gold/20 border-t-2 border-gold'
+                                                        : 'hover:bg-ink/5'
+                                                }`}
+                                            >
+                                                {/* Drag handle */}
+                                                <td className="px-3 py-3.5 text-center">
+                                                    <span
+                                                        className="inline-flex cursor-grab active:cursor-grabbing p-1.5 text-slate-400 hover:text-ink select-none"
+                                                        title="Tarik untuk memindahkan urutan"
+                                                    >
+                                                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M7 2a2 2 0 10.001 4.001A2 2 0 007 2zm0 6a2 2 0 10.001 4.001A2 2 0 007 8zm0 6a2 2 0 10.001 4.001A2 2 0 007 14zm6-12a2 2 0 10.001 4.001A2 2 0 0013 2zm0 6a2 2 0 10.001 4.001A2 2 0 0013 8zm0 6a2 2 0 10.001 4.001A2 2 0 0013 14z" />
+                                                        </svg>
+                                                    </span>
+                                                </td>
+
+                                                {/* Urutan */}
+                                                <td className="px-3 py-3.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink text-xs font-bold text-gold-light">
+                                                            #{promo.sort_number ?? index + 1}
+                                                        </span>
+                                                        <InlineSortNumber promo={promo} />
+                                                    </div>
+                                                </td>
+
+                                                {/* Promo & Mitra */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-start gap-3">
+                                                        {promo.image_url ? (
+                                                            <img
+                                                                src={promo.image_url}
+                                                                alt=""
+                                                                className="h-11 w-11 rounded-lg object-cover border border-ink/10 shrink-0"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gold/15 text-gold-deep font-bold text-sm">
+                                                                %
+                                                            </div>
+                                                        )}
+                                                        <div className="min-w-0">
+                                                            <p className="font-display font-bold text-ink text-sm hover:text-gold-deep">
+                                                                {promo.title}
+                                                            </p>
+                                                            <p className="text-xs text-slate mt-0.5">
+                                                                {promo.partner?.name || 'Mitra Umum'}
+                                                            </p>
+                                                            {promo.rejection_reason && (
+                                                                <p className="mt-1 text-[11px] text-ember font-medium">
+                                                                    Ditolak: {promo.rejection_reason}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* Periode */}
+                                                <td className="px-3 py-3.5 text-xs text-slate whitespace-nowrap">
+                                                    <p className="font-medium text-ink">{formatDate(promo.start_date)}</p>
+                                                    <p className="text-[11px] text-slate-500">s/d {formatDate(promo.end_date)}</p>
+                                                </td>
+
+                                                {/* Status */}
+                                                <td className="px-3 py-3.5">
+                                                    <div className="flex flex-col gap-1 items-start">
+                                                        <StatusChip
+                                                            status={promo.status}
+                                                            label={
+                                                                promo.status === 'pending'
+                                                                    ? 'Menunggu'
+                                                                    : promo.status === 'approved'
+                                                                    ? 'Disetujui'
+                                                                    : 'Ditolak'
+                                                            }
+                                                        />
+                                                        {promo.is_active ? (
+                                                            <StatusChip status="active" label="Aktif" />
+                                                        ) : (
+                                                            <StatusChip status="inactive" label="Nonaktif" />
+                                                        )}
+                                                    </div>
+                                                </td>
+
+                                                {/* Aksi */}
+                                                <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                                                    <div className="flex items-center justify-end gap-1.5">
+                                                        {promo.status === 'pending' && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => router.put(route('admin.promos.approve', promo.id), {}, { preserveScroll: true })}
+                                                                    className="btn-gold !py-1 !px-2.5 text-xs"
+                                                                >
+                                                                    Setujui
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const reason = window.prompt('Alasan penolakan:');
+                                                                        if (reason) router.put(route('admin.promos.reject', promo.id), { reason }, { preserveScroll: true });
+                                                                    }}
+                                                                    className="btn-danger !py-1 !px-2.5 text-xs"
+                                                                >
+                                                                    Tolak
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        <button
+                                                            onClick={() => openEdit(promo.id)}
+                                                            className="btn-ghost !py-1 !px-2.5 text-xs"
+                                                        >
+                                                            Detail / Edit
+                                                        </button>
+                                                        {promo.status === 'approved' && (
+                                                            <button
+                                                                onClick={() => router.put(route('admin.promos.toggle', promo.id), {}, { preserveScroll: true })}
+                                                                className="btn-ghost !py-1 !px-2.5 text-xs"
+                                                            >
+                                                                {promo.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
 
