@@ -343,11 +343,6 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     <div className="rounded-xl border border-ink/10 bg-paper/60 p-4">
                                         <p className="text-xs font-medium uppercase tracking-wider text-slate">Berlaku Hingga</p>
                                         <p className="mt-1 font-display text-lg font-bold text-ink">{membership.expires_at ?? '-'}</p>
-                                        {isActive && membership.days_remaining !== null && (
-                                            <p className="mt-0.5 text-xs font-medium text-emerald-600">
-                                                Tersisa {membership.days_remaining} hari lagi
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
                             ) : (
