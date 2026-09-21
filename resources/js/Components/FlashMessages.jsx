@@ -11,24 +11,26 @@ export default function FlashMessages() {
     useEffect(() => {
         if (flash?.success || flash?.error) {
             setCurrent(flash);
-
-            if (timerRef.current) clearTimeout(timerRef.current);
-
-            const el = toastRef.current;
-            if (el) {
-                gsap.fromTo(el, { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' });
-
-                timerRef.current = setTimeout(() => {
-                    gsap.to(el, {
-                        y: -12, autoAlpha: 0, duration: 0.3, ease: 'power2.in',
-                        onComplete: () => setCurrent(null),
-                    });
-                }, 3000);
-            }
         }
+    }, [flash]);
+
+    useEffect(() => {
+        if (!current || !toastRef.current) return;
+
+        const el = toastRef.current;
+        gsap.killTweensOf(el);
+        gsap.fromTo(el, { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' });
+
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+            gsap.to(el, {
+                y: -12, autoAlpha: 0, duration: 0.3, ease: 'power2.in',
+                onComplete: () => setCurrent(null),
+            });
+        }, 3000);
 
         return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-    }, [flash]);
+    }, [current]);
 
     if (!current) return null;
 
