@@ -14,6 +14,7 @@ use App\Services\Import\MemberImporter;
 use App\Services\MembershipService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -289,6 +290,17 @@ class MemberController extends Controller
         }
 
         $member->update($updateData);
+
+        if ($request->boolean('remove_avatar') && $member->avatar) {
+            Storage::disk('public')->delete($member->avatar);
+            $member->update(['avatar' => null]);
+        } elseif ($request->hasFile('avatar')) {
+            if ($member->avatar) {
+                Storage::disk('public')->delete($member->avatar);
+            }
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $member->update(['avatar' => $path]);
+        }
 
         return redirect()
             ->route('admin.members.index')

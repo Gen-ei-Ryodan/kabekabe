@@ -10,10 +10,27 @@ export default function MemberForm({
     onCancel,
     onSubmit,
     isCreate = false,
+    avatarUrl = null,
 }) {
     const [hobbySearch, setHobbySearch] = useState('');
     const [customHobbyInput, setCustomHobbyInput] = useState('');
     const [businessFieldInput, setBusinessFieldInput] = useState('');
+    const [avatarPreview, setAvatarPreview] = useState(null);
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+        setAvatarPreview(URL.createObjectURL(file));
+        setData('avatar', file);
+    };
+
+    const removeAvatar = () => {
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+        setAvatarPreview(null);
+        setData('avatar', null);
+        setData('remove_avatar', true);
+    };
 
     const toggleHobby = (hobby) => {
         const currentHobbies = Array.isArray(data.hobbies) ? data.hobbies : [];
@@ -53,6 +70,58 @@ export default function MemberForm({
 
     return (
         <form onSubmit={onSubmit} className="space-y-6">
+            {/* 0. FOTO PROFIL */}
+            {!isCreate && (
+                <section className="space-y-4 rounded-xl border border-ink/10 bg-white/40 p-4">
+                    <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
+                        Foto Profil
+                    </h3>
+                    <div className="flex items-center gap-4">
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-ink/10 bg-paper">
+                            {(avatarPreview || avatarUrl) ? (
+                                <img
+                                    src={avatarPreview || avatarUrl}
+                                    alt="Avatar"
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-slate">
+                                    {(data.name || '?')[0].toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-1 space-y-1.5">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleAvatarChange}
+                                className="hidden"
+                                id="avatar-upload"
+                            />
+                            <div className="flex gap-2">
+                                <label
+                                    htmlFor="avatar-upload"
+                                    className="btn-ink cursor-pointer text-xs px-3 py-1.5"
+                                >
+                                    {avatarPreview || avatarUrl ? 'Ganti Foto' : 'Pilih Foto'}
+                                </label>
+                                {(avatarPreview || avatarUrl) && (
+                                    <button
+                                        type="button"
+                                        onClick={removeAvatar}
+                                        className="text-xs font-medium text-ember hover:underline px-3 py-1.5"
+                                    >
+                                        Hapus
+                                    </button>
+                                )}
+                            </div>
+                            <p className="text-[10px] text-slate">JPG/PNG, maks 2MB.</p>
+                            {errors.avatar && <p className="text-xs text-ember">{errors.avatar}</p>}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* 1. DATA AKUN & PRIBADI */}
             <section className="space-y-4 rounded-xl border border-ink/10 bg-white/40 p-4">
                 <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">

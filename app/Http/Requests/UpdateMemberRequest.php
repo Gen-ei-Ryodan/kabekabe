@@ -41,6 +41,8 @@ class UpdateMemberRequest extends FormRequest
             'hobbies' => ['nullable', 'array'],
             'hobbies.*' => ['string', 'max:255'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'avatar' => ['nullable', 'file', 'image', 'max:2048'],
+            'remove_avatar' => ['nullable', 'boolean'],
         ];
     }
 }

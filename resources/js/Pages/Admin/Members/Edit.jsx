@@ -27,11 +27,26 @@ export default function MemberEdit({ member }) {
         hobbies: Array.isArray(member.hobbies) ? member.hobbies : [],
         password: '',
         password_confirmation: '',
+        avatar: null,
+        remove_avatar: false,
     });
 
     const submit = (e) => {
         e.preventDefault();
-        form.put(route('admin.members.update', member.id), { preserveScroll: true });
+        const fd = new FormData();
+        Object.entries(form.data).forEach(([key, val]) => {
+            if (key === 'hobbies' || key === 'business_fields') {
+                (Array.isArray(val) ? val : []).forEach((v, i) => fd.append(`${key}[${i}]`, v));
+            } else if (key === 'avatar' && val instanceof File) {
+                fd.append('avatar', val);
+            } else if (key === 'remove_avatar' && val) {
+                fd.append('remove_avatar', '1');
+            } else if (val !== null && val !== undefined) {
+                fd.append(key, val);
+            }
+        });
+        fd.append('_method', 'PUT');
+        form.post(route('admin.members.update', member.id), { data: fd, preserveScroll: true, forceFormData: true });
     };
 
     return (
@@ -55,6 +70,7 @@ export default function MemberEdit({ member }) {
                         onCancel={() => window.history.back()}
                         onSubmit={submit}
                         isCreate={false}
+                        avatarUrl={member.avatar_url}
                     />
                 </div>
             </div>
