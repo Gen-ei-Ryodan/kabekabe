@@ -1,34 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import gsap from 'gsap';
 
 export default function FlashMessages() {
     const { flash } = usePage().props;
-    const [visible, setVisible] = useState(false);
     const [current, setCurrent] = useState(null);
+    const timerRef = useRef(null);
 
     useEffect(() => {
         if (flash?.success || flash?.error) {
             setCurrent(flash);
-            setVisible(true);
 
-            const timer = setTimeout(() => setVisible(false), 4000);
+            if (timerRef.current) clearTimeout(timerRef.current);
 
-            return () => clearTimeout(timer);
+            requestAnimationFrame(() => {
+                gsap.fromTo('.flash-toast', { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' });
+            });
+
+            timerRef.current = setTimeout(() => {
+                gsap.to('.flash-toast', {
+                    y: -12, autoAlpha: 0, duration: 0.3, ease: 'power2.in',
+                    onComplete: () => setCurrent(null),
+                });
+            }, 3000);
         }
+
+        return () => { if (timerRef.current) clearTimeout(timerRef.current); };
     }, [flash]);
 
-    useEffect(() => {
-        if (!visible || !current) return;
-
-        const ctx = gsap.context(() => {
-            gsap.fromTo('.flash-toast', { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' });
-        });
-
-        return () => ctx.revert();
-    }, [visible, current]);
-
-    if (!visible || !current) return null;
+    if (!current) return null;
 
     const isSuccess = Boolean(current.success);
 
