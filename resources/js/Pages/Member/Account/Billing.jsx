@@ -128,7 +128,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
             return;
         }
 
-        // Jika tagihan aktif paket ini sudah ada dan belum dibayar, langsung buka modal QRIS
+        // Jika tagihan aktif paket ini sudah ada dan belum dibayar, langsung buka modal transfer
         if (activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id === selectedPlanId) {
             setShowModal(true);
             return;
@@ -166,7 +166,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                 return;
             }
 
-            // Set active pending payment & open QRIS modal
+            // Set active pending payment & open transfer modal
             setActivePayment({
                 id: result.payment_id,
                 invoice_number: result.invoice_number,
@@ -176,7 +176,6 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                 duration_months: result.duration_months,
                 stage: result.stage || 'unpaid',
                 stage_label: result.stage_label || 'Belum Dibayar',
-                qris_image_url: result.qris_image_url || '/images/qris-kbkb.svg',
                 payment_proof_url: null,
                 created_at: result.created_at,
                 expires_at_timestamp: result.expires_at_timestamp,
@@ -439,7 +438,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                 <span className={`mt-2 text-xs font-bold ${activePayment.stage === 'unpaid' ? 'text-amber-800' : 'text-emerald-700'}`}>
                                                     Belum Dibayar
                                                 </span>
-                                                <span className="text-[10px] text-slate hidden sm:block">QRIS Siap Bayar</span>
+                                                <span className="text-[10px] text-slate hidden sm:block">Transfer Siap Dibayar</span>
                                             </div>
 
                                             {/* Tahap 2: Sudah Dibayar */}
@@ -498,7 +497,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                         <div>
                                             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">Metode Pembayaran</p>
                                             <p className="mt-1 font-medium text-ink flex items-center gap-1.5 text-sm">
-                                                <span>📱</span> QRIS Resmi KBKB
+                                                <span>🏦</span> Transfer Bank BCA
                                             </p>
                                         </div>
 
@@ -533,7 +532,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     {activePayment.stage === 'unpaid' && (
                                         <div className="mt-5 pt-4 border-t border-ink/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                             <p className="text-xs text-slate">
-                                                QRIS tetap tersimpan meskipun Anda menutup halaman. Klik tombol untuk membuka QRIS dan mengirim bukti transfer.
+                                                Tagihan tetap tersimpan meskipun Anda menutup halaman. Klik tombol untuk melihat detail rekening dan mengirim bukti transfer.
                                             </p>
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <button
@@ -548,8 +547,8 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                     onClick={() => setShowModal(true)}
                                                     className="btn-gold px-4 py-2 text-xs font-bold shadow-md shadow-gold/20 flex items-center gap-1.5"
                                                 >
-                                                    <span>📱</span>
-                                                    <span>Bayar QRIS & Unggah Bukti</span>
+                                                    <span>🏦</span>
+                                                    <span>Transfer & Unggah Bukti</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -570,7 +569,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                 className="btn-ink px-4 py-2 text-xs font-semibold shrink-0 flex items-center gap-1.5"
                                             >
                                                 <span>👁️</span>
-                                                <span>Lihat Bukti Transfer & QRIS</span>
+                                                <span>Lihat Bukti & Rekening</span>
                                             </button>
                                         </div>
                                     )}
@@ -599,17 +598,17 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                         </Reveal>
                     )}
 
-                    {/* Pembayaran Membership QRIS */}
+                    {/* Pembayaran Membership Transfer Bank */}
                     <Reveal>
                         <section className="card-surface p-6 sm:p-8">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
                                     <h2 className="font-display text-lg font-bold text-ink">Beli / Perpanjang Membership</h2>
-                                    <p className="text-xs text-slate">Pembayaran mudah via QRIS (BCA, Mandiri, BRI, GoPay, OVO, ShopeePay).</p>
+                                    <p className="text-xs text-slate">Pembayaran mudah via transfer bank ke rekening KBKB.</p>
                                 </div>
                                 <span className="inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep">
                                     <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse"></span>
-                                    QRIS Official KBKB
+                                    Transfer Rekening KBKB
                                 </span>
                             </div>
 
@@ -639,7 +638,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     <span className="text-base">💡</span>
                                     <div>
                                         <span className="font-bold">Tagihan Anda ({activePayment.invoice_number}) untuk paket {activePayment.plan_name} sedang aktif.</span>
-                                        <p className="mt-0.5 text-slate">Anda dapat membuka QRIS di atas untuk membayar, atau memilih paket lain di bawah untuk memperbarui tagihan Anda.</p>
+                                        <p className="mt-0.5 text-slate">Anda dapat membuka detail rekening di atas untuk membayar, atau memilih paket lain di bawah untuk memperbarui tagihan Anda.</p>
                                     </div>
                                 </div>
                             )}
@@ -755,7 +754,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                 <p className="mt-2 text-[11px] text-slate italic">
                                     {totalBill === 0
                                         ? 'Voucher 100% aktif! Anda dapat mengaktifkan keanggotaan tanpa biaya transfer.'
-                                        : '*Setelah klik Beli, nomor referensi unik dan kode QRIS akan muncul untuk pembayaran.'}
+                                        : '*Setelah klik Beli, nomor referensi unik dan detail rekening akan muncul untuk pembayaran.'}
                                 </p>
                             </div>
 
@@ -785,18 +784,18 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                         </span>
                                     ) : activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id === selectedPlanId ? (
                                         <span className="flex items-center gap-2">
-                                            <span className="text-base">📱</span>
-                                            Buka QRIS Tagihan Aktif (Rp{totalBill.toLocaleString('id-ID')})
+                                            <span className="text-base">🏦</span>
+                                            Buka Tagihan Aktif (Rp{totalBill.toLocaleString('id-ID')})
                                         </span>
                                     ) : activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id !== selectedPlanId ? (
                                         <span className="flex items-center gap-2">
                                             <span className="text-base">🔄</span>
-                                            Ganti Paket & Buat QRIS Baru (Rp{totalBill.toLocaleString('id-ID')})
+                                            Ganti Paket & Buat Tagihan Baru (Rp{totalBill.toLocaleString('id-ID')})
                                         </span>
                                     ) : (
                                         <span className="flex items-center gap-2">
-                                            <span className="text-base">📱</span>
-                                            Beli Sekarang & Bayar via QRIS (Rp{totalBill.toLocaleString('id-ID')})
+                                            <span className="text-base">🏦</span>
+                                            Beli Sekarang & Transfer (Rp{totalBill.toLocaleString('id-ID')})
                                         </span>
                                     )}
                                 </PrimaryButton>
@@ -807,7 +806,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
             </div>
 
             {/* ========================================================= */}
-            {/* MODAL QRIS & UPLOAD BUKTI TRANSFER                        */}
+            {/* MODAL TRANSFER BANK & UPLOAD BUKTI                        */}
             {/* ========================================================= */}
             {showModal && activePayment && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-xs">
@@ -826,7 +825,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                         ? 'Pembayaran Lunas & Selesai'
                                         : activePayment.stage === 'paid'
                                         ? 'Menunggu Verifikasi Admin'
-                                        : 'Pembayaran QRIS Nasional'}
+                                        : 'Pembayaran Transfer Bank'}
                                 </span>
                                 <h3 className="font-display text-xl font-bold text-ink">
                                     {activePayment.stage === 'processed'
@@ -915,19 +914,33 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             </div>
                         </div>
 
-                        {/* QRIS Card Image (Hanya ditampilkan aktif pada tahap Belum Dibayar) */}
+                        {/* Rekening Tujuan Transfer (Hanya ditampilkan aktif pada tahap Belum Dibayar) */}
                         {activePayment.stage === 'unpaid' ? (
-                            <div className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-paper/40 p-4">
-                                <div className="relative w-full max-w-xs overflow-hidden rounded-xl shadow-md border border-slate-200">
-                                    <img
-                                        src={activePayment.qris_image_url || '/images/qris-kbkb.svg'}
-                                        alt="QRIS Pembayaran KBKB"
-                                        className="w-full h-auto object-contain block"
-                                    />
+                            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-amber-50/60 via-white to-gold/5 p-5">
+                                <div className="w-full max-w-sm space-y-3">
+                                    <div className="text-center mb-2">
+                                        <p className="text-[11px] font-bold uppercase tracking-wider text-gold-deep">Tujuan Transfer</p>
+                                    </div>
+                                    
+                                    <div className="rounded-xl border border-ink/10 bg-white p-4 shadow-xs">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-xs">
+                                                BCA
+                                            </div>
+                                            <div>
+                                                <p className="font-mono text-lg font-extrabold text-ink tracking-wide">0405358889</p>
+                                                <p className="text-[11px] text-slate font-medium">a.n Yayasan Karya Berkat Karunia</p>
+                                            </div>
+                                        </div>
+                                        <div className="mt-3 pt-3 border-t border-ink/10">
+                                            <p className="text-[11px] text-slate">KCP Hasanuddin Denpasar</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-3 text-[11px] text-amber-900">
+                                        <span className="font-semibold">Penting:</span> Transfer sesuai nominal tagihan <strong className="font-mono">Rp{Number(activePayment.amount).toLocaleString('id-ID')}</strong> dan sertakan nomor referensi <strong className="font-mono">{activePayment.invoice_number}</strong> di berita transfer.
+                                    </div>
                                 </div>
-                                <p className="mt-2.5 text-[11px] text-center text-slate font-medium">
-                                    Scan dengan BCA Mobile, Livin Mandiri, BRImo, GoPay, OVO, Dana, ShopeePay
-                                </p>
                             </div>
                         ) : null}
 
@@ -973,7 +986,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             ) : (
                                 <div className="space-y-3">
                                     <p className="text-xs text-slate">
-                                        Setelah berhasil transfer melalui QRIS, foto struk atau tangkapan layar (screenshot) bukti transfer dan unggah di sini:
+                                        Setelah berhasil transfer melalui rekening di atas, foto struk atau tangkapan layar (screenshot) bukti transfer dan unggah di sini:
                                     </p>
 
                                     <div

@@ -38,7 +38,7 @@ class ManualPaymentTest extends TestCase
         ]);
     }
 
-    public function test_member_can_checkout_manual_qris_payment(): void
+    public function test_member_can_checkout_manual_transfer_payment(): void
     {
         $response = $this->actingAs($this->member)->postJson(route('member.billing.manual.checkout'), [
             'plan_id' => $this->plan->id,
@@ -50,7 +50,6 @@ class ManualPaymentTest extends TestCase
             'payment_id',
             'invoice_number',
             'amount',
-            'qris_image_url',
         ]);
 
         $paymentId = $response->json('payment_id');

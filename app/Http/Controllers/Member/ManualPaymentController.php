@@ -18,7 +18,7 @@ class ManualPaymentController extends Controller
     ) {}
 
     /**
-     * Request manual QRIS checkout for membership plan.
+     * Request manual transfer checkout for membership plan.
      */
     public function checkout(Request $request): JsonResponse
     {
@@ -87,7 +87,6 @@ class ManualPaymentController extends Controller
                     'duration_months' => $plan->duration_months,
                     'stage' => 'unpaid',
                     'stage_label' => 'Belum Dibayar',
-                    'qris_image_url' => asset('images/qris-kbkb.svg'),
                     'created_at' => $existing->created_at->translatedFormat('d M Y H:i'),
                     'expires_at_timestamp' => $expiresAt->timestamp,
                     'remaining_seconds' => max(0, now()->diffInSeconds($expiresAt, false)),
@@ -103,7 +102,7 @@ class ManualPaymentController extends Controller
 
         // Buat record pembayaran pending untuk verifikasi manual
         $payment = $this->payments->createPending($member, $plan);
-        $notes = "Manual QRIS Payment | Paket: {$plan->name}";
+        $notes = "Manual Transfer Payment | Paket: {$plan->name}";
         if ($discountAmount > 0) {
             $notes .= " | Voucher ({$discountCode->code}): -Rp" . number_format($discountAmount, 0, ',', '.');
         }
@@ -131,7 +130,6 @@ class ManualPaymentController extends Controller
             'duration_months' => $plan->duration_months,
             'stage' => 'unpaid',
             'stage_label' => 'Belum Dibayar',
-            'qris_image_url' => asset('images/qris-kbkb.svg'),
             'created_at' => $payment->created_at->translatedFormat('d M Y H:i'),
             'expires_at_timestamp' => $expiresAt->timestamp,
             'remaining_seconds' => max(0, now()->diffInSeconds($expiresAt, false)),
@@ -139,7 +137,7 @@ class ManualPaymentController extends Controller
     }
 
     /**
-     * Upload payment proof for manual QRIS payment.
+     * Upload payment proof for manual transfer payment.
      */
     public function uploadProof(Request $request, Payment $payment): JsonResponse
     {

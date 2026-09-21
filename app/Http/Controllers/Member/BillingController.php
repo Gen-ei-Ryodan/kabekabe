@@ -73,7 +73,6 @@ class BillingController extends Controller
                 'created_at' => $activePayment->created_at->translatedFormat('d M Y H:i'),
                 'expires_at_timestamp' => $expiresAt->timestamp,
                 'remaining_seconds' => $remainingSeconds,
-                'qris_image_url' => asset('images/qris-kbkb.svg'),
             ];
         }
 
