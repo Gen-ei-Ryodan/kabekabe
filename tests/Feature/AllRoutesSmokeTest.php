@@ -92,7 +92,7 @@ class AllRoutesSmokeTest extends TestCase
         ];
 
         foreach ($routes as $url) {
-            $this->actingAs($vendor)->get($url)->assertOk();
+            $this->actingAs($vendor, 'partner')->get($url)->assertOk();
         }
     }
 

@@ -9,4 +9,7 @@ export default {
     'auth.login.register': 'Register',
     'auth.login.needHelp': 'Need help?',
     'auth.login.contactAdmin': 'Contact admin',
+    'auth.login.titlePartner': 'Partner Login - KBKB',
+    'auth.login.titleAdmin': 'Admin Login - KBKB',
+    'auth.login.partnerRegister': 'Register as partner',
 };

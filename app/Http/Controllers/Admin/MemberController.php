@@ -163,6 +163,24 @@ class MemberController extends Controller
         return Inertia::render('Admin/Members/Create');
     }
 
+    public function search(Request $request)
+    {
+        $q = $request->string('q')->toString();
+
+        return response()->json(
+            User::query()
+                ->where('role', User::ROLE_MEMBER)
+                ->when($q !== '', fn ($query) => $query->where(function ($query) use ($q) {
+                    $query->where('name', 'like', "%{$q}%")
+                        ->orWhere('member_code', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%");
+                }))
+                ->orderBy('name')
+                ->limit(10)
+                ->get(['id', 'name', 'member_code', 'email'])
+        );
+    }
+
     public function store(StoreMemberRequest $request): RedirectResponse
     {
         $validated = $request->validated();

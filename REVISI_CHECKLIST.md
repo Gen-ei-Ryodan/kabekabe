@@ -147,11 +147,12 @@ File: `Vendor/VerifyController.php`, `TransactionService.php`, `MemberScan`
 ## I. PENOMORAN MEMBER
 File: `app/Models/User.php` (`nextMemberCode`)
 
-- [x] Format: `7030260001` (7030 fix + 26 tahun + 4 digit urut)
-- [x] Reset tiap tahun (Januari mulai dari 0001 lagi)
+- [x] Format: `7030YYMMNNN` (7030 fix + YY tahun + MM bulan + 3 digit urut), contoh `70302609001`
+- [x] Reset tiap bulan (bulan baru mulai dari 001 lagi)
+- [x] Kode lama `7030YYNNNN` tidak ikut ter-matching (suffix tepat 3 karakter)
 - [x] Runtime-verified:
-  - 2026: 7030260001, 7030260002, 7030260003
-  - 2027 (Carbon::setTestNow): 7030270001, 7030270002
+  - 2026-09: 70302609001, 70302609002, 70302609003
+  - 2026-10 (Carbon::setTestNow): 70302610001, 70302610002
 
 ## J. INTEGRASI & OTOMATISASI
 File: `app/Services/PaymentGateway/FaspayService.php`, `app/Services/Whatsapp/WaBlastService.php`, `Admin/IntegrationController.php`, `resources/js/Pages/Admin/Integrations/`

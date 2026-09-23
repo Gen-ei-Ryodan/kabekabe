@@ -6,8 +6,16 @@ import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/i18n';
 
-export default function Login({ status }) {
+export default function Login({ status, portal = 'member' }) {
     const { t } = useTranslation();
+    const isPartner = portal === 'partner';
+    const isAdmin = portal === 'admin';
+    const title = isPartner
+        ? t('auth.login.titlePartner')
+        : isAdmin
+          ? t('auth.login.titleAdmin')
+          : t('auth.login.title');
+    const actionRoute = isPartner ? 'partner.login' : isAdmin ? 'admin.login' : 'login';
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -15,7 +23,7 @@ export default function Login({ status }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('login'), {
+        post(route(actionRoute), {
             onFinish: () => reset('password'),
         });
     };
@@ -25,7 +33,7 @@ export default function Login({ status }) {
 
     return (
         <>
-            <Head title={t('auth.login.title')} />
+            <Head title={title} />
 
             <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8 sm:py-12">
                 <div className="mb-4 w-full max-w-3xl flex justify-end">
@@ -117,13 +125,29 @@ export default function Login({ status }) {
                                 </div>
 
                                 <p className="text-center text-sm text-white/90">
-                                    {t('auth.login.noAccount')}{' '}
-                                    <Link
-                                        href={route('register')}
-                                        className="font-semibold text-white hover:underline"
-                                    >
-                                        {t('auth.login.register')}
-                                    </Link>
+                                    {isPartner ? (
+                                        <>
+                                            {t('auth.login.noAccount')}{' '}
+                                            <Link
+                                                href={route('partner.register.show')}
+                                                className="font-semibold text-white hover:underline"
+                                            >
+                                                {t('auth.login.partnerRegister')}
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        !isAdmin && (
+                                            <>
+                                                {t('auth.login.noAccount')}{' '}
+                                                <Link
+                                                    href={route('register')}
+                                                    className="font-semibold text-white hover:underline"
+                                                >
+                                                    {t('auth.login.register')}
+                                                </Link>
+                                            </>
+                                        )
+                                    )}
                                 </p>
 
                                 <p className="text-center text-xs text-white/80">
@@ -218,13 +242,29 @@ export default function Login({ status }) {
                                     </div>
 
                                     <p className="text-center text-sm text-white/90">
-                                        {t('auth.login.noAccount')}{' '}
-                                        <Link
-                                            href={route('register')}
-                                            className="font-semibold text-white hover:underline"
-                                        >
-                                            {t('auth.login.register')}
-                                        </Link>
+                                        {isPartner ? (
+                                            <>
+                                                {t('auth.login.noAccount')}{' '}
+                                                <Link
+                                                    href={route('partner.register.show')}
+                                                    className="font-semibold text-white hover:underline"
+                                                >
+                                                    {t('auth.login.partnerRegister')}
+                                                </Link>
+                                            </>
+                                        ) : (
+                                            !isAdmin && (
+                                                <>
+                                                    {t('auth.login.noAccount')}{' '}
+                                                    <Link
+                                                        href={route('register')}
+                                                        className="font-semibold text-white hover:underline"
+                                                    >
+                                                        {t('auth.login.register')}
+                                                    </Link>
+                                                </>
+                                            )
+                                        )}
                                     </p>
 
                                     <p className="text-center text-xs text-white/80">

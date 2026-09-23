@@ -68,24 +68,23 @@ class User extends Authenticatable
 
     private static function nextMemberCode(): string
     {
-        $year = now()->format('y');
-        $prefix = '7030'.$year;
-        $pattern = $prefix.'%';
+        // ponytail: 3 digit urut per bulan; lewat 999/bulan akan unik-check gagal — naik ke 4 digit jika pernah terjadi.
+        $prefix = '7030'.now()->format('ym');
 
-        $lastInYear = DB::table('users')
+        // Suffix tepat 3 karakter: kode lama (10 char) tidak ikut ter-matching.
+        $lastInMonth = DB::table('users')
             ->where('role', self::ROLE_MEMBER)
-            ->where('member_code', 'like', $pattern)
+            ->where('member_code', 'like', $prefix.'___')
             ->orderByDesc('member_code')
             ->value('member_code');
 
         $next = 1;
 
-        if ($lastInYear) {
-            $suffix = substr($lastInYear, strlen($prefix));
-            $next = ((int) $suffix) + 1;
+        if ($lastInMonth) {
+            $next = ((int) substr($lastInMonth, -3)) + 1;
         }
 
-        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $next, 3, '0', STR_PAD_LEFT);
     }
 
     public function membership(): HasOne

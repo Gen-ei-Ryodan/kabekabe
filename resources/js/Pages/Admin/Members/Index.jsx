@@ -132,7 +132,7 @@ export default function MemberIndex({ members, filters, drawer, pending_count = 
                         </div>
                         <div>
                             <label className="label">ID Member</label>
-                            <input type="text" className="input" placeholder="7030260001" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)} />
+                            <input type="text" className="input" placeholder="70302609001" value={filter.data.member_id || ''} onChange={(e) => filter.setData('member_id', e.target.value)} />
                         </div>
                         <div>
                             <label className="label">Status</label>

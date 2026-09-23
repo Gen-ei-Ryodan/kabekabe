@@ -49,7 +49,7 @@ class VendorFlowTest extends TestCase
     {
         [$partner, $vendor] = $this->vendorWithPartner();
 
-        $this->actingAs($vendor)->get(route('vendor.dashboard'))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Vendor/Dashboard')
@@ -88,7 +88,7 @@ class VendorFlowTest extends TestCase
         [$otherPartner] = $this->vendorWithPartner();
         Transaction::factory()->create(['partner_id' => $otherPartner->id]);
 
-        $this->actingAs($vendor)->get(route('vendor.dashboard'))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('stats.active_members', 2)
@@ -103,7 +103,7 @@ class VendorFlowTest extends TestCase
     {
         $vendor = User::factory()->vendor()->create();
 
-        $this->actingAs($vendor)->get(route('vendor.dashboard'))->assertForbidden();
+        $this->actingAs($vendor, 'partner')->get(route('vendor.dashboard'))->assertForbidden();
     }
 
     public function test_verify_active_member_by_member_code(): void
@@ -111,7 +111,7 @@ class VendorFlowTest extends TestCase
         [, $vendor] = $this->vendorWithPartner();
         $member = $this->activeMember();
 
-        $this->actingAs($vendor)->get(route('vendor.verify.token', $member->member_code))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.verify.token', $member->member_code))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Vendor/Verify')
@@ -126,7 +126,7 @@ class VendorFlowTest extends TestCase
         [, $vendor] = $this->vendorWithPartner();
         $member = $this->activeMember();
 
-        $this->actingAs($vendor)->get(route('vendor.verify.token', $member->card_token))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.verify.token', $member->card_token))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('result.active', true));
     }
@@ -141,7 +141,7 @@ class VendorFlowTest extends TestCase
             'expires_at' => now()->subDay(),
         ]);
 
-        $this->actingAs($vendor)->get(route('vendor.verify.token', $member->member_code))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.verify.token', $member->member_code))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('result.found', true)
@@ -153,7 +153,7 @@ class VendorFlowTest extends TestCase
     {
         [, $vendor] = $this->vendorWithPartner();
 
-        $this->actingAs($vendor)->get(route('vendor.verify.token', 'DOES-NOT-EXIST'))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.verify.token', 'DOES-NOT-EXIST'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('result.found', false));
     }
@@ -164,7 +164,7 @@ class VendorFlowTest extends TestCase
 
         User::factory()->admin()->create();
 
-        $this->actingAs($vendor)->post(route('vendor.promos.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.promos.store'), [
             'title' => 'Diskon 15%',
             'description' => 'Untuk semua produk.',
             'discount_type' => 'percent',
@@ -190,7 +190,7 @@ class VendorFlowTest extends TestCase
         Promo::factory()->create(['partner_id' => $partnerA->id]);
         Promo::factory()->create(['partner_id' => $partnerB->id]);
 
-        $this->actingAs($vendorA)->get(route('vendor.promos.index'))
+        $this->actingAs($vendorA, 'partner')->get(route('vendor.promos.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->has('promos.data', 1));
     }
@@ -201,7 +201,7 @@ class VendorFlowTest extends TestCase
 
         $inactive = User::factory()->member()->create();
 
-        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.transactions.store'), [
             'member_code' => $inactive->member_code,
             'total' => 250000,
         ])->assertSessionHasErrors('member_code');
@@ -227,7 +227,7 @@ class VendorFlowTest extends TestCase
             'end_date' => now()->addDays(15),
         ]);
 
-        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.transactions.store'), [
             'member_code' => $member->member_code,
             'promo_id' => $promo->id,
             'total' => 200000,
@@ -263,7 +263,7 @@ class VendorFlowTest extends TestCase
         [$otherPartner] = $this->vendorWithPartner();
         Transaction::factory()->create(['partner_id' => $otherPartner->id]);
 
-        $this->actingAs($vendor)->get(route('vendor.reports.index'))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.reports.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->has('transactions', 1)
@@ -285,7 +285,7 @@ class VendorFlowTest extends TestCase
 
         $this->createActiveScan($member, $vendor);
 
-        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.transactions.store'), [
             'transaction_number' => 'POS-88123',
             'member_code' => $member->member_code,
             'total' => 100000,
@@ -298,7 +298,7 @@ class VendorFlowTest extends TestCase
 
         $other = $this->activeMember();
 
-        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.transactions.store'), [
             'transaction_number' => 'POS-88123',
             'member_code' => $other->member_code,
             'total' => 100000,
@@ -316,7 +316,7 @@ class VendorFlowTest extends TestCase
             'status' => Promo::STATUS_APPROVED,
         ]);
 
-        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.transactions.store'), [
             'member_code' => $member->member_code,
             'promo_id' => $foreignPromo->id,
             'total' => 200000,
@@ -330,7 +330,7 @@ class VendorFlowTest extends TestCase
         [, $vendor] = $this->vendorWithPartner();
         $member = $this->activeMember();
 
-        $this->actingAs($vendor)->get(route('vendor.transactions.create', ['scan' => $member->card_token]))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.transactions.create', ['scan' => $member->card_token]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Vendor/Transactions/Create')
@@ -357,7 +357,7 @@ class VendorFlowTest extends TestCase
             'ip_address' => '127.0.0.1',
         ]);
 
-        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.transactions.store'), [
             'member_code' => $member->member_code,
             'total' => 100000,
         ])->assertSessionHasErrors('member_code');
@@ -371,7 +371,7 @@ class VendorFlowTest extends TestCase
         $member = $this->activeMember();
         $scan = $this->createActiveScan($member, $vendor);
 
-        $this->actingAs($vendor)->get(route('vendor.transactions.index'))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.transactions.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('pending_scans.0.id', $scan->id)
@@ -385,7 +385,7 @@ class VendorFlowTest extends TestCase
         $member = $this->activeMember();
         $scan = $this->createActiveScan($member, $vendor);
 
-        $this->actingAs($vendor)->post(route('vendor.transactions.store'), [
+        $this->actingAs($vendor, 'partner')->post(route('vendor.transactions.store'), [
             'member_code' => $member->member_code,
             'scan_id' => $scan->id,
             'total' => 100000,
@@ -396,7 +396,7 @@ class VendorFlowTest extends TestCase
             'member_scan_id' => $scan->id,
         ]);
 
-        $this->actingAs($vendor)->get(route('vendor.transactions.index'))
+        $this->actingAs($vendor, 'partner')->get(route('vendor.transactions.index'))
             ->assertInertia(fn ($page) => $page->has('pending_scans', 0));
     }
 }

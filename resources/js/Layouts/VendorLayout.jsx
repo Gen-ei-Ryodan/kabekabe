@@ -59,7 +59,7 @@ export default function VendorLayout({ children }) {
                         </div>
                     </div>
                     <button
-                        onClick={() => router.post(route('logout'))}
+                        onClick={() => router.post(route('partner.logout'))}
                         className="mt-3 w-full rounded-xl px-4 py-2.5 text-sm font-medium text-paper/60 hover:bg-ember/20 hover:text-ember"
                     >
                         Keluar
@@ -95,7 +95,7 @@ export default function VendorLayout({ children }) {
                             </Link>
                         ))}
                         <button
-                            onClick={() => router.post(route('logout'))}
+                            onClick={() => router.post(route('partner.logout'))}
                             className="rounded-xl px-4 py-3 text-left text-sm font-medium text-ember hover:bg-ember/20"
                         >
                             Keluar

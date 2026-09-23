@@ -42,6 +42,13 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Guard terpisah agar 1 window bisa login member (web) + partner (partner)
+        // secara bersamaan tanpa saling menendang.
+        'partner' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
     ],
 
     /*

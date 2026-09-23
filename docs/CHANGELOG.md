@@ -2,6 +2,14 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-23 — Portal login terpisah, paket aktif member, approve partner + kait member, kode member baru
+- **Portal login terpisah (3 guard)**: `GET/POST /login` khusus **member**, `GET/POST /partner` khusus **partner/vendor** (guard `partner` baru di `config/auth.php`), `GET/POST /admin` khusus **admin**. Login di portal salah → error "Akun ini tidak sesuai dengan halaman login tersebut." Route login dikeluarkan dari middleware `guest` supaya 1 window bisa membuka ketiga portal tanpa saling menendang. Guest redirect per portal via exception renderer (`/vendor*`+`/partner*` → `partner.login`, `/admin*` → `admin.login`, sisanya `/login`).
+- **Isolasi multi-guard**: route vendor pindah ke `auth:partner`; logout `web` memakai `session()->regenerate()` (bukan `invalidate()`) agar sesi partner tetap hidup, dan sebaliknya `POST partner/logout` hanya melepas guard partner. `EnsurePasswordUpdated` menangani `must_change_password` partner via route `partner/first-change-password`.
+- **Paket aktif di home member**: `Member/HomeController` mengirim `active_package` (nama plan via `membership.plan` ?? `getLatestPlan()`, expires, sisa hari) → kartu "Paket Aktif" di bawah kartu member saat membership aktif.
+- **Approve partner + kaitkan member**: tombol Setujui kini membuka popup (search member opsional dengan debounce ke `GET admin/members/search` + link buka halaman member). `PartnerController::approve` menerima `member_user_id` (validasi role member) dan mengisi `partners.member_user_id` (FK baru `nullOnDelete`), `is_member`, `member_id_number`, `member_name`. Tanpa pilihan member tetap jalan (kompatibel test lama).
+- **Format kode member baru**: `nextMemberCode()` → `7030YYMMNNN` (contoh `70302609001`), suffix 3 digit reset tiap bulan, matching `like` 3 wildcard agar kode lama 10-char tidak ikut terhitung. Kode lama tetap dipakai apa adanya.
+- Testing: portal render `/partner`+`/admin`, login partner via `/partner`, login member ditolak di portal partner; vendor tests pindah `actingAs($vendor, 'partner')`.
+
 ## 2026-09-23 — Foto promo partner (logo, foto promo, foto produk) + email promo member
 - **Upload foto promo**: partner kini bisa menambahkan 3 foto opsional saat membuat/merevisi promo — **Logo Perusahaan**, **Foto Promo**, dan **Foto Produk** (form `Vendor/Promos/Create` & `Vendor/Promos/Edit`, upload file gambar JPG/PNG/WebP maks 2MB via `forceFormData`). Kolom baru `promos.logo`, `promos.promo_image`, `promos.product_image` (nullable); disimpan ke disk `public/promos/`. Validasi file di `StorePromoRequest`/`UpdatePromoRequest` dengan pesan error Bahasa Indonesia.
 - **Tampilan foto di member**: 

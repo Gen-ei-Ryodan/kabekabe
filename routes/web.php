@@ -27,20 +27,26 @@ use App\Http\Controllers\Vendor\ReportController as VendorReportController;
 use App\Http\Controllers\Vendor\TransactionController as VendorTransactionController;
 use App\Http\Controllers\Vendor\VerifyController;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     $user = auth()->user();
 
-    if (! $user) {
-        return redirect()->route('login');
+    if ($user) {
+        return match ($user->role) {
+            User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
+            User::ROLE_VENDOR => redirect()->route('vendor.dashboard'),
+            default => redirect()->route('member.home'),
+        };
     }
 
-    return match ($user->role) {
-        User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
-        User::ROLE_VENDOR => redirect()->route('vendor.dashboard'),
-        default => redirect()->route('member.home'),
-    };
+    // Sesi partner hidup di guard terpisah, tidak terlihat oleh auth()->user().
+    if (Auth::guard('partner')->check()) {
+        return redirect()->route('vendor.dashboard');
+    }
+
+    return redirect()->route('login');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -76,31 +82,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/billing/doku/{payment}/status', [DokuPaymentController::class, 'checkStatus'])->name('billing.doku.status');
     });
 
-    // ---------- VENDOR ----------
-    Route::middleware('role:vendor')->prefix('vendor')->name('vendor.')->group(function () {
-        Route::get('/dashboard', VendorDashboardController::class)->name('dashboard');
-
-        Route::get('/verify', [VerifyController::class, 'index'])->name('verify');
-        Route::get('/verify/{token}', [VerifyController::class, 'check'])->name('verify.token');
-
-        Route::get('/promos', [VendorPromoController::class, 'index'])->name('promos.index');
-        Route::get('/promos/create', [VendorPromoController::class, 'create'])->name('promos.create');
-        Route::post('/promos', [VendorPromoController::class, 'store'])->name('promos.store');
-        Route::get('/promos/{promo}/edit', [VendorPromoController::class, 'edit'])->name('promos.edit');
-        Route::put('/promos/{promo}', [VendorPromoController::class, 'update'])->name('promos.update');
-        Route::delete('/promos/{promo}', [VendorPromoController::class, 'destroy'])->name('promos.destroy');
-
-        Route::get('/transactions', [VendorTransactionController::class, 'index'])->name('transactions.index');
-        Route::get('/transactions/create', [VendorTransactionController::class, 'create'])->name('transactions.create');
-        Route::post('/transactions', [VendorTransactionController::class, 'store'])->name('transactions.store');
-
-        Route::get('/reports', VendorReportController::class)->name('reports.index');
-
-        Route::get('/billing', [App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
-        Route::post('/billing/ads', [App\Http\Controllers\Vendor\BillingController::class, 'storeAd'])->name('billing.ads.store');
-        Route::post('/billing/ads/{ad}/pay', [App\Http\Controllers\Vendor\BillingController::class, 'payAd'])->name('billing.ads.pay');
-    });
-
     // ---------- ADMIN ----------
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
@@ -110,6 +91,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/members', [AdminMemberController::class, 'store'])->name('members.store');
         Route::get('/members/import-template', [AdminMemberController::class, 'importTemplate'])->name('members.import.template');
         Route::post('/members/import', [AdminMemberController::class, 'import'])->name('members.import');
+        // Wajib sebelum /members/{member} agar tidak tertangkap wildcard.
+        Route::get('/members/search', [AdminMemberController::class, 'search'])->name('members.search');
         Route::get('/members/{member}', [AdminMemberController::class, 'show'])->name('members.show');
         Route::get('/members/{member}/edit', [AdminMemberController::class, 'edit'])->name('members.edit');
         Route::put('/members/{member}', [AdminMemberController::class, 'update'])->name('members.update');
@@ -180,6 +163,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/reports/export', [AdminReportController::class, 'export'])->name('reports.export');
         Route::get('/reports', AdminReportController::class)->name('reports.index');
+    });
+});
+
+// ---------- VENDOR (guard partner: 1 window bisa login member + partner) ----------
+Route::middleware(['auth:partner', 'verified'])->group(function () {
+    Route::middleware('role:vendor')->prefix('vendor')->name('vendor.')->group(function () {
+        Route::get('/dashboard', VendorDashboardController::class)->name('dashboard');
+
+        Route::get('/verify', [VerifyController::class, 'index'])->name('verify');
+        Route::get('/verify/{token}', [VerifyController::class, 'check'])->name('verify.token');
+
+        Route::get('/promos', [VendorPromoController::class, 'index'])->name('promos.index');
+        Route::get('/promos/create', [VendorPromoController::class, 'create'])->name('promos.create');
+        Route::post('/promos', [VendorPromoController::class, 'store'])->name('promos.store');
+        Route::get('/promos/{promo}/edit', [VendorPromoController::class, 'edit'])->name('promos.edit');
+        Route::put('/promos/{promo}', [VendorPromoController::class, 'update'])->name('promos.update');
+        Route::delete('/promos/{promo}', [VendorPromoController::class, 'destroy'])->name('promos.destroy');
+
+        Route::get('/transactions', [VendorTransactionController::class, 'index'])->name('transactions.index');
+        Route::get('/transactions/create', [VendorTransactionController::class, 'create'])->name('transactions.create');
+        Route::post('/transactions', [VendorTransactionController::class, 'store'])->name('transactions.store');
+
+        Route::get('/reports', VendorReportController::class)->name('reports.index');
+
+        Route::get('/billing', [App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/ads', [App\Http\Controllers\Vendor\BillingController::class, 'storeAd'])->name('billing.ads.store');
+        Route::post('/billing/ads/{ad}/pay', [App\Http\Controllers\Vendor\BillingController::class, 'payAd'])->name('billing.ads.pay');
     });
 });
 

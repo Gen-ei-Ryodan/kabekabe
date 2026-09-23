@@ -12,9 +12,13 @@ use Inertia\Response;
 
 class InitialPasswordController extends Controller
 {
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('Auth/ChangeInitialPassword');
+        return Inertia::render('Auth/ChangeInitialPassword', [
+            'updateRoute' => $request->routeIs('partner.*')
+                ? 'partner.password.change-initial.update'
+                : 'password.change-initial.update',
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

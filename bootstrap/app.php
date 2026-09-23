@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -34,4 +35,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Guest redirect per portal: /vendor* + /partner* -> login partner,
+        // /admin* -> login admin, sisanya default ke /login (member).
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if (in_array('partner', $e->guards(), true)) {
+                return redirect()->route('partner.login');
+            }
+
+            if ($request->is('admin', 'admin/*')) {
+                return redirect()->route('admin.login');
+            }
+
+            return null;
+        });
     })->create();

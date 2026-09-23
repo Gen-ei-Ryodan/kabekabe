@@ -13,18 +13,36 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
+// ---------- LOGIN PORTALS ----------
+// Di luar middleware `guest` supaya 1 window bisa membuka /login (member),
+// /partner, dan /admin tanpa saling menendang. Redirect jika sudah login
+// ditangani di AuthenticatedSessionController::renderLogin().
+Route::get('login', [AuthenticatedSessionController::class, 'create'])
+    ->name('login');
+
+Route::post('login', [AuthenticatedSessionController::class, 'store'])
+    ->middleware('throttle:6,1');
+
+Route::get('partner', [AuthenticatedSessionController::class, 'createPartner'])
+    ->name('partner.login');
+
+Route::post('partner', [AuthenticatedSessionController::class, 'storePartner'])
+    ->middleware('throttle:6,1')
+    ->name('partner.login.store');
+
+Route::get('admin', [AuthenticatedSessionController::class, 'createAdmin'])
+    ->name('admin.login');
+
+Route::post('admin', [AuthenticatedSessionController::class, 'storeAdmin'])
+    ->middleware('throttle:6,1')
+    ->name('admin.login.store');
+
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store'])
         ->middleware('throttle:5,1');
-
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
-
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])
-        ->middleware('throttle:6,1');
 
     // Lupa password: minta kode OTP ke email.
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
@@ -82,4 +100,16 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+});
+
+// ---------- PARTNER GUARD (terpisah dari web) ----------
+Route::middleware('auth:partner')->group(function () {
+    Route::get('partner/first-change-password', [InitialPasswordController::class, 'create'])
+        ->name('partner.password.change-initial');
+
+    Route::post('partner/first-change-password', [InitialPasswordController::class, 'store'])
+        ->name('partner.password.change-initial.update');
+
+    Route::post('partner/logout', [AuthenticatedSessionController::class, 'destroyPartner'])
+        ->name('partner.logout');
 });

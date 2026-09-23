@@ -6,7 +6,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { useTranslation } from '@/i18n';
 import { Head, useForm } from '@inertiajs/react';
 
-export default function ChangeInitialPassword() {
+export default function ChangeInitialPassword({ updateRoute = 'password.change-initial.update' }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         password: '',
         password_confirmation: '',
@@ -16,7 +16,7 @@ export default function ChangeInitialPassword() {
     const submit = (e) => {
         e.preventDefault();
 
-        post(route('password.change-initial.update'), {
+        post(route(updateRoute), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };

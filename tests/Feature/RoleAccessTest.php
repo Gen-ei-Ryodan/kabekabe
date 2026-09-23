@@ -10,11 +10,18 @@ class RoleAccessTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guest_is_redirected_to_login(): void
+    public function test_guest_is_redirected_to_portal_login(): void
     {
         $this->get('/member/home')->assertRedirect(route('login'));
-        $this->get('/admin/dashboard')->assertRedirect(route('login'));
-        $this->get('/vendor/dashboard')->assertRedirect(route('login'));
+        $this->get('/admin/dashboard')->assertRedirect(route('admin.login'));
+        $this->get('/vendor/dashboard')->assertRedirect(route('partner.login'));
+    }
+
+    public function test_portal_login_screens_render(): void
+    {
+        $this->get('/login')->assertOk();
+        $this->get('/partner')->assertOk();
+        $this->get('/admin')->assertOk();
     }
 
     public function test_root_redirects_member_to_member_home(): void
@@ -35,7 +42,7 @@ class RoleAccessTest extends TestCase
     {
         $vendor = User::factory()->vendor()->create();
 
-        $this->actingAs($vendor)->get('/')->assertRedirect(route('vendor.dashboard'));
+        $this->actingAs($vendor, 'partner')->get('/')->assertRedirect(route('vendor.dashboard'));
     }
 
     public function test_member_cannot_access_admin_pages(): void
@@ -50,7 +57,7 @@ class RoleAccessTest extends TestCase
     {
         $member = User::factory()->member()->create();
 
-        $this->actingAs($member)->get(route('vendor.dashboard'))->assertForbidden();
+        $this->actingAs($member)->get(route('vendor.dashboard'))->assertRedirect(route('partner.login'));
     }
 
     public function test_admin_cannot_access_member_pages(): void
@@ -64,14 +71,21 @@ class RoleAccessTest extends TestCase
     {
         $vendor = User::factory()->vendor()->create();
 
-        $this->actingAs($vendor)->get(route('member.home'))->assertForbidden();
+        $this->actingAs($vendor, 'partner');
+        // actingAs() memaksa default guard; di produksi default tetap 'web'.
+        $this->app['auth']->shouldUse('web');
+
+        $this->get(route('member.home'))->assertRedirect(route('login'));
     }
 
     public function test_vendor_cannot_access_admin_pages(): void
     {
         $vendor = User::factory()->vendor()->create();
 
-        $this->actingAs($vendor)->get(route('admin.dashboard'))->assertForbidden();
+        $this->actingAs($vendor, 'partner');
+        $this->app['auth']->shouldUse('web');
+
+        $this->get(route('admin.dashboard'))->assertRedirect(route('admin.login'));
     }
 
     public function test_member_home_renders_and_assigns_card_credentials(): void
@@ -88,9 +102,29 @@ class RoleAccessTest extends TestCase
                 ->component('Member/Home')
                 ->has('member.member_code')
                 ->where('member.membership_status', 'inactive')
+                ->where('active_package', null)
             );
 
         $this->assertNotNull($member->fresh()->member_code);
         $this->assertNotNull($member->fresh()->card_token);
+    }
+
+    public function test_member_home_shows_active_package(): void
+    {
+        $member = User::factory()->member()->create();
+        $member->membership()->create([
+            'status' => 'active',
+            'started_at' => now()->subMonth(),
+            'expires_at' => now()->addMonths(11),
+        ]);
+
+        $this->actingAs($member)->get(route('member.home'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Member/Home')
+                ->where('member.membership_status', 'active')
+                ->has('active_package.expires_at')
+                ->where('active_package.days_remaining', fn ($value) => $value > 0)
+            );
     }
 }

@@ -43,7 +43,7 @@ class PromoPhotoTest extends TestCase
         User::factory()->admin()->create();
         [, $vendor] = $this->vendorWithActivePartner();
 
-        $this->actingAs($vendor)->post(route('vendor.promos.store'), $this->validPayload([
+        $this->actingAs($vendor, 'partner')->post(route('vendor.promos.store'), $this->validPayload([
             'logo' => UploadedFile::fake()->image('logo.png', 100, 100),
             'promo_image' => UploadedFile::fake()->image('promo.jpg', 400, 300),
             'product_image' => UploadedFile::fake()->image('product.png', 400, 300),
@@ -63,7 +63,7 @@ class PromoPhotoTest extends TestCase
         User::factory()->admin()->create();
         [, $vendor] = $this->vendorWithActivePartner();
 
-        $this->actingAs($vendor)->post(route('vendor.promos.store'), $this->validPayload())
+        $this->actingAs($vendor, 'partner')->post(route('vendor.promos.store'), $this->validPayload())
             ->assertRedirect(route('vendor.promos.index'));
 
         $promo = Promo::firstOrFail();
@@ -79,7 +79,7 @@ class PromoPhotoTest extends TestCase
         User::factory()->admin()->create();
         [, $vendor] = $this->vendorWithActivePartner();
 
-        $this->actingAs($vendor)->post(route('vendor.promos.store'), $this->validPayload([
+        $this->actingAs($vendor, 'partner')->post(route('vendor.promos.store'), $this->validPayload([
             'promo_image' => UploadedFile::fake()->create('dokumen.pdf', 100, 'application/pdf'),
         ]), ['uploads' => true])->assertSessionHasErrors('promo_image');
 

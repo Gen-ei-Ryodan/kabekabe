@@ -16,9 +16,23 @@ class HomeController extends Controller
     public function __invoke(): Response
     {
         $user = auth()->user();
-        $user->load('membership');
+        $user->load('membership.plan');
         $user->ensureCardToken();
         $user->ensureMemberCode();
+
+        $activePackage = null;
+        if ($user->hasActiveMembership()) {
+            $plan = $user->membership->plan ?? $user->membership->getLatestPlan();
+
+            $activePackage = [
+                'plan_name' => $plan?->name,
+                'expires_at' => $user->membership->expires_at?->format('d M Y'),
+                'expires_at_full' => $user->membership->expires_at?->toISOString(),
+                'days_remaining' => $user->membership->expires_at
+                    ? max(0, (int) now()->diffInDays($user->membership->expires_at, false))
+                    : null,
+            ];
+        }
 
         $vendorRankingByCount = Transaction::query()
             ->select('partner_id', DB::raw('COUNT(*) as total'))
@@ -126,6 +140,7 @@ class HomeController extends Controller
             'vendor_ranking' => $vendorRankingByCount,
             'vendor_ranking_by_count' => $vendorRankingByCount,
             'vendor_ranking_by_amount' => $vendorRankingByAmount,
+            'active_package' => $activePackage,
             'banners' => $allBanners,
             'agendas' => CommunityInfo::query()
                 ->published()

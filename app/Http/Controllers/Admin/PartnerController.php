@@ -11,6 +11,7 @@ use App\Services\ApprovalNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -259,14 +260,33 @@ class PartnerController extends Controller
         return back()->with('success', $partner->is_active ? 'Partner activated.' : 'Partner deactivated.');
     }
 
-    public function approve(Partner $partner): RedirectResponse
+    public function approve(Request $request, Partner $partner): RedirectResponse
     {
-        $partner->forceFill([
+        $validated = $request->validate([
+            'member_user_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')->where('role', User::ROLE_MEMBER),
+            ],
+        ]);
+
+        $data = [
             'status' => Partner::STATUS_ACTIVE,
             'is_active' => true,
             'joined_at' => $partner->joined_at ?? now(),
             'expires_at' => $partner->expires_at ?? now()->addYear(),
-        ])->save();
+        ];
+
+        if (! empty($validated['member_user_id'])) {
+            $member = User::query()->findOrFail($validated['member_user_id']);
+
+            $data['member_user_id'] = $member->id;
+            $data['is_member'] = true;
+            $data['member_id_number'] = $member->member_code;
+            $data['member_name'] = $member->name;
+        }
+
+        $partner->forceFill($data)->save();
 
         if ($partner->user) {
             $partner->user->forceFill(['approval_status' => User::APPROVAL_APPROVED])->save();

@@ -74,6 +74,35 @@ class ApprovalNotificationTest extends TestCase
             'must_change_password' => true,
         ])->save();
 
+        $member = User::factory()->member()->create();
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->put(route('admin.partners.approve', $partner), ['member_user_id' => $member->id])
+            ->assertRedirect();
+
+        $partner->refresh();
+
+        $this->assertTrue($partner->is_active);
+        $this->assertSame(User::APPROVAL_APPROVED, $user->fresh()->approval_status);
+        $this->assertSame($member->id, $partner->member_user_id);
+        $this->assertTrue($partner->is_member);
+        $this->assertSame($member->member_code, $partner->member_id_number);
+        $this->assertSame($member->name, $partner->member_name);
+
+        Mail::assertSent(AccountApprovedMail::class, function (AccountApprovedMail $mail) use ($user) {
+            return $mail->hasTo($user->email)
+                && $mail->initialPassword !== null
+                && Hash::check($mail->initialPassword, $user->fresh()->password);
+        });
+    }
+
+    public function test_partner_approval_works_without_member_selection(): void
+    {
+        Mail::fake();
+
+        $partner = Partner::factory()->create();
+        $partner->user->forceFill(['approval_status' => User::APPROVAL_PENDING])->save();
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
@@ -83,13 +112,7 @@ class ApprovalNotificationTest extends TestCase
         $partner->refresh();
 
         $this->assertTrue($partner->is_active);
-        $this->assertSame(User::APPROVAL_APPROVED, $user->fresh()->approval_status);
-
-        Mail::assertSent(AccountApprovedMail::class, function (AccountApprovedMail $mail) use ($user) {
-            return $mail->hasTo($user->email)
-                && $mail->initialPassword !== null
-                && Hash::check($mail->initialPassword, $user->fresh()->password);
-        });
+        $this->assertNull($partner->member_user_id);
     }
 
     public function test_approval_email_omits_password_when_user_already_changed_it(): void

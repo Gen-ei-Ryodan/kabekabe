@@ -1,12 +1,54 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
+import Modal from '@/Components/Modal';
 import PartnerDrawer from '@/Components/Admin/PartnerDrawer';
 
 export default function PartnerIndex({ partners, filters, categories = [], drawer, pending_count = 0 }) {
     const filter = useForm(filters);
+    const [approveTarget, setApproveTarget] = useState(null);
+    const [memberQuery, setMemberQuery] = useState('');
+    const [memberResults, setMemberResults] = useState([]);
+    const [selectedMember, setSelectedMember] = useState(null);
+
+    useEffect(() => {
+        if (!approveTarget || memberQuery.trim() === '') {
+            setMemberResults([]);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    `${route('admin.members.search')}?q=${encodeURIComponent(memberQuery)}`,
+                    { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } },
+                );
+                if (res.ok) setMemberResults(await res.json());
+            } catch {
+                setMemberResults([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [memberQuery, approveTarget]);
+
+    const closeApproveModal = () => {
+        setApproveTarget(null);
+        setMemberQuery('');
+        setMemberResults([]);
+        setSelectedMember(null);
+    };
+
+    const confirmApprove = () => {
+        router.put(
+            route('admin.partners.approve', approveTarget.id),
+            selectedMember ? { member_user_id: selectedMember.id } : {},
+            { preserveScroll: true, onSuccess: closeApproveModal },
+        );
+    };
 
     const setQuickTab = (statusVal) => {
         router.get(route('admin.partners.index'), { status: statusVal }, { preserveState: true, replace: true });
@@ -206,7 +248,7 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                                     {isPending ? (
                                                         <>
                                                             <button
-                                                                onClick={() => router.put(route('admin.partners.approve', partner.id), {}, { preserveScroll: true })}
+                                                                onClick={() => setApproveTarget(partner)}
                                                                 className="rounded-lg bg-gold px-2.5 py-1 text-xs font-semibold text-ink hover:bg-gold-light transition-colors"
                                                                 title="Setujui partner dan aktifkan akun vendor"
                                                             >
@@ -267,6 +309,86 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
             </div>
 
             <PartnerDrawer drawer={drawer} onClose={closeDrawer} />
+
+            <Modal show={!!approveTarget} maxWidth="lg" onClose={closeApproveModal}>
+                {approveTarget && (
+                    <div className="p-6">
+                        <h2 className="font-display text-xl font-bold text-ink">Setujui Partner</h2>
+                        <p className="mt-1 text-sm text-slate">
+                            Pendaftaran <span className="font-semibold text-ink">{approveTarget.name}</span> akan
+                            disetujui dan akun vendor diaktifkan.
+                        </p>
+
+                        <div className="mt-5">
+                            <label className="label" htmlFor="approve-member-search">
+                                Kaitkan ke member (opsional)
+                            </label>
+                            <input
+                                id="approve-member-search"
+                                type="text"
+                                className="input"
+                                placeholder="Cari nama / kode member…"
+                                value={memberQuery}
+                                onChange={(e) => {
+                                    setMemberQuery(e.target.value);
+                                    setSelectedMember(null);
+                                }}
+                            />
+                            <a
+                                href={route('admin.members.index')}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1.5 inline-block text-xs font-semibold text-gold-deep hover:underline"
+                            >
+                                Buka halaman pencarian member →
+                            </a>
+
+                            {memberResults.length > 0 && !selectedMember && (
+                                <ul className="mt-2 max-h-48 divide-y divide-ink/5 overflow-y-auto rounded-xl border border-ink/10">
+                                    {memberResults.map((m) => (
+                                        <li key={m.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedMember(m)}
+                                                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-paper/60"
+                                            >
+                                                <span className="font-medium text-ink">{m.name}</span>
+                                                <span className="font-mono text-xs text-slate">{m.member_code}</span>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {memberQuery.trim() !== '' && memberResults.length === 0 && !selectedMember && (
+                                <p className="mt-2 text-xs italic text-slate">Member tidak ditemukan.</p>
+                            )}
+
+                            {selectedMember && (
+                                <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-gold/40 bg-gold/10 px-3 py-2 text-sm">
+                                    <span className="font-semibold text-ink">{selectedMember.name}</span>
+                                    <span className="font-mono text-xs text-slate">{selectedMember.member_code}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedMember(null)}
+                                        className="text-xs font-semibold text-ember hover:underline"
+                                    >
+                                        Ganti
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-2">
+                            <button onClick={closeApproveModal} className="btn-ghost text-xs">
+                                Batal
+                            </button>
+                            <button onClick={confirmApprove} className="btn-gold text-xs">
+                                Setujui
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </>
     );
 }

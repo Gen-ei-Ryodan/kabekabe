@@ -14,7 +14,7 @@
 
 ## Kartu Digital & QR
 - `card_token` (UUID) dibangkitkan otomatis saat user member dibuat, dan dijamin via `ensureCardToken()`.
-- `member_code` format `7030YYNNNN` (contoh `7030260001` untuk member pertama tahun 2026), auto-increment per tahun.
+- `member_code` format `7030YYMMNNN` (contoh `70302609001` = 7030 + tahun 26 + bulan 09 + urut 001), auto-increment dan reset tiap bulan. Kode lama format `7030YYNNNN` tetap valid untuk data existing.
 - QR kartu berisi `card_token`; scan kehadiran admin hanya menerima token QR kartu, bukan `member_code` yang sudah tercatat.
 
 ## Promo

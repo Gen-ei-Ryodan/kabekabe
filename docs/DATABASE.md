@@ -16,7 +16,7 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | role | enum(member,admin,vendor) default member, index | |
 | phone, whatsapp, company | string nullable | |
 | avatar | string nullable | storage path |
-| member_code | string unique nullable | `7030YYNNNN`, contoh `7030260001` |
+| member_code | string unique nullable | `7030YYMMNNN`, contoh `70302609001` (reset 001 tiap bulan) |
 | card_token | string unique nullable | UUID QR |
 | notification_settings | json nullable | |
 | gender | enum nullable | `male` atau `female` |
@@ -65,6 +65,7 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | kolom | tipe |
 |-------|------|
 | user_id | FK users cascade (akun vendor) |
+| member_user_id | FK users nullOnDelete nullable (member yang dikaitkan saat approve) |
 | name | string |
 | slug | string unique |
 | category | string |
