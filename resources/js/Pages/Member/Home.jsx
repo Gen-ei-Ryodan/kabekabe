@@ -6,6 +6,8 @@ import Reveal from '@/Components/Reveal';
 
 import Modal from '@/Components/Modal';
 import { formatDate, formatRupiah } from '@/Utils/format';
+import { rememberBackSource } from '@/Utils/backNav';
+import { useTranslation } from '@/i18n';
 
 function RankingCard({ title, subtitle, items = [], emptyText }) {
     const medals = ['🥇', '🥈', '🥉'];
@@ -104,7 +106,14 @@ function PromoPopup({ open, onClose, popup }) {
                     <p className="mt-2 text-sm text-slate">
                         {promo.partner?.name && `dari ${promo.partner.name}`}
                     </p>
-                    <Link href={route('member.promos.show', promo.id)} onClick={onClose} className="btn-gold mt-5 w-full justify-center">
+                    <Link
+                        href={route('member.promos.show', promo.id)}
+                        onClick={() => {
+                            rememberBackSource('promo');
+                            onClose();
+                        }}
+                        className="btn-gold mt-5 w-full justify-center"
+                    >
                         Lihat Promo
                     </Link>
                 </div>
@@ -148,6 +157,7 @@ function PromoBanner({ promo, imageUrl }) {
         return (
             <Link
                 href={route('member.promos.show', promo.id)}
+                onClick={() => rememberBackSource('promo')}
                 className="group relative flex h-full flex-row-reverse overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
             >
                 {imageUrl && (
@@ -196,6 +206,7 @@ function PromoBanner({ promo, imageUrl }) {
     return (
         <Link
             href={route('member.promos.show', promo.id)}
+            onClick={() => rememberBackSource('promo')}
             className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
         >
             {imageUrl && (
@@ -283,7 +294,11 @@ function AgendaBanner({ agenda, imageUrl }) {
 
     if (isPortrait === null || isPortrait) {
         return (
-            <div className="relative flex h-full flex-row-reverse overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift">
+            <Link
+                href={route('member.agendas.show', agenda.id)}
+                onClick={() => rememberBackSource('agenda')}
+                className="relative flex h-full flex-row-reverse overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
+            >
                 <BannerImage url={imageUrl} className="h-full w-20 shrink-0 sm:w-24" />
                 <div aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-gold via-gold-light/40 to-transparent" />
                 <div className="flex flex-1 flex-col">
@@ -307,17 +322,21 @@ function AgendaBanner({ agenda, imageUrl }) {
                         <span className="font-mono text-[7px] uppercase tracking-widest text-slate-soft">
                             {agenda.type || 'Event'}
                         </span>
-                        <span className="font-mono text-[7px] uppercase tracking-widest text-slate/60">
-                            Information
+                        <span className="font-mono text-[7px] uppercase tracking-widest text-gold-deep">
+                            Lihat Detail →
                         </span>
                     </div>
                 </div>
-            </div>
+            </Link>
         );
     }
 
     return (
-        <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift">
+        <Link
+            href={route('member.agendas.show', agenda.id)}
+            onClick={() => rememberBackSource('agenda')}
+            className="relative flex h-full flex-col overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/30 hover:shadow-card"
+        >
             <BannerImage url={imageUrl} className="h-16 w-full sm:h-20" />
             <div aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-gold via-gold-light/40 to-transparent" />
 
@@ -342,11 +361,11 @@ function AgendaBanner({ agenda, imageUrl }) {
                 <span className="font-mono text-[7px] uppercase tracking-widest text-slate-soft">
                     {agenda.type || 'Event'}
                 </span>
-                <span className="font-mono text-[7px] uppercase tracking-widest text-slate/60">
-                    Information
+                <span className="font-mono text-[7px] uppercase tracking-widest text-gold-deep">
+                    Lihat Detail →
                 </span>
             </div>
-        </div>
+        </Link>
     );
 }
 
@@ -410,8 +429,9 @@ export default function Home({
     vendor_ranking_by_amount = [],
     popup = null,
 }) {
+    const { t } = useTranslation();
     const hour = new Date().getHours();
-    const greeting = hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : hour < 18 ? 'Selamat sore' : 'Selamat malam';
+    const greeting = hour < 11 ? t('home.greeting.morning') : hour < 15 ? t('home.greeting.afternoon') : hour < 18 ? t('home.greeting.evening') : t('home.greeting.night');
 
     const firstName = (member?.name || '').split(' ')[0];
     const bannerList = Array.isArray(banners) ? banners : [];

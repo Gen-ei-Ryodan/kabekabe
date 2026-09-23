@@ -11,11 +11,14 @@ export default function PromoCreate() {
         start_date: '',
         end_date: '',
         terms: '',
+        logo: null,
+        promo_image: null,
+        product_image: null,
     });
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('vendor.promos.store'), { preserveScroll: true });
+        post(route('vendor.promos.store'), { preserveScroll: true, forceFormData: true });
     };
 
     return (
@@ -86,6 +89,62 @@ export default function PromoCreate() {
                         <label className="label" htmlFor="terms">Syarat & Ketentuan</label>
                         <textarea id="terms" rows={2} className="input" value={data.terms} onChange={(e) => setData('terms', e.target.value)} placeholder="Berlaku untuk member AKTIF. Tidak dapat digabung dengan promo lain." />
                         {errors.terms && <p className="mt-1 text-xs text-ember">{errors.terms}</p>}
+                    </div>
+
+                    {/* Foto-foto Opsional */}
+                    <div className="border-t border-ink/10 pt-6">
+                        <p className="eyebrow mb-4">Foto Promo (Opsional)</p>
+                        <div className="grid gap-4 sm:grid-cols-3">
+                            <div>
+                                <label className="label" htmlFor="logo">Logo Perusahaan</label>
+                                <input
+                                    id="logo"
+                                    type="file"
+                                    accept="image/*"
+                                    className="input"
+                                    onChange={(e) => setData('logo', e.target.files[0])}
+                                />
+                                {errors.logo && <p className="mt-1 text-xs text-ember">{errors.logo}</p>}
+                                {data.logo && (
+                                    <div className="mt-2">
+                                        <img src={URL.createObjectURL(data.logo)} alt="Preview Logo" className="h-20 w-20 rounded-lg object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="promo_image">Foto Promo</label>
+                                <input
+                                    id="promo_image"
+                                    type="file"
+                                    accept="image/*"
+                                    className="input"
+                                    onChange={(e) => setData('promo_image', e.target.files[0])}
+                                />
+                                {errors.promo_image && <p className="mt-1 text-xs text-ember">{errors.promo_image}</p>}
+                                {data.promo_image && (
+                                    <div className="mt-2">
+                                        <img src={URL.createObjectURL(data.promo_image)} alt="Preview Promo" className="h-20 w-20 rounded-lg object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="product_image">Foto Produk</label>
+                                <input
+                                    id="product_image"
+                                    type="file"
+                                    accept="image/*"
+                                    className="input"
+                                    onChange={(e) => setData('product_image', e.target.files[0])}
+                                />
+                                {errors.product_image && <p className="mt-1 text-xs text-ember">{errors.product_image}</p>}
+                                {data.product_image && (
+                                    <div className="mt-2">
+                                        <img src={URL.createObjectURL(data.product_image)} alt="Preview Produk" className="h-20 w-20 rounded-lg object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <p className="mt-2 text-xs text-slate-soft">Format: JPG, PNG, atau WebP. Maksimal 2MB per file.</p>
                     </div>
 
                     <div className="flex justify-end gap-3">

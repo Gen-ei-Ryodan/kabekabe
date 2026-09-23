@@ -3,67 +3,78 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\PasswordOtpService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class NewPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Display the password reset view (only after OTP verification).
      */
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
+        $email = $request->session()->get('password_reset_email');
+        $verified = (bool) $request->session()->get('password_reset_verified');
+
+        if (! $email || ! $verified) {
+            return redirect()
+                ->route('password.request')
+                ->with('status', 'Silakan minta dan verifikasi kode OTP terlebih dahulu.');
+        }
+
         return Inertia::render('Auth/ResetPassword', [
-            'email' => $request->email,
-            'token' => $request->route('token'),
+            'email' => $email,
         ]);
     }
 
     /**
-     * Handle an incoming new password request.
-     *
-     * @throws ValidationException
+     * Handle an incoming new password request (guarded by a verified OTP in session).
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        $email = $request->session()->get('password_reset_email');
+        $verified = (bool) $request->session()->get('password_reset_verified');
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        if ($status == Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', __($status));
+        if (! $email || ! $verified) {
+            return redirect()
+                ->route('password.request')
+                ->with('status', 'Silakan minta dan verifikasi kode OTP terlebih dahulu.');
         }
 
-        throw ValidationException::withMessages([
-            'email' => [trans($status)],
+        $request->validate([
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ], [
+            'password.required' => 'Password baru wajib diisi.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
+
+        $user = User::query()->where('email', $email)->first();
+
+        if ($user) {
+            $user->forceFill([
+                'password' => Hash::make($request->password),
+                'remember_token' => Str::random(60),
+            ])->save();
+
+            app(PasswordOtpService::class)->clear($user);
+
+            event(new PasswordReset($user));
+        }
+
+        $request->session()->forget(['password_reset_email', 'password_reset_verified']);
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('login')
+            ->with('status', 'Password berhasil direset. Silakan masuk dengan password baru Anda.');
     }
 }

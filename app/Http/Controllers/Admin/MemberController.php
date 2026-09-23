@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ImportRowsRequest;
 use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\UpdateMemberRequest;
-use App\Models\Payment;
-use App\Models\Transaction;
 use App\Models\User;
+use App\Services\ApprovalNotifier;
 use App\Services\Import\ImportTemplateDownloader;
 use App\Services\Import\MemberImporter;
 use App\Services\MembershipService;
@@ -347,7 +346,14 @@ class MemberController extends Controller
 
         $this->memberships->ensureMembership($member);
 
-        return back()->with('success', "Pendaftaran member {$member->name} berhasil disetujui.");
+        $emailSent = app(ApprovalNotifier::class)->notifyApproved($member);
+
+        $message = "Pendaftaran member {$member->name} berhasil disetujui.";
+        $message .= $emailSent
+            ? " Email notifikasi & password awal dikirim ke {$member->email}."
+            : " Gagal mengirim email ke {$member->email} — periksa konfigurasi SMTP.";
+
+        return back()->with($emailSent ? 'success' : 'error', $message);
     }
 
     public function reject(User $member): RedirectResponse

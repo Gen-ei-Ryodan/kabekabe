@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\InitialPasswordController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\PasswordOtpController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
@@ -24,6 +26,7 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->middleware('throttle:6,1');
 
+    // Lupa password: minta kode OTP ke email.
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
@@ -31,10 +34,24 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:5,1')
         ->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+    // Verifikasi kode OTP.
+    Route::get('forgot-password/verify-otp', [PasswordOtpController::class, 'create'])
+        ->name('password.otp');
+
+    Route::post('forgot-password/verify-otp', [PasswordOtpController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('password.otp.verify');
+
+    Route::post('forgot-password/resend-otp', [PasswordOtpController::class, 'resend'])
+        ->middleware('throttle:3,1')
+        ->name('password.otp.resend');
+
+    // Reset password baru setelah OTP terverifikasi.
+    Route::get('reset-password', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
         ->name('password.store');
 });
 
@@ -55,10 +72,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
-    Route::get('first-change-password', [\App\Http\Controllers\Auth\InitialPasswordController::class, 'create'])
+    Route::get('first-change-password', [InitialPasswordController::class, 'create'])
         ->name('password.change-initial');
 
-    Route::post('first-change-password', [\App\Http\Controllers\Auth\InitialPasswordController::class, 'store'])
+    Route::post('first-change-password', [InitialPasswordController::class, 'store'])
         ->name('password.change-initial.update');
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');

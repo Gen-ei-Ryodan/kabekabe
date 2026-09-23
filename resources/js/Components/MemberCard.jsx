@@ -4,6 +4,7 @@ import QrCode from '@/Components/QrCode';
 import Avatar from '@/Components/Avatar';
 import Modal from '@/Components/Modal';
 import { formatDateEn } from '@/Utils/format';
+import { useTranslation } from '@/i18n';
 
 export default function MemberCard({ member }) {
     const wrapRef = useRef(null);
@@ -11,6 +12,7 @@ export default function MemberCard({ member }) {
     const sheenRef = useRef(null);
     const [photoOpen, setPhotoOpen] = useState(false);
     const [qrOpen, setQrOpen] = useState(false);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const wrap = wrapRef.current;
@@ -115,7 +117,7 @@ export default function MemberCard({ member }) {
                             type="button"
                             onClick={() => setPhotoOpen(true)}
                             className="group relative h-20 w-20 cursor-pointer overflow-hidden rounded-xl border-2 border-gold shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/70 sm:h-28 sm:w-28"
-                            aria-label="Lihat foto"
+                            aria-label={t('membercard.viewPhoto')}
                         >
                             <Avatar
                                 src={member.avatar_url}
@@ -139,8 +141,8 @@ export default function MemberCard({ member }) {
                                 type="button"
                                 onClick={() => setQrOpen(true)}
                                 className="group relative cursor-pointer overflow-hidden rounded-lg bg-white p-1 shadow-md transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold"
-                                aria-label="Perbesar QR Code"
-                                title="Klik untuk memperbesar QR Code"
+                                aria-label={t('membercard.zoomQr')}
+                                title={t('membercard.zoomQrTitle')}
                             >
                                 <QrCode value={member.card_token} size={72} className="rounded" />
                                 <span className="absolute inset-0 flex items-center justify-center rounded bg-ink/10 opacity-0 transition-opacity group-hover:opacity-100">
@@ -150,7 +152,7 @@ export default function MemberCard({ member }) {
                                 </span>
                             </button>
                             <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">
-                                Scan QR
+                                {t('membercard.scanQr')}
                             </div>
                         </div>
 
@@ -183,13 +185,13 @@ export default function MemberCard({ member }) {
 
                             <div className="flex items-end justify-between gap-3">
                                 <div>
-                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Bergabung</div>
+                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">{t('membercard.joined')}</div>
                                     <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
                                         {member.joined_at}
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">Berlaku Hingga</div>
+                                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-paper/70 drop-shadow sm:text-[9px]">{t('membercard.validUntil')}</div>
                                     <div className="font-display text-xs font-bold text-paper drop-shadow sm:text-sm">
                                         {member.expires_at ? formatDateEn(member.expires_at) : '—'}
                                     </div>
@@ -213,7 +215,7 @@ export default function MemberCard({ member }) {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                         </svg>
                         <div className="absolute rounded-2xl border border-ember/50 bg-ember/90 px-5 py-2.5 text-center shadow-lg">
-                            <p className="font-display text-sm font-bold text-white">Membership Tidak Aktif</p>
+                            <p className="font-display text-sm font-bold text-white">{t('membercard.inactive')}</p>
                         </div>
                     </div>
                 )}
@@ -251,8 +253,8 @@ export default function MemberCard({ member }) {
                 onClose={() => setQrOpen(false)}
             >
                 <div className="flex flex-col items-center justify-center rounded-2xl bg-paper p-6 text-center shadow-2xl">
-                    <h3 className="font-display text-lg font-bold text-ink">QR Digital Member Card</h3>
-                    <p className="mt-1 text-xs text-slate">Tunjukkan QR Code ini kepada kasir/vendor saat bertransaksi.</p>
+                    <h3 className="font-display text-lg font-bold text-ink">{t('membercard.qrTitle')}</h3>
+                    <p className="mt-1 text-xs text-slate">{t('membercard.qrHint')}</p>
 
                     <div className="my-6 rounded-2xl border border-ink/10 bg-white p-5 shadow-inner">
                         <QrCode value={member.card_token} size={220} className="mx-auto" />
@@ -266,7 +268,7 @@ export default function MemberCard({ member }) {
                         onClick={() => setQrOpen(false)}
                         className="mt-6 w-full rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-paper shadow transition-colors hover:bg-ink/90"
                     >
-                        Tutup
+                        {t('membercard.close')}
                     </button>
                 </div>
             </Modal>

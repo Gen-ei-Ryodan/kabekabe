@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\PasswordOtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,29 +23,36 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws ValidationException
+     * Handle an incoming password reset request by sending an OTP code to the email.
      */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => 'required|email',
+            'email' => ['required', 'email'],
+        ], [
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $email = $request->string('email')->toString();
 
-        if ($status == Password::RESET_LINK_SENT) {
-            return back()->with('status', __($status));
+        $user = User::query()->where('email', $email)->first();
+
+        if ($user) {
+            app(PasswordOtpService::class)->issue(
+                $user,
+                PasswordOtpService::PURPOSE_RESET,
+                'Kode OTP Reset Password',
+                'Gunakan kode 6 digit di bawah ini untuk melanjutkan proses reset password akun KBKB Anda.',
+            );
         }
 
-        throw ValidationException::withMessages([
-            'email' => [trans($status)],
-        ]);
+        // Selalu arahkan ke halaman verifikasi OTP tanpa mengungkap apakah email terdaftar.
+        $request->session()->put('password_reset_email', $email);
+        $request->session()->forget('password_reset_verified');
+
+        return redirect()
+            ->route('password.otp')
+            ->with('status', 'Jika email terdaftar, kode OTP sudah dikirim ke email Anda.');
     }
 }

@@ -49,6 +49,57 @@ export const INDUSTRY_CATEGORIES = [
     'Reparasi',
 ];
 
+/**
+ * Pemetaan bidang industri => kategori partner (daftar klien 2026-09-23).
+ * Industri yang tidak terdaftar => 'Lain-lain'.
+ */
+export const INDUSTRY_TO_PARTNER_CATEGORY = {
+    'Elektrikal': 'Elektronik & Gadget',
+    'Elektronik': 'Elektronik & Gadget',
+    'F&B - Baking': 'F&B',
+    'F&B - Coffee Shop': 'F&B',
+    'F&B - Supplier': 'F&B',
+    'F&B - Resto/Depot': 'F&B',
+    'Salon': 'Kecantikan',
+    'Farmasi': 'Kesehatan',
+    'Kesehatan': 'Kesehatan',
+    'Olahraga': 'Olahraga',
+    'Otomotif - Roda Dua & Tiga': 'Otomotif',
+    'Otomotif - Parts & Aksesoris': 'Otomotif',
+    'Otomotif - Roda Empat': 'Otomotif',
+    'Arsitektur': 'Pembangunan',
+    'Konstruksi - Interior': 'Pembangunan',
+    'Konstruksi - Exterior': 'Pembangunan',
+    'Real Estate': 'Real Estate',
+    'Hotel & Villa': 'Real Estate',
+    'Penyewaan & Sewa Guna': 'Real Estate',
+    'Perdagangan Besar/Eceran': 'Supplier',
+};
+
+export const PARTNER_CATEGORY_OPTIONS = [
+    'Elektronik & Gadget',
+    'F&B',
+    'Kecantikan',
+    'Kesehatan',
+    'Olahraga',
+    'Otomotif',
+    'Pembangunan',
+    'Real Estate',
+    'Supplier',
+    'Lain-lain',
+];
+
+/**
+ * Turunkan kategori partner dari bidang industri terpilih:
+ * hasil pertama yang bukan 'Lain-lain' menang; jika semuanya 'Lain-lain' => 'Lain-lain'.
+ */
+export function derivePartnerCategory(industries) {
+    const mapped = (industries || []).map(
+        (i) => INDUSTRY_TO_PARTNER_CATEGORY[i] || 'Lain-lain'
+    );
+    return mapped.find((c) => c !== 'Lain-lain') || 'Lain-lain';
+}
+
 export const HOBBY_LIST = [
     'Nonton Film',
     'Ngopi',

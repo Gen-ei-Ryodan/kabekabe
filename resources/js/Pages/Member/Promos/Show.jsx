@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import StatusChip from '@/Components/StatusChip';
 import { formatDate, formatRupiah } from '@/Utils/format';
+import { handleBackNavigation } from '@/Utils/backNav';
 
 export default function PromoShow({ promo, member_active }) {
     return (
@@ -9,8 +10,12 @@ export default function PromoShow({ promo, member_active }) {
             <Head title={promo.title} />
 
             <div className="mx-auto max-w-3xl">
-                <Link href={route('member.partners.index')} className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate hover:text-ink">
-                    ← Kembali ke semua promo
+                <Link
+                    href={route('member.partners.index')}
+                    onClick={(e) => handleBackNavigation(e, 'promo')}
+                    className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate hover:text-ink"
+                >
+                    ← Kembali
                 </Link>
 
                 <div className="card-surface overflow-hidden">
@@ -37,6 +42,39 @@ export default function PromoShow({ promo, member_active }) {
                             </p>
                         </div>
                     </div>
+
+                    {/* Foto-foto Opsional */}
+                    {(promo.logo_url || promo.promo_image_url || promo.product_image_url) && (
+                        <div className="border-t border-ink/10 bg-paper/30 p-5 sm:p-8">
+                            <p className="eyebrow mb-4">Galeri Promo</p>
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                {promo.promo_image_url && (
+                                    <div className="rounded-xl border border-ink/10 bg-white p-3 flex flex-col sm:col-span-1">
+                                        <div className="aspect-[4/3] overflow-hidden rounded-lg">
+                                            <img src={promo.promo_image_url} alt="Foto Promo" className="h-full w-full object-cover" />
+                                        </div>
+                                        <p className="mt-2 text-xs font-medium text-slate text-center">Foto Promo</p>
+                                    </div>
+                                )}
+                                {promo.product_image_url && (
+                                    <div className="rounded-xl border border-ink/10 bg-white p-3 flex flex-col">
+                                        <div className="aspect-[4/3] overflow-hidden rounded-lg">
+                                            <img src={promo.product_image_url} alt="Foto Produk" className="h-full w-full object-cover" />
+                                        </div>
+                                        <p className="mt-2 text-xs font-medium text-slate text-center">Foto Produk</p>
+                                    </div>
+                                )}
+                                {promo.logo_url && (
+                                    <div className="rounded-xl border border-ink/10 bg-white p-3 flex flex-col">
+                                        <div className="aspect-[4/3] flex items-center justify-center overflow-hidden bg-paper/50 rounded-lg">
+                                            <img src={promo.logo_url} alt="Logo Perusahaan" className="max-h-full max-w-full object-contain" />
+                                        </div>
+                                        <p className="mt-2 text-xs font-medium text-slate text-center">Logo Perusahaan</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="p-5 sm:p-10">
                         <h2 className="font-display text-lg font-bold">Tentang Promo Ini</h2>

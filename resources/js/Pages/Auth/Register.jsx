@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { HOBBY_LIST, INDUSTRY_CATEGORIES } from '@/constants/membership';
+import { HOBBY_LIST, INDUSTRY_CATEGORIES, derivePartnerCategory } from '@/constants/membership';
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
@@ -26,9 +26,9 @@ export default function Register() {
         religion: '',
         place_of_worship_address: '',
         company: '',
-        companies: [{ company: '', industry: '' }],
+        is_household: false,
+        companies: [{ company: '', industry: '', position: '', address: '' }],
         business_fields: [],
-        business_address: '',
         business_district: '',
         business_city: '',
         industry: [],
@@ -87,7 +87,7 @@ export default function Register() {
     };
 
     const addCompany = () => {
-        setData('companies', [...data.companies, { company: '', industry: '' }]);
+        setData('companies', [...data.companies, { company: '', industry: '', position: '', address: '' }]);
     };
 
     const removeCompany = (index) => {
@@ -111,12 +111,14 @@ export default function Register() {
 
     const submit = (e) => {
         e.preventDefault();
-        if (data.role === 'member') {
+        if (data.role === 'member' && !data.is_household) {
             const validCompanies = (data.companies || []).filter(
-                (c) => c.company && c.company.trim() && c.industry && c.industry.trim()
+                (c) => c.company?.trim() && c.industry?.trim() && c.position?.trim()
             );
             if (validCompanies.length === 0) {
-                alert('Silakan isi minimal 1 Nama Perusahaan beserta Bidang Industri.');
+                alert(
+                    'Silakan isi minimal 1 info usaha (Nama Perusahaan, Bidang Industri, Jabatan), atau centang "Bapak / Ibu Rumah Tangga".'
+                );
                 return;
             }
         }
@@ -399,10 +401,33 @@ export default function Register() {
                                 <p className="text-xs text-slate mt-0.5">Bidang bisnis atau instansi tempat Anda beraktivitas.</p>
                             </div>
 
+                            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink/15 bg-white/80 p-3.5 shadow-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={data.is_household}
+                                    onChange={(e) => setData('is_household', e.target.checked)}
+                                    className="mt-0.5 h-4 w-4 rounded border-ink/30 text-gold-deep focus:ring-gold"
+                                />
+                                <span className="text-sm leading-snug text-ink">
+                                    <span className="font-semibold">Bapak / Ibu Rumah Tangga</span>
+                                    <span className="mt-0.5 block text-xs text-slate">
+                                        Jika dicentang, bagian informasi usaha & pekerjaan tidak perlu diisi.
+                                    </span>
+                                </span>
+                            </label>
+
+                            {data.is_household && (
+                                <div className="rounded-xl border border-gold/30 bg-gold/10 p-4 text-xs leading-relaxed text-slate">
+                                    Informasi usaha & pekerjaan tidak diperlukan untuk Bapak/Ibu Rumah Tangga.
+                                    Silakan lanjut ke bagian berikutnya.
+                                </div>
+                            )}
+
+                            {!data.is_household && (
                             <div className="space-y-4">
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <InputLabel value="Perusahaan & Bidang Industri * (Minimal 1)" />
+                                        <InputLabel value="Usaha / Pekerjaan * (Minimal 1)" />
                                         <button
                                             type="button"
                                             onClick={addCompany}
@@ -461,54 +486,66 @@ export default function Register() {
                                                         ))}
                                                     </select>
                                                 </div>
+
+                                                <div>
+                                                    <InputLabel htmlFor={`position_${idx}`} value="Jabatan *" />
+                                                    <TextInput
+                                                        id={`position_${idx}`}
+                                                        value={comp.position}
+                                                        onChange={(e) => updateCompany(idx, 'position', e.target.value)}
+                                                        className="mt-1 block w-full"
+                                                        placeholder="Contoh: Direktur, Manajer, Wiraswasta"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="sm:col-span-2">
+                                                    <InputLabel htmlFor={`company_address_${idx}`} value="Alamat" />
+                                                    <textarea
+                                                        id={`company_address_${idx}`}
+                                                        rows={2}
+                                                        value={comp.address}
+                                                        onChange={(e) => updateCompany(idx, 'address', e.target.value)}
+                                                        className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+                                                        placeholder="Alamat perusahaan / tempat usaha..."
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
 
+                                    <InputError message={errors.companies} className="mt-1" />
                                     <InputError message={errors.company} className="mt-1" />
                                     <InputError message={errors.industry} className="mt-1" />
                                 </div>
 
                                 <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <InputLabel htmlFor="business_district" value="Kecamatan Usaha" />
+                                        <TextInput
+                                            id="business_district"
+                                            value={data.business_district}
+                                            onChange={(e) => setData('business_district', e.target.value)}
+                                            className="mt-1 block w-full"
+                                            placeholder="Kecamatan kantor"
+                                        />
+                                        <InputError message={errors.business_district} className="mt-1" />
+                                    </div>
 
-                                <div className="sm:col-span-2">
-                                    <InputLabel htmlFor="business_address" value="Alamat Kantor / Usaha" />
-                                    <textarea
-                                        id="business_address"
-                                        rows={2}
-                                        value={data.business_address}
-                                        onChange={(e) => setData('business_address', e.target.value)}
-                                        className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-                                        placeholder="Alamat kantor atau lokasi toko..."
-                                    />
-                                    <InputError message={errors.business_address} className="mt-1" />
-                                </div>
-
-                                <div>
-                                    <InputLabel htmlFor="business_district" value="Kecamatan Usaha" />
-                                    <TextInput
-                                        id="business_district"
-                                        value={data.business_district}
-                                        onChange={(e) => setData('business_district', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="Kecamatan kantor"
-                                    />
-                                    <InputError message={errors.business_district} className="mt-1" />
-                                </div>
-
-                                <div>
-                                    <InputLabel htmlFor="business_city" value="Kota / Kabupaten Usaha" />
-                                    <TextInput
-                                        id="business_city"
-                                        value={data.business_city}
-                                        onChange={(e) => setData('business_city', e.target.value)}
-                                        className="mt-1 block w-full"
-                                        placeholder="Kota/Kabupaten kantor"
-                                    />
-                                    <InputError message={errors.business_city} className="mt-1" />
+                                    <div>
+                                        <InputLabel htmlFor="business_city" value="Kota / Kabupaten Usaha" />
+                                        <TextInput
+                                            id="business_city"
+                                            value={data.business_city}
+                                            onChange={(e) => setData('business_city', e.target.value)}
+                                            className="mt-1 block w-full"
+                                            placeholder="Kota/Kabupaten kantor"
+                                        />
+                                        <InputError message={errors.business_city} className="mt-1" />
+                                    </div>
                                 </div>
                             </div>
-                            </div>
+                            )}
                         </section>
 
                         {/* 4. HOBI & KESUKAAN */}
@@ -709,6 +746,16 @@ export default function Register() {
                                         </p>
                                     )}
                                     <InputError message={errors.industry} className="mt-1" />
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                    <InputLabel value="Kategori Partner" />
+                                    <div className="mt-1 rounded-xl border border-gold/30 bg-gold/10 px-3.5 py-2.5 text-sm font-semibold text-gold-deep">
+                                        {data.industry.length > 0 ? derivePartnerCategory(data.industry) : '—'}
+                                    </div>
+                                    <p className="mt-1 text-xs text-slate">
+                                        Kategori diambil otomatis dari bidang industri yang dipilih.
+                                    </p>
                                 </div>
 
                                 <div>
@@ -1125,10 +1172,11 @@ export default function Register() {
                         <span>ℹ️</span> Informasi Keamanan Akun:
                     </p>
                     <p>
-                        Password sementara akan di-generate otomatis oleh sistem setelah formulir dikirim. Anda dapat login menggunakan password tersebut dan langsung menggantinya pada halaman profil.
+                        Pendaftaran Anda akan ditinjau dan diverifikasi oleh admin pengurus KBKB terlebih dahulu.
                     </p>
                     <p>
-                        Pendaftaran Anda akan ditinjau dan diverifikasi oleh admin pengurus KBKB terlebih dahulu.
+                        Setelah disetujui, Anda akan menerima email berisi konfirmasi persetujuan beserta password awal
+                        untuk login pertama kali.
                     </p>
                 </div>
 

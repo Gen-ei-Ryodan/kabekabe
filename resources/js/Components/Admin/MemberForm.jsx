@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import TextInput from '@/Components/TextInput';
 import { INDUSTRY_CATEGORIES, HOBBY_LIST } from '@/constants/membership';
 
 export default function MemberForm({
@@ -566,23 +567,26 @@ export default function MemberForm({
                         <label className="label" htmlFor="password">
                             {isCreate ? 'Kata Sandi *' : 'Kata Sandi Baru (kosongkan bila tidak diubah)'}
                         </label>
-                        <input
+                        <TextInput
                             id="password"
                             type="password"
-                            className="input"
+                            name="password"
+                            autoComplete="new-password"
                             value={data.password || ''}
                             onChange={(e) => setData('password', e.target.value)}
                             required={isCreate}
                         />
                         {errors.password && <p className="mt-1 text-xs text-ember">{errors.password}</p>}
+                        <p className="mt-1 text-[11px] text-slate-soft">Minimal 8 karakter, kombinasi huruf &amp; angka.</p>
                     </div>
 
                     <div>
                         <label className="label" htmlFor="password_confirmation">Konfirmasi Kata Sandi</label>
-                        <input
+                        <TextInput
                             id="password_confirmation"
                             type="password"
-                            className="input"
+                            name="password_confirmation"
+                            autoComplete="new-password"
                             value={data.password_confirmation || ''}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             required={isCreate && Boolean(data.password)}

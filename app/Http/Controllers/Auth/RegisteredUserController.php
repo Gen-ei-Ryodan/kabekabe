@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use App\Models\User;
+use App\Support\PartnerCategory;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -78,8 +80,6 @@ class RegisteredUserController extends Controller
                 'industry.required' => 'Bidang industri wajib dipilih minimal 1.',
             ]);
 
-            $generatedPassword = 'KBKB' . random_int(1000, 9999);
-
             $userName = $isMember
                 ? $request->member_name
                 : ($request->pic_name ?: $request->trade_name ?: $request->name);
@@ -105,7 +105,7 @@ class RegisteredUserController extends Controller
                 'business_address' => $request->address,
                 'business_district' => $request->district,
                 'business_city' => $request->city,
-                'password' => Hash::make($generatedPassword),
+                'password' => Hash::make(Str::random(40)),
                 'role' => User::ROLE_VENDOR,
                 'approval_status' => User::APPROVAL_PENDING,
                 'must_change_password' => true,
@@ -117,7 +117,9 @@ class RegisteredUserController extends Controller
                 'slug' => Partner::slugFor($request->trade_name ?: $request->name),
                 'pic_name' => $userName,
                 'pic_phone' => $request->phone,
-                'category' => $request->category ?: ($industryString ?: 'Umum'),
+                'category' => PartnerCategory::fromIndustries(
+                    is_array($industryInput) ? array_filter($industryInput) : [$industryString]
+                ),
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'address' => $request->address,
@@ -135,32 +137,51 @@ class RegisteredUserController extends Controller
                 'status' => Partner::STATUS_INACTIVE,
             ]);
         } else {
-            $companiesInput = $request->input('companies');
-            if (is_array($companiesInput) && count($companiesInput) > 0) {
-                $formattedCompanyParts = [];
-                $extractedIndustries = [];
-                $extractedFields = [];
+            $isHousehold = $request->boolean('is_household');
 
-                foreach ($companiesInput as $c) {
-                    $cName = trim($c['company'] ?? '');
-                    $cInd = trim($c['industry'] ?? '');
-                    if ($cName !== '') {
-                        $formattedCompanyParts[] = $cInd !== '' ? "{$cName} ({$cInd})" : $cName;
-                        $extractedFields[] = $cName;
-                    }
-                    if ($cInd !== '') {
-                        $extractedIndustries[] = $cInd;
-                    }
+            // Normalisasi daftar usaha: buang baris yang sepenuhnya kosong.
+            $businesses = [];
+            foreach ((array) $request->input('companies', []) as $c) {
+                $cName = trim((string) ($c['company'] ?? ''));
+                $cInd = trim((string) ($c['industry'] ?? ''));
+                $cPos = trim((string) ($c['position'] ?? ''));
+                $cAddr = trim((string) ($c['address'] ?? ''));
+
+                if ($cName === '' && $cInd === '' && $cPos === '' && $cAddr === '') {
+                    continue;
                 }
 
-                if (! empty($formattedCompanyParts)) {
-                    $request->merge([
-                        'company' => implode(', ', $formattedCompanyParts),
-                        'industry' => $extractedIndustries,
-                        'business_fields' => ! empty($extractedFields) ? $extractedFields : ['Lainnya'],
-                    ]);
+                $businesses[] = [
+                    'company' => $cName,
+                    'industry' => $cInd,
+                    'position' => $cPos,
+                    'address' => $cAddr,
+                ];
+            }
+
+            // Turunkan field legacy (kompatibel dengan layar admin & profil).
+            $formattedCompanyParts = [];
+            $extractedIndustries = [];
+            $extractedFields = [];
+
+            foreach ($businesses as $b) {
+                if ($b['company'] !== '') {
+                    $formattedCompanyParts[] = $b['industry'] !== '' ? "{$b['company']} ({$b['industry']})" : $b['company'];
+                    $extractedFields[] = $b['company'];
+                }
+                if ($b['industry'] !== '') {
+                    $extractedIndustries[] = $b['industry'];
                 }
             }
+
+            $request->merge([
+                'is_household' => $isHousehold,
+                'companies' => $businesses,
+                'company' => ! empty($formattedCompanyParts) ? implode(', ', $formattedCompanyParts) : null,
+                'industry' => ! empty($extractedIndustries) ? implode(', ', $extractedIndustries) : null,
+                'business_fields' => ! empty($extractedFields) ? $extractedFields : null,
+                'business_address' => $businesses[0]['address'] ?? null,
+            ]);
 
             $request->validate([
                 'role' => 'required|in:member,partner',
@@ -178,26 +199,34 @@ class RegisteredUserController extends Controller
                 'address' => 'nullable|string|max:500',
                 'district' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
-                'business_fields' => 'required|array|min:1',
+                'is_household' => 'boolean',
+                'companies' => ($isHousehold ? 'nullable' : 'required').'|array'.($isHousehold ? '' : '|min:1'),
+                'companies.*.company' => ($isHousehold ? 'nullable' : 'required').'|string|max:255',
+                'companies.*.industry' => ($isHousehold ? 'nullable' : 'required').'|string|max:100',
+                'companies.*.position' => ($isHousehold ? 'nullable' : 'required').'|string|max:100',
+                'companies.*.address' => 'nullable|string|max:500',
+                'business_fields' => ($isHousehold ? 'nullable' : 'required').'|array'.($isHousehold ? '' : '|min:1'),
                 'business_fields.*' => 'required|string|max:100',
                 'company' => 'nullable|string|max:255',
                 'business_address' => 'nullable|string|max:500',
                 'business_district' => 'nullable|string|max:100',
                 'business_city' => 'nullable|string|max:100',
-                'industry' => 'required',
+                'industry' => $isHousehold ? 'nullable|string|max:255' : 'required|string|max:255',
             ], [
+                'companies.required' => 'Silakan isi minimal 1 info usaha atau centang "Bapak/Ibu Rumah Tangga".',
+                'companies.min' => 'Silakan isi minimal 1 info usaha atau centang "Bapak/Ibu Rumah Tangga".',
+                'companies.*.company.required' => 'Nama perusahaan wajib diisi.',
+                'companies.*.industry.required' => 'Bidang industri wajib dipilih.',
+                'companies.*.position.required' => 'Jabatan wajib diisi.',
                 'business_fields.required' => 'Bidang usaha wajib diisi minimal 1.',
                 'business_fields.min' => 'Bidang usaha wajib diisi minimal 1.',
                 'industry.required' => 'Bidang industri wajib dipilih minimal 1.',
             ]);
 
-            $industryInput = $request->input('industry');
-            $industryString = is_array($industryInput) ? implode(', ', array_filter($industryInput)) : (string) $industryInput;
-            if (empty(trim($industryString))) {
+            $industryString = $request->input('industry');
+            if (! $isHousehold && empty(trim((string) $industryString))) {
                 return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
             }
-
-            $generatedPassword = 'KBKB' . random_int(1000, 9999);
 
             $user = User::create([
                 'name' => $request->name,
@@ -220,8 +249,10 @@ class RegisteredUserController extends Controller
                 'business_address' => $request->business_address,
                 'business_district' => $request->business_district,
                 'business_city' => $request->business_city,
+                'businesses' => ! empty($businesses) ? $businesses : null,
+                'is_household' => $isHousehold,
                 'industry' => $industryString,
-                'password' => Hash::make($generatedPassword),
+                'password' => Hash::make(Str::random(40)),
                 'role' => User::ROLE_MEMBER,
                 'approval_status' => User::APPROVAL_PENDING,
                 'must_change_password' => true,
@@ -234,7 +265,6 @@ class RegisteredUserController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $roleInput,
-            'generatedPassword' => $generatedPassword,
         ]);
     }
 }

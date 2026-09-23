@@ -3,6 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
+import { useTranslation } from '@/i18n';
 import { Head, useForm } from '@inertiajs/react';
 
 export default function ChangeInitialPassword() {
@@ -10,6 +11,7 @@ export default function ChangeInitialPassword() {
         password: '',
         password_confirmation: '',
     });
+    const { t } = useTranslation();
 
     const submit = (e) => {
         e.preventDefault();
@@ -21,18 +23,18 @@ export default function ChangeInitialPassword() {
 
     return (
         <GuestLayout>
-            <Head title="Ubah Password Awal" />
+            <Head title={t('flow.changeInitial.title')} />
 
             <header className="mb-6">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Perbarui Password Anda</h1>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-ink">{t('flow.changeInitial.heading')}</h1>
                 <p className="mt-2 text-sm text-slate">
-                    Ini adalah login pertama Anda. Untuk alasan keamanan, sistem mewajibkan Anda membuat password baru sebelum mengakses sistem.
+                    {t('flow.changeInitial.instruction')}
                 </p>
             </header>
 
             <form onSubmit={submit} className="space-y-5">
                 <div>
-                    <InputLabel htmlFor="password" value="Password Baru" />
+                    <InputLabel htmlFor="password" value={t('flow.newPassword')} />
 
                     <TextInput
                         id="password"
@@ -47,10 +49,11 @@ export default function ChangeInitialPassword() {
                     />
 
                     <InputError message={errors.password} className="mt-2" />
+                    <p className="mt-2 text-[11px] text-slate-soft">{t('flow.passwordHint')}</p>
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password_confirmation" value="Konfirmasi Password Baru" />
+                    <InputLabel htmlFor="password_confirmation" value={t('flow.confirmNewPassword')} />
 
                     <TextInput
                         id="password_confirmation"
@@ -67,7 +70,7 @@ export default function ChangeInitialPassword() {
                 </div>
 
                 <PrimaryButton className="w-full justify-center" disabled={processing}>
-                    {processing ? 'Menyimpan…' : 'Simpan & Masuk ke Akun'}
+                    {processing ? t('flow.saving') : t('flow.changeInitial.submit')}
                 </PrimaryButton>
             </form>
         </GuestLayout>

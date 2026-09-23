@@ -1,0 +1,68 @@
+// Kamus Bahasa Indonesia — halaman jelajah member (namespace: home.*, partners.*, promos.*, agenda.*)
+export default {
+    // Beranda member
+    'home.headTitle': 'Beranda',
+    'home.greeting.morning': 'Selamat pagi',
+    'home.greeting.afternoon': 'Selamat siang',
+    'home.greeting.evening': 'Selamat sore',
+    'home.greeting.night': 'Selamat malam',
+    'home.sr.cardReady': 'Kartu member digital Anda siap digunakan.',
+    'home.ranking.title': 'Top Vendor Ranking',
+    'home.ranking.aria': 'Vendor Ranking',
+    'home.ranking.byCount.title': 'Berdasarkan Transaksi',
+    'home.ranking.byCount.subtitle': 'Frekuensi Transaksi Terbanyak',
+    'home.ranking.byCount.empty': 'Belum ada data transaksi',
+    'home.ranking.byAmount.title': 'Berdasarkan Nominal',
+    'home.ranking.byAmount.subtitle': 'Total Belanja Tertinggi',
+    'home.ranking.byAmount.empty': 'Belum ada data belanja',
+    'home.popup.eyebrow': 'Eksklusif Member',
+    'home.popup.from': 'dari {name}',
+    'home.popup.cta': 'Lihat Promo',
+    'home.promoLabel': 'Promo',
+    'home.agendaLabel': 'Agenda',
+    'home.promo.view': 'Lihat →',
+
+    // Promo & Partner (index)
+    'partners.headTitle': 'Promo & Partner',
+    'partners.tab.promos': 'Promo',
+    'partners.tab.partners': 'Partner',
+    'partners.filter.all': 'Semua',
+    'partners.searchPlaceholder': 'Cari promo atau nama partner...',
+    'partners.emptyPromos.title': 'Belum ada promo aktif',
+    'partners.emptyPromos.desc': 'Tidak ada promo untuk kategori ini saat ini.',
+    'partners.emptyPartners.title': 'Belum ada partner',
+    'partners.emptyPartners.desc': 'Belum ada partner terdaftar di kategori ini.',
+    'partners.promosCount': '{n} promo',
+
+    // Detail partner
+    'partners.backToList': '← Kembali ke daftar partner',
+    'partners.info': 'Informasi',
+    'partners.address': 'Alamat',
+    'partners.phone': 'Telepon',
+    'partners.email': 'Email',
+    'partners.activePromos': 'Promo aktif di sini',
+    'partners.noActivePromos': 'Belum ada promo aktif saat ini.',
+    'partners.promoHintLead': 'Tunjukkan kartu digital Anda di kasir untuk menggunakan promo. Pastikan status membership Anda',
+    'partners.promoHintStatus': 'AKTIF',
+
+    // Detail promo
+    'promos.freeItem': 'Free Barang',
+    'promos.freeItemDesc': 'Hadiah barang senilai {value}',
+    'promos.exclusiveDiscount': 'Diskon eksklusif member',
+    'promos.status.available': 'Tersedia untuk Anda',
+    'promos.status.needActive': 'Perlu status Aktif',
+    'promos.about': 'Tentang Promo Ini',
+    'promos.minPurchase': 'Minimal Belanja',
+    'promos.benefit': 'Benefit / Diskon',
+    'promos.period': 'Periode',
+    'promos.noMinimum': 'Tanpa Minimal',
+    'promos.percentOff': 'Diskon {n}%',
+    'promos.terms': 'Syarat & Ketentuan',
+    'promos.visitPartner': 'Kunjungi {name}',
+    'promos.showCardHint': '✓ Tunjukkan kartu digital Anda saat pembayaran',
+    'promos.inactiveHint': 'Untuk memperbarui membership Anda, silakan hubungi admin atau perpanjang langganan.',
+
+    // Detail agenda
+    'agenda.free': 'Gratis',
+    'agenda.fee': 'Biaya {fee}',
+};

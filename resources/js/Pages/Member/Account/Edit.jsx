@@ -2,9 +2,12 @@ import { Head, useForm } from '@inertiajs/react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import Avatar from '@/Components/Avatar';
+import TextInput from '@/Components/TextInput';
+import { useTranslation } from '@/i18n';
 
-export default function AccountEdit({ account }) {
-    const { data, setData, put, processing, errors } = useForm({
+export default function AccountEdit({ account, password_otp_sent }) {
+    const { t } = useTranslation();
+    const { data, setData, post, put, processing, errors } = useForm({
         name: account.name || '',
         email: account.email || '',
         religion: account.religion || '',
@@ -15,27 +18,45 @@ export default function AccountEdit({ account }) {
         current_password: '',
         password: '',
         password_confirmation: '',
+        otp: '',
     });
+
+    const otpSent = Boolean(password_otp_sent);
+    const willChangePassword = Boolean(data.password) || otpSent;
+
+    const sendOtp = () => {
+        post(route('member.account.password.send-otp'), {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
 
     const submit = (e) => {
         e.preventDefault();
+
+        // Ganti password: minta kode OTP ke email dulu sebelum disimpan.
+        if (data.password && !otpSent) {
+            sendOtp();
+            return;
+        }
+
         put(route('member.account.update'), { preserveScroll: true });
     };
 
     return (
         <>
-            <Head title="Pengaturan Profil" />
+            <Head title={t('account.headTitle')} />
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Pengaturan Akun</h1>
-                    <p className="mt-1 text-sm text-slate">Perbarui data profil member, informasi kontak, dan keamanan akun Anda.</p>
+                    <h1 className="font-display text-3xl font-bold tracking-tight text-ink">{t('account.title')}</h1>
+                    <p className="mt-1 text-sm text-slate">{t('account.subtitle')}</p>
                 </header>
 
                 <form onSubmit={submit} className="mt-8 space-y-8">
                     <Reveal>
                         <section className="card-surface p-6 sm:p-8">
-                            <h2 className="font-display text-lg font-bold text-ink">Profil Member</h2>
+                            <h2 className="font-display text-lg font-bold text-ink">{t('account.profileTitle')}</h2>
 
                             <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
                                 <Avatar
@@ -48,7 +69,7 @@ export default function AccountEdit({ account }) {
                                     {account.can_change_avatar ? (
                                         <>
                                             <label className="btn-ghost cursor-pointer text-xs">
-                                                {data.avatar ? 'Foto dipilih ✓' : 'Pilih Foto Profil'}
+                                                {data.avatar ? t('account.avatarChosen') : t('account.avatarPick')}
                                                 <input
                                                     type="file"
                                                     accept="image/*"
@@ -58,16 +79,16 @@ export default function AccountEdit({ account }) {
                                             </label>
                                             {errors.avatar && <p className="mt-1 text-xs text-ember">{errors.avatar}</p>}
                                             <p className="mt-1.5 text-[11px] text-slate-soft">
-                                                Foto profil hanya boleh diganti 1 kali di awal. Format rasio 1:1, maks 2MB.
+                                                {t('account.avatarHint')}
                                             </p>
                                         </>
                                     ) : (
                                         <div className="space-y-1.5">
                                             <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink/5 px-2.5 py-1 text-xs font-medium text-slate">
-                                                🔒 Foto profil terkunci
+                                                {t('account.avatarLocked')}
                                             </span>
                                             <p className="text-[11px] text-slate">
-                                                Foto profil hanya boleh diganti 1 kali di awal. Untuk penggantian foto selanjutnya, silakan ajukan ke Admin.
+                                                {t('account.avatarLockedHint')}
                                             </p>
                                             <a
                                                 href={`https://wa.me/628113888888?text=${encodeURIComponent(`Halo Admin KBKB, saya ingin mengajukan penggantian foto profil member:\nNama: ${account.name}\nNo. Member: ${account.member_code || '-'}`)}`}
@@ -75,7 +96,7 @@ export default function AccountEdit({ account }) {
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1 text-xs font-semibold text-gold-deep hover:underline"
                                             >
-                                                Ajukan Perubahan Foto ke Admin via WhatsApp →
+                                                {t('account.avatarRequestWa')}
                                             </a>
                                         </div>
                                     )}
@@ -159,31 +180,100 @@ export default function AccountEdit({ account }) {
                         <section className="card-surface p-6 sm:p-8">
                             <h2 className="font-display text-lg font-bold text-ink">Keamanan & Password</h2>
                             <p className="mt-1 text-xs text-slate">Kosongkan jika tidak ingin mengubah password.</p>
+                            <p className="mt-1 text-xs text-slate">Password baru wajib minimal 8 karakter dan kombinasi huruf + angka. Penggantian password dikonfirmasi melalui kode OTP yang dikirim ke email Anda.</p>
 
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
                                     <label className="label" htmlFor="current_password">Password Saat Ini (Wajib jika ingin ganti password)</label>
-                                    <input id="current_password" type="password" className="input" value={data.current_password} onChange={(e) => setData('current_password', e.target.value)} />
+                                    <TextInput
+                                        id="current_password"
+                                        type="password"
+                                        name="current_password"
+                                        autoComplete="current-password"
+                                        className="input"
+                                        value={data.current_password}
+                                        onChange={(e) => setData('current_password', e.target.value)}
+                                    />
                                     {errors.current_password && <p className="mt-1 text-xs text-ember">{errors.current_password}</p>}
                                 </div>
 
                                 <div>
                                     <label className="label" htmlFor="password">Password Baru</label>
-                                    <input id="password" type="password" className="input" value={data.password} onChange={(e) => setData('password', e.target.value)} />
+                                    <TextInput
+                                        id="password"
+                                        type="password"
+                                        name="password"
+                                        autoComplete="new-password"
+                                        className="input"
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                    />
                                     {errors.password && <p className="mt-1 text-xs text-ember">{errors.password}</p>}
+                                    <p className="mt-1 text-[11px] text-slate-soft">Minimal 8 karakter, kombinasi huruf &amp; angka.</p>
                                 </div>
 
                                 <div>
                                     <label className="label" htmlFor="password_confirmation">Konfirmasi Password Baru</label>
-                                    <input id="password_confirmation" type="password" className="input" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} />
+                                    <TextInput
+                                        id="password_confirmation"
+                                        type="password"
+                                        name="password_confirmation"
+                                        autoComplete="new-password"
+                                        className="input"
+                                        value={data.password_confirmation}
+                                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    />
+                                    {errors.password_confirmation && <p className="mt-1 text-xs text-ember">{errors.password_confirmation}</p>}
                                 </div>
+
+                                {willChangePassword && (
+                                    <div className="sm:col-span-2 rounded-xl border border-gold/40 bg-gold/10 p-4">
+                                        <label className="label" htmlFor="otp">
+                                            Kode OTP dari Email {otpSent && <span className="text-ember">*</span>}
+                                        </label>
+                                        <input
+                                            id="otp"
+                                            name="otp"
+                                            type="text"
+                                            inputMode="numeric"
+                                            autoComplete="one-time-code"
+                                            maxLength={6}
+                                            className="input font-mono tracking-[0.4em]"
+                                            placeholder="••••••"
+                                            value={data.otp}
+                                            onChange={(e) => setData('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                        />
+                                        {errors.otp && <p className="mt-1 text-xs text-ember">{errors.otp}</p>}
+                                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                                            <p className="text-[11px] text-slate">
+                                                {otpSent
+                                                    ? `Kode 6 digit dikirim ke ${account.email} (berlaku 10 menit). Masukkan kode lalu klik Simpan Perubahan.`
+                                                    : 'Klik "Simpan Perubahan" untuk mengirim kode OTP ke email Anda terlebih dahulu.'}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={sendOtp}
+                                                disabled={processing}
+                                                className="text-[11px] font-bold text-gold-deep hover:underline disabled:opacity-50"
+                                            >
+                                                {otpSent ? 'Kirim Ulang Kode OTP' : 'Kirim Kode OTP'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </section>
                     </Reveal>
 
                     <div className="flex justify-stretch gap-3 sm:justify-end">
                         <button type="submit" className="btn-gold w-full sm:w-auto" disabled={processing}>
-                            {processing ? 'Menyimpan…' : 'Simpan Perubahan'}
+                            {processing
+                                ? 'Memproses…'
+                                : data.password && !otpSent
+                                    ? 'Kirim OTP ke Email'
+                                    : data.password
+                                        ? 'Verifikasi OTP & Simpan'
+                                        : 'Simpan Perubahan'}
                         </button>
                     </div>
                 </form>

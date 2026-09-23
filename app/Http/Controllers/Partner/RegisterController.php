@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Partner;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use App\Models\User;
+use App\Support\PartnerCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,7 +35,7 @@ class RegisterController extends Controller
             'member_code' => ['nullable', 'string', 'max:20'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
             'phone' => ['nullable', 'string', 'max:30'],
             'date_of_birth' => ['nullable', 'date'],
             'industry' => ['required'],
@@ -73,7 +75,9 @@ class RegisterController extends Controller
             $partner = $user->partner()->create([
                 'name' => $validated['company_name'],
                 'slug' => Partner::slugFor($validated['company_name']),
-                'category' => $industryString ?: 'General',
+                'category' => PartnerCategory::fromIndustries(
+                    is_array($industryInput) ? array_filter($industryInput) : [$industryString]
+                ),
                 'address' => $validated['company_address'] ?? null,
                 'phone' => $validated['company_phone'] ?? null,
                 'email' => $validated['email'],

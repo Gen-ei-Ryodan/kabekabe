@@ -5,12 +5,14 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { HOBBY_LIST, INDUSTRY_CATEGORIES } from '@/constants/membership';
+import { HOBBY_LIST, INDUSTRY_CATEGORIES, derivePartnerCategory } from '@/constants/membership';
+import { useTranslation } from '@/i18n';
 
 const INDUSTRI_OPTIONS = INDUSTRY_CATEGORIES;
 const HOBBY_OPTIONS = HOBBY_LIST;
 
 export default function Register() {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm({
         company_name: '',
         company_address: '',
@@ -75,7 +77,7 @@ export default function Register() {
     const submit = (e) => {
         e.preventDefault();
         if (Array.isArray(data.industry) && data.industry.length === 0) {
-            alert('Pilih minimal 1 bidang industri');
+            alert(t('partner.alertIndustry'));
             return;
         }
         post(route('partner.register.store'), {
@@ -85,17 +87,17 @@ export default function Register() {
 
     return (
         <GuestLayout maxWidth="max-w-3xl">
-            <Head title="Registrasi Partner KBKB" />
+            <Head title={t('partner.title')} />
 
             <header className="mb-6 text-center sm:text-left">
                 <span className="inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep mb-2">
-                    Mitra Usaha KBKB
+                    {t('partner.badge')}
                 </span>
                 <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink">
-                    Formulir Registrasi Partner
+                    {t('partner.heading')}
                 </h1>
                 <p className="mt-1 text-sm text-slate">
-                    Isi data lengkap perusahaan Anda untuk bergabung sebagai mitra usaha KBKB.
+                    {t('partner.subtitle')}
                 </p>
             </header>
 
@@ -105,34 +107,34 @@ export default function Register() {
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">1</span>
-                            Data Perusahaan
+                            {t('partner.s1Title')}
                         </h2>
-                        <p className="text-xs text-slate mt-0.5">Informasi identitas perusahaan/usaha Anda.</p>
+                        <p className="text-xs text-slate mt-0.5">{t('partner.s1Desc')}</p>
                     </div>
 
                     <div className="space-y-4">
                         <div>
-                            <InputLabel htmlFor="company_name" value="Nama Perusahaan *" />
+                            <InputLabel htmlFor="company_name" value={t('partner.companyName')} />
                             <TextInput
                                 id="company_name"
                                 value={data.company_name}
                                 onChange={(e) => setData('company_name', e.target.value)}
                                 className="mt-1 block w-full"
-                                placeholder="Contoh: PT Maju Jaya, Kopi Cantik Bali"
+                                placeholder={t('partner.companyNamePh')}
                                 required
                             />
                             <InputError message={errors.company_name} className="mt-1" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="industry" value="Bidang Industri * (Pilih minimal 1)" />
+                            <InputLabel htmlFor="industry" value={t('partner.industryLabel')} />
                             <div className="space-y-2">
                                 <div className="flex gap-2">
                                     <TextInput
                                         type="text"
                                         value={industrySearch}
                                         onChange={(e) => setIndustrySearch(e.target.value)}
-                                        placeholder="Cari bidang industri (misal: F&B, Hotel, Retail)..."
+                                        placeholder={t('partner.industrySearchPh')}
                                         className="flex-1 text-xs"
                                     />
                                     {industrySearch && (
@@ -141,13 +143,13 @@ export default function Register() {
                                             onClick={() => setIndustrySearch('')}
                                             className="btn-ghost text-xs px-3"
                                         >
-                                            Reset
+                                            {t('partner.reset')}
                                         </button>
                                     )}
                                 </div>
                                 {Array.isArray(data.industry) && data.industry.length > 0 && (
                                     <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-xl bg-gold/10 border border-gold/20">
-                                        <span className="text-xs text-gold-deep font-medium mr-1">Terpilih:</span>
+                                        <span className="text-xs text-gold-deep font-medium mr-1">{t('partner.selected')}</span>
                                         {data.industry.map((ind) => (
                                             <span
                                                 key={ind}
@@ -187,17 +189,28 @@ export default function Register() {
                                             );
                                         })}
                                         {filteredIndustries.length === 0 && (
-                                            <p className="text-xs text-slate py-1">Tidak ditemukan pilihan industri.</p>
+                                            <p className="text-xs text-slate py-1">{t('partner.industryEmpty')}</p>
                                         )}
                                     </div>
                                 </div>
                             </div>
                             <InputError message={errors.industry} className="mt-1" />
+                            <div className="mt-3">
+                                <InputLabel value={t('partner.categoryLabel')} />
+                                <div className="mt-1 rounded-xl border border-gold/30 bg-gold/10 px-3.5 py-2.5 text-sm font-semibold text-gold-deep">
+                                    {Array.isArray(data.industry) && data.industry.length > 0
+                                        ? derivePartnerCategory(data.industry)
+                                        : '—'}
+                                </div>
+                                <p className="mt-1 text-xs text-slate">
+                                    {t('partner.categoryDesc')}
+                                </p>
+                            </div>
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <InputLabel htmlFor="company_phone" value="Nomor Telepon Perusahaan" />
+                                <InputLabel htmlFor="company_phone" value={t('partner.companyPhone')} />
                                 <TextInput
                                     id="company_phone"
                                     type="tel"
@@ -210,14 +223,14 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="employee_count" value="Jumlah Karyawan" />
+                                <InputLabel htmlFor="employee_count" value={t('partner.employeeCount')} />
                                 <TextInput
                                     id="employee_count"
                                     type="number"
                                     value={data.employee_count}
                                     onChange={(e) => setData('employee_count', e.target.value)}
                                     className="mt-1 block w-full"
-                                    placeholder="Contoh: 25"
+                                    placeholder={t('partner.employeeCountPh')}
                                 />
                                 <InputError message={errors.employee_count} className="mt-1" />
                             </div>
@@ -225,26 +238,26 @@ export default function Register() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <InputLabel htmlFor="established_since" value="Berdiri Sejak" />
+                                <InputLabel htmlFor="established_since" value={t('partner.establishedSince')} />
                                 <TextInput
                                     id="established_since"
                                     value={data.established_since}
                                     onChange={(e) => setData('established_since', e.target.value)}
                                     className="mt-1 block w-full"
-                                    placeholder="Contoh: 2020"
+                                    placeholder={t('partner.establishedSincePh')}
                                 />
                                 <InputError message={errors.established_since} className="mt-1" />
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="company_address" value="Alamat Perusahaan" />
+                                <InputLabel htmlFor="company_address" value={t('partner.companyAddress')} />
                                 <textarea
                                     id="company_address"
                                     rows={2}
                                     value={data.company_address}
                                     onChange={(e) => setData('company_address', e.target.value)}
                                     className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-                                    placeholder="Jalan, No. Rumah, RT/RW, Kelurahan/Desa, Kota"
+                                    placeholder={t('partner.companyAddressPh')}
                                 />
                                 <InputError message={errors.company_address} className="mt-1" />
                             </div>
@@ -257,27 +270,27 @@ export default function Register() {
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">2</span>
-                            PIC (Person In Charge)
+                            {t('partner.s2Title')}
                         </h2>
-                        <p className="text-xs text-slate mt-0.5">Penanggung jawab akun mitra dan kontak personal.</p>
+                        <p className="text-xs text-slate mt-0.5">{t('partner.s2Desc')}</p>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <InputLabel htmlFor="pic_name" value="Nama PIC *" />
+                            <InputLabel htmlFor="pic_name" value={t('partner.picName')} />
                             <TextInput
                                 id="pic_name"
                                 value={data.pic_name}
                                 onChange={(e) => setData('pic_name', e.target.value)}
                                 className="mt-1 block w-full"
-                                placeholder="Nama lengkap PIC"
+                                placeholder={t('partner.picNamePh')}
                                 required
                             />
                             <InputError message={errors.pic_name} className="mt-1" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="pic_phone" value="Nomor HP PIC *" />
+                            <InputLabel htmlFor="pic_phone" value={t('partner.picPhone')} />
                             <TextInput
                                 id="pic_phone"
                                 type="tel"
@@ -297,9 +310,9 @@ export default function Register() {
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">3</span>
-                            Status Keanggotaan
+                            {t('partner.s3Title')}
                         </h2>
-                        <p className="text-xs text-slate mt-0.5">Apakah Anda sudah bergabung sebagai member KBKB?</p>
+                        <p className="text-xs text-slate mt-0.5">{t('partner.s3Desc')}</p>
                     </div>
 
                     <div className="flex items-center gap-3 p-3 rounded-xl border border-ink/10 bg-white/80">
@@ -316,19 +329,19 @@ export default function Register() {
                             }}
                         />
                         <label htmlFor="is_member" className="cursor-pointer text-sm font-medium text-ink">
-                            Sudah bergabung sebagai member KBKB
+                            {t('partner.isMember')}
                         </label>
                     </div>
 
                     {data.is_member && (
                         <div className="border-t border-ink/10 pt-3">
-                            <InputLabel htmlFor="member_code" value="Nomor ID Member *" />
+                            <InputLabel htmlFor="member_code" value={t('partner.memberId')} />
                             <TextInput
                                 id="member_code"
                                 value={data.member_code}
                                 onChange={(e) => setData('member_code', e.target.value)}
                                 className="mt-1 block w-full"
-                                placeholder="Contoh: MMB-00001"
+                                placeholder={t('partner.memberIdPh')}
                                 required
                             />
                             <InputError message={errors.member_code} className="mt-1" />
@@ -341,28 +354,28 @@ export default function Register() {
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">4</span>
-                            Akun Login & Data Diri
+                            {t('partner.s4Title')}
                         </h2>
-                        <p className="text-xs text-slate mt-0.5">Kredensial untuk mengakses dashboard partner KBKB.</p>
+                        <p className="text-xs text-slate mt-0.5">{t('partner.s4Desc')}</p>
                     </div>
 
                     <div className="space-y-4">
                         <div>
-                            <InputLabel htmlFor="name" value="Nama Lengkap *" />
+                            <InputLabel htmlFor="name" value={t('partner.fullName')} />
                             <TextInput
                                 id="name"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
                                 className="mt-1 block w-full"
                                 autoComplete="name"
-                                placeholder="Nama sesuai KTP"
+                                placeholder={t('partner.fullNamePh')}
                                 required
                             />
                             <InputError message={errors.name} className="mt-1" />
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="email" value="Email (Untuk Login) *" />
+                            <InputLabel htmlFor="email" value={t('partner.emailLabel')} />
                             <TextInput
                                 id="email"
                                 type="email"
@@ -370,7 +383,7 @@ export default function Register() {
                                 onChange={(e) => setData('email', e.target.value)}
                                 className="mt-1 block w-full"
                                 autoComplete="username"
-                                placeholder="email@perusahaan.com"
+                                placeholder={t('partner.emailPh')}
                                 required
                             />
                             <InputError message={errors.email} className="mt-1" />
@@ -378,7 +391,7 @@ export default function Register() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <InputLabel htmlFor="password" value="Password *" />
+                                <InputLabel htmlFor="password" value={t('partner.passwordLabel')} />
                                 <TextInput
                                     id="password"
                                     type="password"
@@ -389,10 +402,11 @@ export default function Register() {
                                     required
                                 />
                                 <InputError message={errors.password} className="mt-1" />
+                                <p className="mt-1 text-[11px] text-slate-soft">{t('partner.passwordHint')}</p>
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password_confirmation" value="Konfirmasi Password *" />
+                                <InputLabel htmlFor="password_confirmation" value={t('partner.passwordConfirm')} />
                                 <TextInput
                                     id="password_confirmation"
                                     type="password"
@@ -408,7 +422,7 @@ export default function Register() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <InputLabel htmlFor="phone" value="Nomor HP" />
+                                <InputLabel htmlFor="phone" value={t('partner.phoneLabel')} />
                                 <TextInput
                                     id="phone"
                                     type="tel"
@@ -421,7 +435,7 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="date_of_birth" value="Tanggal Lahir" />
+                                <InputLabel htmlFor="date_of_birth" value={t('partner.birthDate')} />
                                 <TextInput
                                     id="date_of_birth"
                                     type="date"
@@ -440,16 +454,16 @@ export default function Register() {
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">5</span>
-                            Hobi & Kesukaan
+                            {t('partner.s5Title')}
                         </h2>
-                        <p className="text-xs text-slate mt-0.5">Pilih minat/hobi untuk memudahkan networking dengan sesama mitra KBKB.</p>
+                        <p className="text-xs text-slate mt-0.5">{t('partner.s5Desc')}</p>
                     </div>
 
                     {/* Hobi Terpilih */}
                     <div>
-                        <InputLabel value={`Hobi Terpilih (${data.hobbies.length})`} className="mb-1.5" />
+                        <InputLabel value={t('partner.hobbiesSelected', { count: data.hobbies.length })} className="mb-1.5" />
                         {data.hobbies.length === 0 ? (
-                            <p className="text-xs italic text-slate">Belum ada hobi yang dipilih.</p>
+                            <p className="text-xs italic text-slate">{t('partner.hobbiesEmpty')}</p>
                         ) : (
                             <div className="flex flex-wrap gap-1.5">
                                 {data.hobbies.map((h) => (
@@ -478,7 +492,7 @@ export default function Register() {
                                 type="text"
                                 value={hobbySearch}
                                 onChange={(e) => setHobbySearch(e.target.value)}
-                                placeholder="Cari dari 60+ pilihan hobi (misal: Bulutangkis, Golf, Memasak)..."
+                                placeholder={t('partner.hobbySearchPh')}
                                 className="flex-1 text-xs"
                             />
                             {hobbySearch && (
@@ -487,7 +501,7 @@ export default function Register() {
                                     onClick={() => setHobbySearch('')}
                                     className="btn-ghost text-xs px-3"
                                 >
-                                    Reset
+                                    {t('partner.reset')}
                                 </button>
                             )}
                         </div>
@@ -512,7 +526,7 @@ export default function Register() {
                                     );
                                 })}
                                 {filteredHobbies.length === 0 && (
-                                    <p className="text-xs text-slate py-1">Tidak ditemukan pilihan hobi yang sesuai.</p>
+                                    <p className="text-xs text-slate py-1">{t('partner.hobbyEmpty')}</p>
                                 )}
                             </div>
                         </div>
@@ -520,7 +534,7 @@ export default function Register() {
 
                     {/* Custom Hobby */}
                     <div className="border-t border-ink/10 pt-3">
-                        <InputLabel value="Lainnya (sebutkan hobi khusus jika belum tersedia di atas)" />
+                        <InputLabel value={t('partner.customHobbyLabel')} />
                         <div className="mt-1.5 flex gap-2">
                             <TextInput
                                 value={customHobbyInput}
@@ -532,7 +546,7 @@ export default function Register() {
                                         setCustomHobbyInput('');
                                     }
                                 }}
-                                placeholder="Ketik nama hobi lainnya..."
+                                placeholder={t('partner.customHobbyPh')}
                                 className="flex-1"
                             />
                             <button
@@ -543,7 +557,7 @@ export default function Register() {
                                 }}
                                 className="btn-ink text-xs px-4 py-2"
                             >
-                                + Tambah
+                                {t('partner.add')}
                             </button>
                         </div>
                     </div>
@@ -552,29 +566,29 @@ export default function Register() {
                 {/* Notifikasi & Submit */}
                 <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4 text-xs text-slate space-y-1">
                     <p className="font-semibold text-gold-deep flex items-center gap-1.5">
-                        <span>ℹ️</span> Informasi:
+                        <span>ℹ️</span> {t('partner.infoLabel')}
                     </p>
                     <p>
-                        Pendaftaran partner akan ditinjau oleh tim KBKB. Anda akan menerima email konfirmasi setelah diverifikasi.
+                        {t('partner.infoBody')}
                     </p>
                 </div>
 
                 <PrimaryButton className="w-full justify-center py-3 text-base font-semibold" disabled={processing}>
-                    {processing ? 'Memproses Pendaftaran…' : 'Kirim Pendaftaran'}
+                    {processing ? t('partner.processing') : t('partner.submit')}
                 </PrimaryButton>
             </form>
 
             <p className="mt-6 text-center text-sm text-slate">
-                Sudah memiliki akun?{' '}
+                {t('partner.hasAccount')}{' '}
                 <Link href={route('login')} className="font-semibold text-gold-deep hover:underline">
-                    Masuk di sini
+                    {t('partner.loginHere')}
                 </Link>
             </p>
 
             <p className="mt-2 text-center text-sm text-slate">
-                Ingin daftar sebagai member biasa?{' '}
+                {t('partner.wantMember')}{' '}
                 <Link href={route('register')} className="font-semibold text-gold-deep hover:underline">
-                    Daftar Member
+                    {t('partner.registerMember')}
                 </Link>
             </p>
         </GuestLayout>

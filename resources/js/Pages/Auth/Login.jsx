@@ -2,9 +2,12 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useTranslation } from '@/i18n';
 
-export default function Login() {
+export default function Login({ status }) {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -22,9 +25,18 @@ export default function Login() {
 
     return (
         <>
-            <Head title="Masuk - KBKB" />
+            <Head title={t('auth.login.title')} />
 
             <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8 sm:py-12">
+                <div className="mb-4 w-full max-w-3xl flex justify-end">
+                    <LanguageSwitcher />
+                </div>
+                {status && (
+                    <div className="mb-4 w-full max-w-3xl rounded-xl border border-sage/40 bg-sage/15 px-4 py-3 text-sm font-medium text-ink backdrop-blur-sm">
+                        {status}
+                    </div>
+                )}
+
                 <form
                     onSubmit={submit}
                     className="relative w-full max-w-3xl"
@@ -44,7 +56,7 @@ export default function Login() {
                                 <div>
                                     <InputLabel
                                         htmlFor="email-mobile"
-                                        value="Alamat Email"
+                                        value={t('auth.login.email')}
                                         className="text-white/90"
                                     />
                                     <TextInput
@@ -68,7 +80,7 @@ export default function Login() {
                                 <div>
                                     <InputLabel
                                         htmlFor="password-mobile"
-                                        value="Password"
+                                        value={t('auth.login.password')}
                                         className="text-white/90"
                                     />
                                     <TextInput
@@ -92,7 +104,7 @@ export default function Login() {
                                     className="w-full justify-center"
                                     disabled={processing}
                                 >
-                                    {processing ? 'Memproses Masuk…' : 'Masuk'}
+                                    {processing ? t('auth.login.processing') : t('auth.login.submit')}
                                 </PrimaryButton>
 
                                 <div className="text-center">
@@ -100,29 +112,29 @@ export default function Login() {
                                         href={route('password.request')}
                                         className="text-sm font-bold text-white hover:text-white/80 hover:underline"
                                     >
-                                        Lupa password?
+                                        {t('auth.login.forgot')}
                                     </Link>
                                 </div>
 
                                 <p className="text-center text-sm text-white/90">
-                                    Belum punya akun?{' '}
+                                    {t('auth.login.noAccount')}{' '}
                                     <Link
                                         href={route('register')}
                                         className="font-semibold text-white hover:underline"
                                     >
-                                        Daftar di sini
+                                        {t('auth.login.register')}
                                     </Link>
                                 </p>
 
                                 <p className="text-center text-xs text-white/80">
-                                    Butuh bantuan?{' '}
+                                    {t('auth.login.needHelp')}{' '}
                                     <a
                                         href="https://wa.me/62811290689"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="font-semibold text-white hover:underline"
                                     >
-                                        Hubungi Admin (WhatsApp)
+                                        {t('auth.login.contactAdmin')}
                                     </a>
                                 </p>
                             </div>
@@ -145,7 +157,7 @@ export default function Login() {
                                     <div>
                                         <InputLabel
                                             htmlFor="email-desktop"
-                                            value="Alamat Email"
+                                            value={t('auth.login.email')}
                                             className="text-white/90"
                                         />
                                         <TextInput
@@ -169,7 +181,7 @@ export default function Login() {
                                     <div>
                                         <InputLabel
                                             htmlFor="password-desktop"
-                                            value="Password"
+                                            value={t('auth.login.password')}
                                             className="text-white/90"
                                         />
                                         <TextInput
@@ -193,7 +205,7 @@ export default function Login() {
                                         className="w-full justify-center"
                                         disabled={processing}
                                     >
-                                        {processing ? 'Memproses Masuk…' : 'Masuk'}
+                                        {processing ? t('auth.login.processing') : t('auth.login.submit')}
                                     </PrimaryButton>
 
                                     <div className="text-center">
@@ -201,29 +213,29 @@ export default function Login() {
                                             href={route('password.request')}
                                             className="text-sm font-bold text-white hover:text-white/80 hover:underline"
                                         >
-                                            Lupa password?
+                                            {t('auth.login.forgot')}
                                         </Link>
                                     </div>
 
                                     <p className="text-center text-sm text-white/90">
-                                        Belum punya akun?{' '}
+                                        {t('auth.login.noAccount')}{' '}
                                         <Link
                                             href={route('register')}
                                             className="font-semibold text-white hover:underline"
                                         >
-                                            Daftar di sini
+                                            {t('auth.login.register')}
                                         </Link>
                                     </p>
 
                                     <p className="text-center text-xs text-white/80">
-                                        Butuh bantuan?{' '}
+                                        {t('auth.login.needHelp')}{' '}
                                         <a
                                             href="https://wa.me/62811290689"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="font-semibold text-white hover:underline"
                                         >
-                                            Hubungi Admin (WhatsApp)
+                                            {t('auth.login.contactAdmin')}
                                         </a>
                                     </p>
                                 </div>

@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Mail\PromoApprovedMail;
 use App\Models\Promo;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class PromoService
 {
@@ -58,7 +61,34 @@ class PromoService
             "/member/promos/{$promo->id}",
         );
 
+        $this->emailMembers($promo);
+
         return $promo->fresh();
+    }
+
+    /**
+     * Kirim email broadcast promo baru ke seluruh member.
+     * Kegagalan per penerima tidak menggagalkan persetujuan promo.
+     */
+    private function emailMembers(Promo $promo): int
+    {
+        $members = User::query()
+            ->where('role', User::ROLE_MEMBER)
+            ->whereNotNull('email')
+            ->get();
+
+        $sent = 0;
+
+        foreach ($members as $member) {
+            try {
+                Mail::to($member->email)->send(new PromoApprovedMail($member, $promo));
+                $sent++;
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        return $sent;
     }
 
     public function reject(Promo $promo, User $admin, string $reason): Promo

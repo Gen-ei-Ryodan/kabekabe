@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
-use App\Models\HomePopup;
 use App\Models\MembershipPlan;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -46,8 +45,8 @@ class AdminFlowTest extends TestCase
         $this->actingAs($admin)->post(route('admin.members.store'), [
             'name' => 'Member Baru',
             'email' => 'baru@example.com',
-            'password' => 'secret-password',
-            'password_confirmation' => 'secret-password',
+            'password' => 'SecretPass1',
+            'password_confirmation' => 'SecretPass1',
             'valid_until' => now()->addMonths(6)->toDateString(),
             'whatsapp' => '081234567890',
         ])->assertRedirect();
@@ -67,8 +66,8 @@ class AdminFlowTest extends TestCase
         $this->actingAs($admin)->post(route('admin.members.store'), [
             'name' => 'Member Demografi',
             'email' => 'demografi@example.com',
-            'password' => 'secret-password',
-            'password_confirmation' => 'secret-password',
+            'password' => 'SecretPass1',
+            'password_confirmation' => 'SecretPass1',
             'valid_until' => now()->addMonths(6)->toDateString(),
             'gender' => 'female',
             'birth_date' => '1995-04-12',
@@ -112,8 +111,8 @@ class AdminFlowTest extends TestCase
             'description' => 'Toko kebutuhan sehari-hari.',
             'vendor_name' => 'Budi Santoso',
             'vendor_email' => 'vendor-maju@example.com',
-            'vendor_password' => 'secret-password',
-            'vendor_password_confirmation' => 'secret-password',
+            'vendor_password' => 'VendorPass1',
+            'vendor_password_confirmation' => 'VendorPass1',
         ])->assertRedirect(route('admin.partners.index'));
 
         $vendor = User::where('email', 'vendor-maju@example.com')->first();

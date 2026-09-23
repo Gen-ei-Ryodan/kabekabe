@@ -7,7 +7,6 @@ use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
 use App\Models\HomePopup;
 use App\Models\Transaction;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -53,9 +52,9 @@ class HomeController extends Controller
         $popupBanner = null;
         if ($activePopup && $activePopup->is_active && $activePopup->promo && $activePopup->promo->isActive()) {
             $popupBanner = [
-                'id' => 'popup-' . $activePopup->id,
+                'id' => 'popup-'.$activePopup->id,
                 'type' => HomeBanner::TYPE_PROMO,
-                'image_url' => $activePopup->imageUrl(),
+                'image_url' => $activePopup->imageUrl() ?? $activePopup->promo->promo_image_url,
                 'promo' => [
                     'id' => $activePopup->promo->id,
                     'title' => $activePopup->promo_title ?: $activePopup->promo->title,
@@ -78,7 +77,7 @@ class HomeController extends Controller
             ->map(fn (HomeBanner $banner) => [
                 'id' => $banner->id,
                 'type' => $banner->type,
-                'image_url' => $banner->imageUrl(),
+                'image_url' => $banner->imageUrl() ?? $banner->promo?->promo_image_url,
                 'promo' => $banner->type === HomeBanner::TYPE_PROMO && $banner->promo && $banner->promo->isActive()
                     ? [
                         'id' => $banner->promo->id,

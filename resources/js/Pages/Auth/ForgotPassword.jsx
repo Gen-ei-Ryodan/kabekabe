@@ -1,12 +1,14 @@
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { useTranslation } from '@/i18n';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
+    const { t } = useTranslation();
 
     const submit = (e) => {
         e.preventDefault();
@@ -18,7 +20,7 @@ export default function ForgotPassword({ status }) {
 
     return (
         <>
-            <Head title="Forgot Password" />
+            <Head title={t('flow.forgotPassword.title')} />
 
             <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8 sm:py-12">
                 <form onSubmit={submit} className="relative w-full max-w-3xl">
@@ -37,7 +39,7 @@ export default function ForgotPassword({ status }) {
                         <div className="absolute inset-0 p-6 sm:p-10 md:p-12">
                             <div className="absolute bottom-6 right-6 w-full max-w-xs space-y-4 sm:bottom-10 sm:right-10 sm:max-w-sm md:bottom-12 md:right-12">
                                 <p className="text-sm text-white/80">
-                                    Enter your email and we'll send you a reset link.
+                                    {t('flow.forgotPassword.instruction')}
                                 </p>
 
                                 {status && (
@@ -48,7 +50,7 @@ export default function ForgotPassword({ status }) {
 
                                 <div>
                                     <label className="text-xs font-medium text-white/90" htmlFor="email">
-                                        Email
+                                        {t('flow.emailAddress')}
                                     </label>
                                     <TextInput
                                         id="email"
@@ -63,16 +65,16 @@ export default function ForgotPassword({ status }) {
                                 </div>
 
                                 <PrimaryButton className="w-full justify-center" disabled={processing}>
-                                    {processing ? 'Sending…' : 'Send Reset Link'}
+                                    {processing ? t('flow.forgotPassword.sending') : t('flow.forgotPassword.send')}
                                 </PrimaryButton>
 
                                 <p className="text-center text-sm text-white/90">
-                                    Remember your password?{' '}
+                                    {t('flow.forgotPassword.remember')}{' '}
                                     <Link
                                         href={route('login')}
                                         className="font-semibold text-white hover:underline"
                                     >
-                                        Back to Login
+                                        {t('flow.forgotPassword.backToLogin')}
                                     </Link>
                                 </p>
                             </div>

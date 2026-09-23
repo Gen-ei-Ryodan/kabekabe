@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePromoRequest;
 use App\Http\Requests\UpdatePromoRequest;
 use App\Models\Promo;
+use App\Models\User;
 use App\Services\PromoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class PromoController extends Controller
         ]);
     }
 
-    public function create(): Response|\Illuminate\Http\RedirectResponse
+    public function create(): Response|RedirectResponse
     {
         $partner = auth()->user()->partner;
 
@@ -65,7 +66,18 @@ class PromoController extends Controller
                 ->with('error', 'Status Partner Anda Tidak Aktif atau masa berlaku telah habis. Anda tidak dapat membuat promo.');
         }
 
-        $promo = $partner->promos()->create($request->validated());
+        $data = $request->validated();
+
+        // Handle file uploads
+        foreach (['logo', 'promo_image', 'product_image'] as $field) {
+            if ($request->hasFile($field)) {
+                $data[$field] = $request->file($field)->store('promos', 'public');
+            } else {
+                unset($data[$field]);
+            }
+        }
+
+        $promo = $partner->promos()->create($data);
 
         $this->promos->submit($promo, $request->user());
 
@@ -85,7 +97,18 @@ class PromoController extends Controller
 
     public function update(UpdatePromoRequest $request, Promo $promo): RedirectResponse
     {
-        $promo->update($request->validated());
+        $data = $request->validated();
+
+        // Handle file uploads
+        foreach (['logo', 'promo_image', 'product_image'] as $field) {
+            if ($request->hasFile($field)) {
+                $data[$field] = $request->file($field)->store('promos', 'public');
+            } else {
+                unset($data[$field]);
+            }
+        }
+
+        $promo->update($data);
 
         $this->promos->submit($promo, $request->user());
 
@@ -105,7 +128,7 @@ class PromoController extends Controller
             ->with('success', 'Promo deleted.');
     }
 
-    private function userCanEdit(\App\Models\User $user, Promo $promo): bool
+    private function userCanEdit(User $user, Promo $promo): bool
     {
         return $user->isVendor()
             && $promo->partner->user_id === $user->id

@@ -7,6 +7,7 @@ use App\Http\Requests\StorePartnerRequest;
 use App\Http\Requests\UpdatePartnerRequest;
 use App\Models\Partner;
 use App\Models\User;
+use App\Services\ApprovalNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -204,18 +205,42 @@ class PartnerController extends Controller
             if (array_key_exists('pic_name', $validated) && $validated['pic_name']) {
                 $userUpdate['name'] = $validated['pic_name'];
             }
-            if (array_key_exists('nickname', $validated)) $userUpdate['nickname'] = $validated['nickname'];
-            if (array_key_exists('gender', $validated)) $userUpdate['gender'] = $validated['gender'];
-            if (array_key_exists('birth_place', $validated)) $userUpdate['birth_place'] = $validated['birth_place'];
-            if (array_key_exists('birth_date', $validated)) $userUpdate['birth_date'] = $validated['birth_date'];
-            if (array_key_exists('marital_status', $validated)) $userUpdate['marital_status'] = $validated['marital_status'];
-            if (array_key_exists('religion', $validated)) $userUpdate['religion'] = $validated['religion'];
-            if (array_key_exists('place_of_worship_address', $validated)) $userUpdate['place_of_worship_address'] = $validated['place_of_worship_address'];
-            if (array_key_exists('member_phone', $validated) && $validated['member_phone']) $userUpdate['phone'] = $validated['member_phone'];
-            if (array_key_exists('member_address', $validated) && $validated['member_address']) $userUpdate['address'] = $validated['member_address'];
-            if (array_key_exists('member_district', $validated) && $validated['member_district']) $userUpdate['district'] = $validated['member_district'];
-            if (array_key_exists('member_city', $validated) && $validated['member_city']) $userUpdate['city'] = $validated['member_city'];
-            if (array_key_exists('hobbies', $validated)) $userUpdate['hobbies'] = $validated['hobbies'];
+            if (array_key_exists('nickname', $validated)) {
+                $userUpdate['nickname'] = $validated['nickname'];
+            }
+            if (array_key_exists('gender', $validated)) {
+                $userUpdate['gender'] = $validated['gender'];
+            }
+            if (array_key_exists('birth_place', $validated)) {
+                $userUpdate['birth_place'] = $validated['birth_place'];
+            }
+            if (array_key_exists('birth_date', $validated)) {
+                $userUpdate['birth_date'] = $validated['birth_date'];
+            }
+            if (array_key_exists('marital_status', $validated)) {
+                $userUpdate['marital_status'] = $validated['marital_status'];
+            }
+            if (array_key_exists('religion', $validated)) {
+                $userUpdate['religion'] = $validated['religion'];
+            }
+            if (array_key_exists('place_of_worship_address', $validated)) {
+                $userUpdate['place_of_worship_address'] = $validated['place_of_worship_address'];
+            }
+            if (array_key_exists('member_phone', $validated) && $validated['member_phone']) {
+                $userUpdate['phone'] = $validated['member_phone'];
+            }
+            if (array_key_exists('member_address', $validated) && $validated['member_address']) {
+                $userUpdate['address'] = $validated['member_address'];
+            }
+            if (array_key_exists('member_district', $validated) && $validated['member_district']) {
+                $userUpdate['district'] = $validated['member_district'];
+            }
+            if (array_key_exists('member_city', $validated) && $validated['member_city']) {
+                $userUpdate['city'] = $validated['member_city'];
+            }
+            if (array_key_exists('hobbies', $validated)) {
+                $userUpdate['hobbies'] = $validated['hobbies'];
+            }
 
             if (! empty($userUpdate)) {
                 $partner->user->update($userUpdate);
@@ -244,10 +269,22 @@ class PartnerController extends Controller
         ])->save();
 
         if ($partner->user) {
-            $partner->user->forceFill(['approval_status' => \App\Models\User::APPROVAL_APPROVED])->save();
+            $partner->user->forceFill(['approval_status' => User::APPROVAL_APPROVED])->save();
         }
 
-        return back()->with('success', "Pendaftaran partner {$partner->name} berhasil disetujui.");
+        $emailSent = true;
+        if ($partner->user) {
+            $emailSent = app(ApprovalNotifier::class)->notifyApproved($partner->user);
+        }
+
+        $message = "Pendaftaran partner {$partner->name} berhasil disetujui.";
+        $message .= $partner->user
+            ? ($emailSent
+                ? " Email notifikasi & password awal dikirim ke {$partner->user->email}."
+                : " Gagal mengirim email ke {$partner->user->email} — periksa konfigurasi SMTP.")
+            : '';
+
+        return back()->with($emailSent ? 'success' : 'error', $message);
     }
 
     public function reject(Partner $partner): RedirectResponse
@@ -258,7 +295,7 @@ class PartnerController extends Controller
         ])->save();
 
         if ($partner->user) {
-            $partner->user->forceFill(['approval_status' => \App\Models\User::APPROVAL_REJECTED])->save();
+            $partner->user->forceFill(['approval_status' => User::APPROVAL_REJECTED])->save();
         }
 
         return back()->with('success', "Pendaftaran partner {$partner->name} ditolak.");

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UpdateMemberRequest extends FormRequest
 {
@@ -40,7 +41,7 @@ class UpdateMemberRequest extends FormRequest
             'business_city' => ['nullable', 'string', 'max:100'],
             'hobbies' => ['nullable', 'array'],
             'hobbies.*' => ['string', 'max:255'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', Password::defaults(), 'confirmed'],
             'avatar' => ['nullable', 'file', 'image', 'max:2048'],
             'remove_avatar' => ['nullable', 'boolean'],
         ];

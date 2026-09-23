@@ -2,6 +2,33 @@
 
 Semua perubahan signifikan dicatat di sini. Format: `YYYY-MM-DD — deskripsi`.
 
+## 2026-09-23 — Foto promo partner (logo, foto promo, foto produk) + email promo member
+- **Upload foto promo**: partner kini bisa menambahkan 3 foto opsional saat membuat/merevisi promo — **Logo Perusahaan**, **Foto Promo**, dan **Foto Produk** (form `Vendor/Promos/Create` & `Vendor/Promos/Edit`, upload file gambar JPG/PNG/WebP maks 2MB via `forceFormData`). Kolom baru `promos.logo`, `promos.promo_image`, `promos.product_image` (nullable); disimpan ke disk `public/promos/`. Validasi file di `StorePromoRequest`/`UpdatePromoRequest` dengan pesan error Bahasa Indonesia.
+- **Tampilan foto di member**: 
+  - **Daftar promo** (`Member/Partners/Index`) — thumbnail foto promo di kartu (fallback ke logo partner / inisial).
+  - **Detail promo** (`Member/Promos/Show`) — section "Galeri Promo" berisi foto promo, foto produk, dan logo perusahaan (rapi, grid, logo pakai `object-contain`).
+  - **Detail partner** (`Member/Partners/Show`) — foto promo tampil di daftar promo aktif partner.
+  - **Home member** — banner/popup promo fallback ke foto promo partner jika tidak ada gambar banner.
+- **Tampilan foto di admin**: thumbnail foto promo di tabel `Admin/Promos/Index`, preview foto di drawer edit & halaman `Admin/Promos/Edit` sehingga admin bisa meninjau foto sebelum approve.
+- **Email promo member (baru)**: saat admin menyetujui promo, selain notifikasi in-app, sistem kirim email `App\Mail\PromoApprovedMail` (view `mail/promo-approved`) ke seluruh member — kartu promo lengkap dengan foto promo, logo, foto produk, benefit, periode, syarat & ketentuan, dan tombol "Lihat Promo". Pengiriman per penerima di try/catch — kegagalan email tidak membatalkan persetujuan promo.
+- Model `Promo`: tambah accessor `logo_url`, `promo_image_url`, `product_image_url` (`#[Appends]`, menangani path storage relatif & URL absolut).
+- Testing: 143 test PASS (876 assertions), termasuk 7 test baru `tests/Feature/PromoPhotoTest.php` (upload opsional, validasi gambar, tampilan detail/list member, email broadcast + render).
+
+## 2026-09-23 — Email persetujuan registrasi, detail agenda, form usaha multi, navigasi kembali
+- **Registrasi → approve → email**: password tidak lagi ditampilkan di layar sukses registrasi (`RegisterSuccess`). Password akun kini dibuat acak saat registrasi (tidak diketahui siapa pun); saat admin menyetujui member (`Admin\MemberController@approve`) atau partner (`Admin\PartnerController@approve`), sistem meng-generate password awal (jika user belum pernah login) lalu mengirim email `App\Mail\AccountApprovedMail` (view `mail/approved`) berisi konfirmasi persetujuan + password awal. Layanan: `App\Services\ApprovalNotifier`. Layar & notice registrasi menjelaskan bahwa password awal dikirim via email setelah disetujui.
+- **Detail agenda dari home member**: kartu agenda di home kini bisa diklik → `GET /member/agendas/{info}` (`Member\AgendaController@show` → `Member/Agendas/Show.jsx`), footer kartu berubah jadi "Lihat Detail →".
+- **Form registrasi member — informasi usaha**: checkbox **"Bapak / Ibu Rumah Tangga"** (jika dicentang info usaha tidak perlu diisi, dicek lagi di server), field baru **"Jabatan"**, dan blok usaha jadi **repeatable** — Nama Perusahaan + Bidang Industri + Jabatan + Alamat per usaha, bisa lebih dari satu. Kolom baru `users.is_household` (boolean) + `users.businesses` (json: `[{company, industry, position, address}]`); field legacy (`company`, `industry`, `business_fields`, `business_address`) tetap diisi agar layar admin/profil lama kompatibel.
+- **Navigasi kembali promo**: tombol "← Kembali" di detail promo kini memakai `history.back()` (util `Utils/backNav.js` + flag sessionStorage) — dari home → kembali ke home, dari daftar promo → kembali ke daftar; fallback ke daftar promo bila halaman dibuka langsung. Juga berlaku untuk kembali dari detail agenda ke home.
+- Testing: 135 test PASS (818 assertions).
+
+## 2026-09-23 — Keamanan password: eye icon, strong password, OTP
+- **Eye icon**: semua field password (login, register, reset, ubah password, form admin member/partner) kini punya tombol lihat/sembunyikan password — otomatis dari `Components/TextInput.jsx`.
+- **Strong password**: aturan global `Password::defaults()` → `App\Rules\StrongPassword` (min 8 karakter, kombinasi huruf + angka) berlaku untuk semua field password (register partner, reset password, first-change, admin create member/partner, ganti password member).
+- **Lupa password + OTP**: alur link-token diganti alur kode OTP 6 digit ke email (`PasswordResetLinkController` → `Auth/ForgotPasswordOtp.jsx` → `NewPasswordController`). Halaman baru `Auth/ForgotPasswordOtp.jsx` + resend OTP. Mailable `App\Mail\OtpMail` + view `mail/otp`.
+- **Konfirmasi OTP ganti password member**: halaman `Member/Account/Edit` mengirim kode OTP ke email sebelum password baru disimpan (`member.account.password.send-otp`), field OTP muncul di section Keamanan.
+- Kolom baru `users`: `otp_code`, `otp_expires_at`, `otp_purpose`.
+- Testing: 124 test PASS.
+
 ## 2026-09-07 — Member search, profile email, login enhancements
 - **Partners/Promos search**: tambah input search di halaman Promo & Partner untuk filter promos berdasarkan judul dan partners berdasarkan nama.
 - **Profile email**: tampilkan email member (read-only) di halaman Account Edit; pesan "Contact admin to change your email."

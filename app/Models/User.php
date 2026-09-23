@@ -7,28 +7,32 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'nickname', 'email', 'password', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'avatar_changes_count', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'birth_place', 'hobbies', 'marital_status', 'place_of_worship_address', 'city', 'address', 'district', 'business_fields', 'business_address', 'business_district', 'business_city', 'industry'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable(['name', 'nickname', 'email', 'password', 'otp_code', 'otp_expires_at', 'otp_purpose', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'avatar_changes_count', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'birth_place', 'hobbies', 'marital_status', 'place_of_worship_address', 'city', 'address', 'district', 'business_fields', 'business_address', 'business_district', 'business_city', 'industry', 'businesses', 'is_household'])]
+#[Hidden(['password', 'remember_token', 'otp_code'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     public const ROLE_MEMBER = 'member';
+
     public const ROLE_ADMIN = 'admin';
+
     public const ROLE_VENDOR = 'vendor';
 
     public const ROLES = [self::ROLE_MEMBER, self::ROLE_ADMIN, self::ROLE_VENDOR];
 
     public const APPROVAL_PENDING = 'pending';
+
     public const APPROVAL_APPROVED = 'approved';
+
     public const APPROVAL_REJECTED = 'rejected';
 
     /**
@@ -41,11 +45,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'otp_expires_at' => 'datetime',
             'notification_settings' => 'array',
             'birth_date' => 'date',
             'must_change_password' => 'boolean',
             'hobbies' => 'array',
             'business_fields' => 'array',
+            'businesses' => 'array',
+            'is_household' => 'boolean',
         ];
     }
 
@@ -62,8 +69,8 @@ class User extends Authenticatable
     private static function nextMemberCode(): string
     {
         $year = now()->format('y');
-        $prefix = '7030' . $year;
-        $pattern = $prefix . '%';
+        $prefix = '7030'.$year;
+        $pattern = $prefix.'%';
 
         $lastInYear = DB::table('users')
             ->where('role', self::ROLE_MEMBER)
@@ -78,7 +85,7 @@ class User extends Authenticatable
             $next = ((int) $suffix) + 1;
         }
 
-        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 
     public function membership(): HasOne
@@ -207,6 +214,6 @@ class User extends Authenticatable
             return null;
         }
 
-        return '/storage/' . $this->avatar;
+        return '/storage/'.$this->avatar;
     }
 }

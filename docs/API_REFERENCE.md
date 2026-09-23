@@ -10,11 +10,14 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | POST | `/logout` | `logout` | |
 | GET | `/register` | `register` | throttle `6,1` |
 | POST | `/register` | `register` | throttle `6,1` |
-| GET | `/forgot-password` | `password.request` | throttle `5,1` |
-| POST | `/forgot-password` | `password.email` | |
-| GET | `/reset-password/{token}` | `password.reset` | |
-| POST | `/reset-password` | `password.store` | |
-| PUT | `/password` | `password.update` | |
+| GET | `/forgot-password` | `password.request` | |
+| POST | `/forgot-password` | `password.email` | throttle `5,1`; kirim OTP ke email → redirect ke verify-otp |
+| GET | `/forgot-password/verify-otp` | `password.otp` | form verifikasi kode OTP |
+| POST | `/forgot-password/verify-otp` | `password.otp.verify` | throttle `10,1` |
+| POST | `/forgot-password/resend-otp` | `password.otp.resend` | throttle `3,1` |
+| GET | `/reset-password` | `password.reset` | butuh OTP terverifikasi di session |
+| POST | `/reset-password` | `password.store` | throttle `5,1`, strong password |
+| PUT | `/password` | `password.update` | strong password |
 | GET | `/verify-email` | `verification.notice` | |
 | POST | `/email/verification-notification` | `verification.send` | |
 | GET | `/verify-email/{id}/{hash}` | `verification.verify` | |
@@ -24,6 +27,7 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | Method | URI | Name |
 |--------|-----|------|
 | GET | `/home` | `member.home` |
+| GET | `/agendas/{info}` | `member.agendas.show` (props: `agenda`; hanya `is_published`, type `event`/`agenda`) |
 | GET | `/promos/{promo}` | `member.promos.show` |
 | GET | `/partners` | `member.partners.index` (props: `partners`, `promos`, `categories`, `filters`) |
 | GET | `/partners/{partner}` | `member.partners.show` |
@@ -31,8 +35,9 @@ Semua route web (Inertia). Konvensi nama route: `{role}.{resource}.{action}`. Pr
 | GET | `/notifications` | `member.notifications.index` |
 | POST | `/notifications/read-all` | `member.notifications.read-all` |
 | POST | `/notifications/{notification}/read` | `member.notifications.read` |
-| GET | `/account` | `member.account.edit` |
-| PUT | `/account` | `member.account.update` |
+| GET | `/account` | `member.account.edit` (props: `account`, `password_otp_sent`) |
+| PUT | `/account` | `member.account.update` (ganti password wajib `otp` 6 digit via email) |
+| POST | `/account/password/send-otp` | `member.account.password.send-otp` | throttle `5,1`; kirim OTP konfirmasi ganti password |
 | GET | `/billing` | `member.billing.index` |
 
 > **Dihapus (revisi klien):** `member.payments.index/store/proof` (member tidak membayar via sistem; admin yang mencatat), `member.promos.index` (list promo digabung ke PARTNER), `member.community.*` (fitur komunitas tidak lagi tampil untuk member).

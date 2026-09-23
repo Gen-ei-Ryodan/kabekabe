@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import TextInput from '@/Components/TextInput';
 import { INDUSTRY_CATEGORIES, HOBBY_LIST } from '@/constants/membership';
 
 const toDateInput = (val) => {
@@ -711,23 +712,26 @@ export default function PartnerForm({
 
                         <div>
                             <label className="label" htmlFor="vendor_password">Kata Sandi *</label>
-                            <input
+                            <TextInput
                                 id="vendor_password"
                                 type="password"
-                                className="input"
+                                name="vendor_password"
+                                autoComplete="new-password"
                                 value={data.vendor_password || ''}
                                 onChange={(e) => setData('vendor_password', e.target.value)}
                                 required
                             />
                             {errors.vendor_password && <p className="mt-1 text-xs text-ember">{errors.vendor_password}</p>}
+                            <p className="mt-1 text-[11px] text-slate-soft">Minimal 8 karakter, kombinasi huruf &amp; angka.</p>
                         </div>
 
                         <div>
                             <label className="label" htmlFor="vendor_password_confirmation">Konfirmasi Kata Sandi</label>
-                            <input
+                            <TextInput
                                 id="vendor_password_confirmation"
                                 type="password"
-                                className="input"
+                                name="vendor_password_confirmation"
+                                autoComplete="new-password"
                                 value={data.vendor_password_confirmation || ''}
                                 onChange={(e) => setData('vendor_password_confirmation', e.target.value)}
                                 required

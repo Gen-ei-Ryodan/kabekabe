@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
+import { rememberBackSource } from '@/Utils/backNav';
 
 export default function PartnerShow({ partner }) {
     return (
@@ -46,7 +47,7 @@ export default function PartnerShow({ partner }) {
                                     <p className="text-sm text-slate">No active promos right now.</p>
                                 ) : (
                                     partner.promos.map((promo) => (
-                                        <Link key={promo.id} href={route('member.promos.show', promo.id)} className="block rounded-xl border border-ink/10 bg-paper p-4 transition-colors hover:border-gold/40">
+                                        <Link key={promo.id} href={route('member.promos.show', promo.id)} onClick={() => rememberBackSource('promo')} className="block rounded-xl border border-ink/10 bg-paper p-4 transition-colors hover:border-gold/40">
                                             <div className="flex items-center justify-between gap-3">
                                                 <span className="font-display text-lg font-bold text-gold-deep">
                                                     {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)}
@@ -54,6 +55,11 @@ export default function PartnerShow({ partner }) {
                                                 <span className="text-xs text-slate">{formatDate(promo.start_date)} — {formatDate(promo.end_date)}</span>
                                             </div>
                                             <p className="mt-1 text-sm font-medium">{promo.title}</p>
+                                            {promo.promo_image_url && (
+                                                <div className="mt-2">
+                                                    <img src={promo.promo_image_url} alt={promo.title} className="h-24 w-full rounded-lg object-cover" />
+                                                </div>
+                                            )}
                                         </Link>
                                     ))
                                 )}

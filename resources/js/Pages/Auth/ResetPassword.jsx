@@ -3,15 +3,16 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
+import { useTranslation } from '@/i18n';
 import { Head, useForm } from '@inertiajs/react';
 
-export default function ResetPassword({ token, email }) {
+export default function ResetPassword({ email }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        token: token,
-        email: email,
+        email: email || '',
         password: '',
         password_confirmation: '',
     });
+    const { t } = useTranslation();
 
     const submit = (e) => {
         e.preventDefault();
@@ -23,27 +24,19 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <GuestLayout>
-            <Head title="Reset Password" />
+            <Head title={t('flow.resetPassword.title')} />
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
+            <header className="mb-6">
+                <h1 className="font-display text-2xl font-bold tracking-tight text-ink">{t('flow.resetPassword.heading')}</h1>
+                <p className="mt-2 text-sm text-slate">
+                    {t('flow.resetPassword.instructionBefore')}{' '}
+                    <span className="font-semibold text-ink">{email}</span>.
+                </p>
+            </header>
 
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
+            <form onSubmit={submit} className="space-y-5">
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value={t('flow.newPassword')} />
 
                     <TextInput
                         id="password"
@@ -57,12 +50,13 @@ export default function ResetPassword({ token, email }) {
                     />
 
                     <InputError message={errors.password} className="mt-2" />
+                    <p className="mt-2 text-[11px] text-slate-soft">{t('flow.passwordHint')}</p>
                 </div>
 
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value={t('flow.confirmNewPassword')}
                     />
 
                     <TextInput
@@ -85,7 +79,7 @@ export default function ResetPassword({ token, email }) {
 
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton className="ms-4" disabled={processing}>
-                        Reset Password
+                        {processing ? t('flow.saving') : t('flow.resetPassword.submit')}
                     </PrimaryButton>
                 </div>
             </form>

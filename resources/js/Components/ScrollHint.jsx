@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from '@/i18n';
 
 export default function ScrollHint() {
     const [visible, setVisible] = useState(false);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const check = () => {
@@ -26,7 +28,7 @@ export default function ScrollHint() {
             aria-hidden="true"
         >
             <div className="flex flex-col items-center gap-0.5 rounded-full border border-ink/10 bg-paper/90 px-3 py-1.5 shadow-lift backdrop-blur-sm">
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink/50">Scroll</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink/50">{t('scroll.hint')}</span>
                 <svg
                     viewBox="0 0 24 24"
                     fill="none"

@@ -60,7 +60,11 @@ export default function PromoIndex({ promos, filters }) {
                         {promos.data.map((promo) => (
                             <div key={promo.id} className="card-surface p-5">
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="min-w-0">
+                                    <div className="flex min-w-0 flex-1 items-start gap-4">
+                                        {promo.promo_image_url ? (
+                                            <img src={promo.promo_image_url} alt="" className="h-20 w-20 shrink-0 rounded-xl object-cover border border-ink/10" />
+                                        ) : null}
+                                        <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span className="font-mono text-xs text-slate">#{promo.id}</span>
                                             <StatusChip
@@ -83,6 +87,7 @@ export default function PromoIndex({ promos, filters }) {
                                                 Alasan penolakan: {promo.rejection_reason}
                                             </p>
                                         )}
+                                        </div>
                                     </div>
 
                                     <div className="flex shrink-0 gap-2">

@@ -5,6 +5,7 @@ import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
 import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
+import { rememberBackSource } from '@/Utils/backNav';
 
 const TABS = [
     { key: 'promos', label: 'Promos' },
@@ -15,6 +16,7 @@ function PromoCard({ promo }) {
     return (
         <Link
             href={route('member.promos.show', promo.id)}
+            onClick={() => rememberBackSource('promo')}
             className="group flex h-full items-stretch gap-3 overflow-hidden rounded-xl border border-ink/10 bg-white/80 shadow-lift transition-all hover:-translate-y-1 hover:shadow-card"
         >
             <div className="min-w-0 flex-1">
@@ -36,7 +38,9 @@ function PromoCard({ promo }) {
                     </p>
                 </div>
             </div>
-            {promo.partner?.logo_url ? (
+            {promo.promo_image_url ? (
+                <img src={promo.promo_image_url} alt={promo.title} className="my-auto mr-3 h-16 w-16 shrink-0 rounded-lg object-cover" />
+            ) : promo.partner?.logo_url ? (
                 <img src={promo.partner.logo_url} alt={promo.partner.name} className="my-auto mr-3 h-12 w-12 shrink-0 rounded-lg object-cover" />
             ) : (
                 <span className="my-auto mr-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-ink font-display text-lg font-bold text-gold-light">

@@ -11,8 +11,12 @@ use App\Http\Controllers\Admin\PromoController as AdminPromoController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Member\AccountController;
+use App\Http\Controllers\Member\AgendaController;
+use App\Http\Controllers\Member\BillingController;
+use App\Http\Controllers\Member\DokuPaymentController;
 use App\Http\Controllers\Member\HistoryController;
 use App\Http\Controllers\Member\HomeController;
+use App\Http\Controllers\Member\ManualPaymentController;
 use App\Http\Controllers\Member\NotificationController as MemberNotificationController;
 use App\Http\Controllers\Member\PartnerController as MemberPartnerController;
 use App\Http\Controllers\Member\PromoController as MemberPromoController;
@@ -44,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ---------- MEMBER ----------
     Route::middleware('role:member')->prefix('member')->name('member.')->group(function () {
         Route::get('/home', HomeController::class)->name('home');
+        Route::get('/agendas/{info}', [AgendaController::class, 'show'])->name('agendas.show');
 
         Route::get('/promos/{promo}', [MemberPromoController::class, 'show'])->name('promos.show');
 
@@ -58,14 +63,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
         Route::put('/account', [AccountController::class, 'update'])->name('account.update');
+        Route::post('/account/password/send-otp', [AccountController::class, 'sendPasswordOtp'])
+            ->middleware('throttle:5,1')
+            ->name('account.password.send-otp');
 
-        Route::get('/billing', [\App\Http\Controllers\Member\BillingController::class, 'index'])->name('billing.index');
-        Route::post('/billing/manual/checkout', [\App\Http\Controllers\Member\ManualPaymentController::class, 'checkout'])->name('billing.manual.checkout');
-        Route::post('/billing/manual/payments/{payment}/proof', [\App\Http\Controllers\Member\ManualPaymentController::class, 'uploadProof'])->name('billing.manual.proof');
-        Route::post('/billing/manual/payments/{payment}/cancel', [\App\Http\Controllers\Member\ManualPaymentController::class, 'cancel'])->name('billing.manual.cancel');
-        Route::post('/billing/doku/check-promo', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkPromo'])->name('billing.doku.promo');
-        Route::post('/billing/doku/checkout', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkout'])->name('billing.doku.checkout');
-        Route::get('/billing/doku/{payment}/status', [\App\Http\Controllers\Member\DokuPaymentController::class, 'checkStatus'])->name('billing.doku.status');
+        Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/manual/checkout', [ManualPaymentController::class, 'checkout'])->name('billing.manual.checkout');
+        Route::post('/billing/manual/payments/{payment}/proof', [ManualPaymentController::class, 'uploadProof'])->name('billing.manual.proof');
+        Route::post('/billing/manual/payments/{payment}/cancel', [ManualPaymentController::class, 'cancel'])->name('billing.manual.cancel');
+        Route::post('/billing/doku/check-promo', [DokuPaymentController::class, 'checkPromo'])->name('billing.doku.promo');
+        Route::post('/billing/doku/checkout', [DokuPaymentController::class, 'checkout'])->name('billing.doku.checkout');
+        Route::get('/billing/doku/{payment}/status', [DokuPaymentController::class, 'checkStatus'])->name('billing.doku.status');
     });
 
     // ---------- VENDOR ----------
@@ -88,9 +96,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/reports', VendorReportController::class)->name('reports.index');
 
-        Route::get('/billing', [\App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
-        Route::post('/billing/ads', [\App\Http\Controllers\Vendor\BillingController::class, 'storeAd'])->name('billing.ads.store');
-        Route::post('/billing/ads/{ad}/pay', [\App\Http\Controllers\Vendor\BillingController::class, 'payAd'])->name('billing.ads.pay');
+        Route::get('/billing', [App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/ads', [App\Http\Controllers\Vendor\BillingController::class, 'storeAd'])->name('billing.ads.store');
+        Route::post('/billing/ads/{ad}/pay', [App\Http\Controllers\Vendor\BillingController::class, 'payAd'])->name('billing.ads.pay');
     });
 
     // ---------- ADMIN ----------
@@ -176,7 +184,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // ---------- DOKU WEBHOOK ----------
-Route::post('/api/doku/notifications', [\App\Http\Controllers\Member\DokuPaymentController::class, 'notification'])->name('doku.notification');
+Route::post('/api/doku/notifications', [DokuPaymentController::class, 'notification'])->name('doku.notification');
 
 // ---------- PARTNER REGISTRATION (Public) ----------
 Route::get('/partner/register', [PartnerRegisterController::class, 'show'])->name('partner.register.show');

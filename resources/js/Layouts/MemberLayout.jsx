@@ -4,19 +4,22 @@ import AppLogo from '@/Components/AppLogo';
 import FlashMessages from '@/Components/FlashMessages';
 import ScrollHint from '@/Components/ScrollHint';
 import WhatsAppSupport from '@/Components/WhatsAppSupport';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { useTranslation } from '@/i18n';
 
 const NAV = [
-    { name: 'Beranda', route: 'member.home' },
-    { name: 'Riwayat', route: 'member.history.index' },
-    { name: 'Partner', route: 'member.partners.index' },
-    { name: 'Notifikasi', route: 'member.notifications.index', badge: true },
-    { name: 'Tagihan', route: 'member.billing.index' },
-    { name: 'Profil', route: 'member.account.edit' },
+    { nameKey: 'nav.home', route: 'member.home' },
+    { nameKey: 'nav.history', route: 'member.history.index' },
+    { nameKey: 'nav.promoPartner', route: 'member.partners.index' },
+    { nameKey: 'nav.notifications', route: 'member.notifications.index', badge: true },
+    { nameKey: 'nav.billing', route: 'member.billing.index' },
+    { nameKey: 'nav.profile', route: 'member.account.edit' },
 ];
 
 export default function MemberLayout({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const unread = usePage().props.auth?.user?.notifications_unread ?? 0;
+    const { t } = useTranslation();
 
     const logout = () => router.post(route('logout'));
 
@@ -44,24 +47,25 @@ export default function MemberLayout({ children }) {
                                 href={route(item.route)}
                                 className="rounded-full px-4 py-2 text-sm font-medium text-slate transition-colors hover:bg-ink/5 hover:text-ink"
                             >
-                                {item.name}
+                                {t(item.nameKey)}
                                 {item.badge && <UnreadBadge value={unread} />}
                             </Link>
                         ))}
                     </nav>
 
                     <div className="flex items-center gap-3">
+                        <LanguageSwitcher className="hidden sm:inline-flex" />
                         <button
                             onClick={logout}
                             className="hidden rounded-full px-3 py-2 text-sm font-medium text-slate hover:bg-ember/10 hover:text-ember md:block"
                         >
-                            Keluar
+                            {t('nav.logout')}
                         </button>
 
                         <button
                             onClick={() => setMobileOpen((v) => !v)}
                             className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-white/70 md:hidden"
-                            aria-label="Menu"
+                            aria-label={t('nav.menu')}
                         >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                                 {mobileOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
@@ -80,17 +84,20 @@ export default function MemberLayout({ children }) {
                                     className="flex items-center rounded-xl px-4 py-3 text-sm font-medium text-ink hover:bg-ink/5"
                                     onClick={() => setMobileOpen(false)}
                                 >
-                                    {item.name}
+                                    {t(item.nameKey)}
                                     {item.badge && <UnreadBadge value={unread} />}
                                 </Link>
                             ))}
 
-                            <button
-                                onClick={logout}
-                                className="rounded-xl px-4 py-3 text-left text-sm font-medium text-ember hover:bg-ember/10"
-                            >
-                                Keluar
-                            </button>
+                            <div className="flex items-center justify-between px-4 py-2">
+                                <LanguageSwitcher />
+                                <button
+                                    onClick={logout}
+                                    className="rounded-xl px-3 py-2 text-sm font-medium text-ember hover:bg-ember/10"
+                                >
+                                    {t('nav.logout')}
+                                </button>
+                            </div>
                         </div>
                     </nav>
                 )}
@@ -104,7 +111,7 @@ export default function MemberLayout({ children }) {
             <footer className="border-t border-ink/10 py-8">
                 <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-center sm:px-6">
                     <AppLogo className="h-6 w-auto" />
-                    <p className="text-xs text-slate">Satu kartu. Satu komunitas.</p>
+                    <p className="text-xs text-slate">{t('nav.footerTagline')}</p>
                 </div>
             </footer>
         </div>

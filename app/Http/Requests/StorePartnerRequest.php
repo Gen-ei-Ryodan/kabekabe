@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class StorePartnerRequest extends FormRequest
 {
@@ -59,7 +60,7 @@ class StorePartnerRequest extends FormRequest
             // Vendor Login credentials
             'vendor_name' => ['required', 'string', 'max:255'],
             'vendor_email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'vendor_password' => ['required', 'string', 'min:8', 'confirmed'],
+            'vendor_password' => ['required', 'string', Password::defaults(), 'confirmed'],
         ];
     }
 }

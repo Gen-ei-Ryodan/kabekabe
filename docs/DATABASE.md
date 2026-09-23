@@ -9,7 +9,10 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | name | string | |
 | email | string unique | |
 | email_verified_at | timestamp nullable | |
-| password | string | hashed cast |
+| password | string | hashed cast; **wajib strong** (min 8, kombinasi huruf + angka) via `Password::defaults()` → `App\Rules\StrongPassword` |
+| otp_code | string(6) nullable | kode OTP (forgot password & konfirmasi ganti password member) |
+| otp_expires_at | timestamp nullable | masa berlaku OTP (10 menit) |
+| otp_purpose | string nullable index | `password_reset` atau `change_password` |
 | role | enum(member,admin,vendor) default member, index | |
 | phone, whatsapp, company | string nullable | |
 | avatar | string nullable | storage path |
@@ -20,6 +23,10 @@ SQLite (dev). Semua tabel dibuat lewat migrasi; `RefreshDatabase` untuk test.
 | religion | enum nullable | islam, kristen, katolik, buddha, hindu, lainnya |
 | birth_date | date nullable | tidak boleh di masa depan |
 | city | string nullable | |
+| approval_status | enum(pending,approved,rejected) default approved | status persetujuan registrasi; approve kirim email `AccountApprovedMail` + password awal |
+| must_change_password | boolean default false | wajib ganti password saat login pertama |
+| is_household | boolean default false | centang "Bapak/Ibu Rumah Tangga" saat registrasi → info usaha tidak wajib |
+| businesses | json nullable | daftar usaha registrasi: `[{company, industry, position, address}]`, bisa lebih dari satu |
 
 ## memberships (1:1 per member)
 | kolom | tipe |

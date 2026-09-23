@@ -11,11 +11,14 @@ export default function PromoEdit({ promo }) {
         start_date: promo.start_date,
         end_date: promo.end_date,
         terms: promo.terms || '',
+        logo: null,
+        promo_image: null,
+        product_image: null,
     });
 
     const submit = (e) => {
         e.preventDefault();
-        form.put(route('vendor.promos.update', promo.id), { preserveScroll: true });
+        form.put(route('vendor.promos.update', promo.id), { preserveScroll: true, forceFormData: true });
     };
 
     return (
@@ -90,6 +93,80 @@ export default function PromoEdit({ promo }) {
                         <label className="label" htmlFor="terms">Syarat & Ketentuan</label>
                         <textarea id="terms" rows={2} className="input" value={form.data.terms} onChange={(e) => form.setData('terms', e.target.value)} />
                         {form.errors.terms && <p className="mt-1 text-xs text-ember">{form.errors.terms}</p>}
+                    </div>
+
+                    {/* Foto-foto Opsional */}
+                    <div className="border-t border-ink/10 pt-6">
+                        <p className="eyebrow mb-4">Foto Promo (Opsional)</p>
+                        <div className="grid gap-4 sm:grid-cols-3">
+                            <div>
+                                <label className="label" htmlFor="logo">Logo Perusahaan</label>
+                                {promo.logo_url && (
+                                    <div className="mb-2">
+                                        <img src={promo.logo_url} alt="Logo saat ini" className="h-20 w-20 rounded-lg object-cover" />
+                                        <p className="text-xs text-slate-soft">Foto saat ini</p>
+                                    </div>
+                                )}
+                                <input
+                                    id="logo"
+                                    type="file"
+                                    accept="image/*"
+                                    className="input"
+                                    onChange={(e) => form.setData('logo', e.target.files[0])}
+                                />
+                                {form.errors.logo && <p className="mt-1 text-xs text-ember">{form.errors.logo}</p>}
+                                {form.data.logo && (
+                                    <div className="mt-2">
+                                        <img src={URL.createObjectURL(form.data.logo)} alt="Preview Logo" className="h-20 w-20 rounded-lg object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="promo_image">Foto Promo</label>
+                                {promo.promo_image_url && (
+                                    <div className="mb-2">
+                                        <img src={promo.promo_image_url} alt="Foto promo saat ini" className="h-20 w-20 rounded-lg object-cover" />
+                                        <p className="text-xs text-slate-soft">Foto saat ini</p>
+                                    </div>
+                                )}
+                                <input
+                                    id="promo_image"
+                                    type="file"
+                                    accept="image/*"
+                                    className="input"
+                                    onChange={(e) => form.setData('promo_image', e.target.files[0])}
+                                />
+                                {form.errors.promo_image && <p className="mt-1 text-xs text-ember">{form.errors.promo_image}</p>}
+                                {form.data.promo_image && (
+                                    <div className="mt-2">
+                                        <img src={URL.createObjectURL(form.data.promo_image)} alt="Preview Promo" className="h-20 w-20 rounded-lg object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="product_image">Foto Produk</label>
+                                {promo.product_image_url && (
+                                    <div className="mb-2">
+                                        <img src={promo.product_image_url} alt="Foto produk saat ini" className="h-20 w-20 rounded-lg object-cover" />
+                                        <p className="text-xs text-slate-soft">Foto saat ini</p>
+                                    </div>
+                                )}
+                                <input
+                                    id="product_image"
+                                    type="file"
+                                    accept="image/*"
+                                    className="input"
+                                    onChange={(e) => form.setData('product_image', e.target.files[0])}
+                                />
+                                {form.errors.product_image && <p className="mt-1 text-xs text-ember">{form.errors.product_image}</p>}
+                                {form.data.product_image && (
+                                    <div className="mt-2">
+                                        <img src={URL.createObjectURL(form.data.product_image)} alt="Preview Produk" className="h-20 w-20 rounded-lg object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <p className="mt-2 text-xs text-slate-soft">Format: JPG, PNG, atau WebP. Maksimal 2MB per file.</p>
                     </div>
 
                     <div className="flex justify-end gap-3">

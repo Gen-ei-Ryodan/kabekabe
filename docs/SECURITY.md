@@ -11,6 +11,9 @@ Status: **Ditinjau**. Lingkup demo (single-server, web session).
 
 ## A02 Cryptographic Failures — ✓
 - Password di-hash via cast `hashed`.
+- **Strong password wajib** di semua input password: min 8 karakter + kombinasi huruf dan angka (`App\Rules\StrongPassword`, diregistrasikan via `Password::defaults()`).
+- **OTP 6 digit via email** (berlaku 10 menit, `hash_equals`, kolom `users.otp_*`) untuk reset password dan konfirmasi ganti password member.
+- **Password awal registrasi tidak pernah ditampilkan** di layar siapa pun: dibuat acak saat registrasi, lalu di-generate ulang dan **dikirim hanya via email setelah admin menyetujui** (`ApprovalNotifier` → `AccountApprovedMail`).
 - `card_token` UUID acak untuk QR.
 - Tidak ada secret/credential di repo; `.env` di-gitignore.
 
@@ -30,8 +33,10 @@ Status: **Ditinjau**. Lingkup demo (single-server, web session).
 ## A06 Vulnerable & Outdated Components — ✓
 - `composer audit`: 0 advisories. `npm audit`: 0 vulnerabilities.
 
-## A07 Identification & Authentication Failures — ✓ Sebagian
+## A07 Identification & Authentication Failures — ✓
 - Breeze auth + email verification (`verified` middleware di semua area).
+- **Lupa password**: verifikasi kode OTP ke email sebelum reset (`throttle` 5,1 request / 10,1 verify / 3,1 resend).
+- **Ganti password member**: wajib konfirmasi kode OTP ke email sebelum disimpan.
 - Session driver default; cookie secure disarankan di production (HTTPS).
 
 ## A08 Software & Data Integrity — ✓

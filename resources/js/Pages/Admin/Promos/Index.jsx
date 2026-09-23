@@ -193,9 +193,9 @@ export default function PromoIndex({ promos, filters, drawer }) {
                                                 {/* Promo & Mitra */}
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-start gap-3">
-                                                        {promo.image_url ? (
+                                                        {promo.promo_image_url ? (
                                                             <img
-                                                                src={promo.image_url}
+                                                                src={promo.promo_image_url}
                                                                 alt=""
                                                                 className="h-11 w-11 rounded-lg object-cover border border-ink/10 shrink-0"
                                                             />

@@ -80,6 +80,32 @@ export default function PromoEdit({ promo }) {
                         <textarea rows={2} className="input" value={form.data.terms} onChange={(e) => form.setData('terms', e.target.value)} />
                     </div>
 
+                    {(promo.logo_url || promo.promo_image_url || promo.product_image_url) && (
+                        <div className="border-t border-ink/10 pt-5">
+                            <p className="eyebrow mb-3">Foto Promo</p>
+                            <div className="flex flex-wrap gap-3">
+                                {promo.promo_image_url && (
+                                    <div className="text-center">
+                                        <img src={promo.promo_image_url} alt="Foto Promo" className="h-24 w-32 rounded-lg object-cover border border-ink/10" />
+                                        <p className="mt-1 text-[11px] text-slate">Foto Promo</p>
+                                    </div>
+                                )}
+                                {promo.product_image_url && (
+                                    <div className="text-center">
+                                        <img src={promo.product_image_url} alt="Foto Produk" className="h-24 w-32 rounded-lg object-cover border border-ink/10" />
+                                        <p className="mt-1 text-[11px] text-slate">Foto Produk</p>
+                                    </div>
+                                )}
+                                {promo.logo_url && (
+                                    <div className="text-center">
+                                        <img src={promo.logo_url} alt="Logo" className="h-24 w-32 rounded-lg object-contain bg-paper border border-ink/10" />
+                                        <p className="mt-1 text-[11px] text-slate">Logo</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {promo.status === 'approved' && (
                         <p className="rounded-xl bg-sage/10 px-4 py-3 text-xs text-sage">
                             Promo aktif memberikan benefit {promo.discount_type === 'percent' ? `${promo.discount_value}%` : formatRupiah(promo.discount_value)} bagi member AKTIF. Anda dapat mengaktifkan/menonaktifkan dari daftar promo.
