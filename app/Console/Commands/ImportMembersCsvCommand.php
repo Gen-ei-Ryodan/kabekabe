@@ -256,6 +256,7 @@ class ImportMembersCsvCommand extends Command
             return null;
         }
 
+        $year = strlen($parts[2]) === 2 ? '20'.$parts[2] : $parts[2];
         $yearInt = (int) $year;
         if ($yearInt < 1970) {
             $yearInt += 100; // contoh 1936 -> 2036
