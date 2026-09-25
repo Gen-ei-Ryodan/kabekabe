@@ -145,27 +145,20 @@ export default function Login({ status, portal = 'member' }) {
 
                 <form
                     onSubmit={submit}
-                    className="relative w-full max-w-3xl"
+                    className={`relative w-full max-w-3xl ${isPartner ? 'max-sm:-mx-4 max-sm:w-[calc(100%+2rem)]' : ''}`}
                 >
                     {isPartner ? (
-                        /* Partner: kartu mewah — mobile portrait di header, desktop landscape banner, form di panel ink. */
-                        <div className="login-card mx-auto w-full max-w-2xl overflow-hidden rounded-[28px] bg-ink shadow-card">
+                        /* Partner: poster utuh — image jadi background kartu, form overlay di area bawah image (sama seperti member). */
+                        <div className="login-card relative mx-auto aspect-[1024/1536] min-h-[700px] w-full max-w-lg overflow-hidden rounded-[28px] bg-black shadow-card sm:min-h-[740px]">
                             <img
                                 src="/images/auth/partner-portrait.png"
                                 alt=""
                                 aria-hidden="true"
-                                className="block h-auto w-full select-none object-cover object-top sm:hidden"
-                                draggable="false"
-                            />
-                            <img
-                                src="/images/auth/partner-landscape.jpeg"
-                                alt=""
-                                aria-hidden="true"
-                                className="hidden h-auto w-full select-none object-cover object-center sm:block"
+                                className="absolute inset-0 h-full w-full select-none object-cover object-top"
                                 draggable="false"
                             />
 
-                            <div className="flex flex-col justify-center space-y-4 p-6 sm:p-8 md:p-10">
+                            <div className="absolute inset-x-5 bottom-5 top-[54%] flex flex-col justify-end space-y-2.5 sm:inset-x-8 sm:bottom-8 sm:space-y-3">
                                 {fields('partner')}
                             </div>
                         </div>
