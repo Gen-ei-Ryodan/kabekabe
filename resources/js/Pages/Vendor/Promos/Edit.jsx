@@ -27,8 +27,15 @@ export default function PromoEdit({ promo }) {
 
             <div className="mx-auto max-w-2xl">
                 <header>
-                    <p className="eyebrow">Promo Ditolak</p>
-                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Revisi Promo</h1>
+                    <p className="eyebrow">
+                        {promo.status === 'rejected' ? 'Promo Ditolak' : promo.status === 'approved' ? 'Promo Disetujui' : 'Promo Menunggu Review'}
+                    </p>
+                    <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
+                        {promo.status === 'rejected' ? 'Revisi Promo' : 'Edit Promo'}
+                    </h1>
+                    <p className="mt-2 text-sm text-slate">
+                        Perubahan akan disubmit ulang dan menunggu persetujuan admin sebelum tayang kembali.
+                    </p>
                     {promo.rejection_reason && (
                         <p className="mt-3 rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember">
                             Alasan penolakan: {promo.rejection_reason}

@@ -6,13 +6,16 @@ import EmptyState from '@/Components/EmptyState';
 import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 import { rememberBackSource } from '@/Utils/backNav';
+import { useTranslation } from '@/i18n';
 
 const TABS = [
-    { key: 'promos', label: 'Promos' },
-    { key: 'partners', label: 'Partners' },
+    { key: 'promos', labelKey: 'partners.tab.promos' },
+    { key: 'partners', labelKey: 'partners.tab.partners' },
 ];
 
 function PromoCard({ promo }) {
+    const { t } = useTranslation();
+
     return (
         <Link
             href={route('member.promos.show', promo.id)}
@@ -31,7 +34,9 @@ function PromoCard({ promo }) {
                 <div className="p-3">
                     <h3 className="line-clamp-2 font-display text-sm font-bold leading-snug text-ink">{promo.title}</h3>
                     {promo.min_purchase > 0 && (
-                        <p className="mt-1.5 font-mono text-[10px] text-gold-deep">Min. {formatRupiah(promo.min_purchase)}</p>
+                        <p className="mt-1.5 font-mono text-[10px] text-gold-deep">
+                            {t('partners.minSpend', { value: formatRupiah(promo.min_purchase) })}
+                        </p>
                     )}
                     <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-slate-soft">
                         {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
@@ -52,6 +57,8 @@ function PromoCard({ promo }) {
 }
 
 function PartnerCard({ partner }) {
+    const { t } = useTranslation();
+
     return (
         <Link
             href={route('member.partners.show', partner.id)}
@@ -64,7 +71,7 @@ function PartnerCard({ partner }) {
                 <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-gold-deep">{partner.category}</p>
                 <p className="mt-1.5 line-clamp-2 text-xs text-slate">{partner.description}</p>
                 <div className="mt-2 flex items-center justify-between border-t border-ink/5 pt-2">
-                    <span className="text-[11px] text-slate-soft">{partner.promos_count} promos</span>
+                    <span className="text-[11px] text-slate-soft">{t('partners.promosCount', { n: partner.promos_count })}</span>
                     <span className="text-xs font-semibold text-ink transition-transform group-hover:translate-x-1">→</span>
                 </div>
             </div>
@@ -80,6 +87,8 @@ function PartnerCard({ partner }) {
 }
 
 export default function PartnerIndex({ partners, promos, categories, filters }) {
+    const { t } = useTranslation();
+
     const [tab, setTab] = useState(
         () => new URLSearchParams(window.location.search).get('tab') === 'partners' ? 'partners' : 'promos',
     );
@@ -128,7 +137,7 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
                         category === cat ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
                     }`}
                 >
-                    {cat === 'all' ? 'All' : cat}
+                    {cat === 'all' ? t('partners.filter.all') : cat}
                 </button>
             ))}
         </div>
@@ -136,21 +145,21 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
 
     return (
         <>
-            <Head title="Promo & Partner" />
+            <Head title={t('partners.headTitle')} />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                    <h1 className="font-display text-3xl font-bold tracking-tight">Promo & Partner</h1>
+                    <h1 className="font-display text-3xl font-bold tracking-tight">{t('partners.headTitle')}</h1>
                     <div className="inline-flex w-fit rounded-full border border-ink/10 bg-white/70 p-1">
-                        {TABS.map((t) => (
+                        {TABS.map((item) => (
                             <button
-                                key={t.key}
-                                onClick={() => switchTab(t.key)}
+                                key={item.key}
+                                onClick={() => switchTab(item.key)}
                                 className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-                                    tab === t.key ? 'bg-ink text-paper' : 'text-slate hover:text-ink'
+                                    tab === item.key ? 'bg-ink text-paper' : 'text-slate hover:text-ink'
                                 }`}
                             >
-                                {t.label}
+                                {t(item.labelKey)}
                             </button>
                         ))}
                     </div>
@@ -159,13 +168,13 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
                 <form onSubmit={handleSearch} className="flex gap-2">
                     <input
                         type="text"
-                        placeholder="Cari promo atau nama partner..."
+                        placeholder={t('partners.searchPlaceholder')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="input flex-1"
                     />
                     <button type="submit" className="btn-ghost border border-ink/15 bg-white/70 px-4 py-2 text-sm font-medium text-ink hover:bg-white">
-                        Search
+                        {t('common.search')}
                     </button>
                 </form>
 
@@ -175,8 +184,8 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
 
                         {promoList.length === 0 ? (
                             <EmptyState
-                                title="No active promos"
-                                description="No promos available for this category right now."
+                                title={t('partners.emptyPromos.title')}
+                                description={t('partners.emptyPromos.desc')}
                             />
                         ) : (
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -196,8 +205,8 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
 
                         {partnerList.length === 0 ? (
                             <EmptyState
-                                title="No partners yet"
-                                description="No partners registered in this category yet."
+                                title={t('partners.emptyPartners.title')}
+                                description={t('partners.emptyPartners.desc')}
                             />
                         ) : (
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

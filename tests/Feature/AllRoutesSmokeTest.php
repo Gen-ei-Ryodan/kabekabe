@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\AppNotification;
 use App\Models\CommunityInfo;
 use App\Models\Membership;
-use App\Models\MembershipPlan;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Promo;
@@ -85,6 +84,7 @@ class AllRoutesSmokeTest extends TestCase
             route('vendor.verify.token', 'some-random-token'),
             route('vendor.promos.index'),
             route('vendor.promos.create'),
+            route('vendor.promos.show', $promo),
             route('vendor.promos.edit', $promo),
             route('vendor.transactions.index'),
             route('vendor.transactions.create'),

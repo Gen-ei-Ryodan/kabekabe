@@ -33,6 +33,7 @@ export default {
     'partners.emptyPartners.title': 'No partners yet',
     'partners.emptyPartners.desc': 'No partners registered in this category yet.',
     'partners.promosCount': '{n} promos',
+    'partners.minSpend': 'Min. {value}',
 
     // Partner detail
     'partners.backToList': '← Back to partners',
@@ -61,6 +62,15 @@ export default {
     'promos.visitPartner': 'Visit {name}',
     'promos.showCardHint': '✓ Show your digital card when paying',
     'promos.inactiveHint': 'To update your membership, please contact the admin or renew your subscription.',
+
+    // Promo photo gallery (carousel)
+    'promos.gallery.title': 'Promo Gallery',
+    'promos.gallery.promo': 'Promo Photo',
+    'promos.gallery.product': 'Product Photo',
+    'promos.gallery.logo': 'Company Logo',
+    'promos.gallery.prev': 'Previous photo',
+    'promos.gallery.next': 'Next photo',
+    'promos.gallery.counter': '{i} of {n}',
 
     // Agenda detail
     'agenda.free': 'Free',

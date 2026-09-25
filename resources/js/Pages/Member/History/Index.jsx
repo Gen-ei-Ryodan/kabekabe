@@ -6,14 +6,17 @@ import EmptyState from '@/Components/EmptyState';
 import StatusChip from '@/Components/StatusChip';
 import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
+import { useTranslation } from '@/i18n';
 
 const TABS = [
-    { key: 'payments', label: 'Pembayaran' },
-    { key: 'usage', label: 'Riwayat Belanja' },
-    { key: 'attendance', label: 'Kehadiran' },
+    { key: 'payments', labelKey: 'history.tab.payments' },
+    { key: 'usage', labelKey: 'history.tab.usage' },
+    { key: 'attendance', labelKey: 'history.tab.attendance' },
 ];
 
 export default function HistoryIndex({ payments, transactions, total_benefit, total_payment_made, attendances, membership, filters = {} }) {
+    const { t } = useTranslation();
+
     const [tab, setTab] = useState(
         () => {
             const urlTab = new URLSearchParams(window.location.search).get('tab');
@@ -67,24 +70,24 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
 
     return (
         <>
-            <Head title="Riwayat" />
+            <Head title={t('history.headTitle')} />
 
             <div className="flex flex-col gap-8">
                 <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <h1 className="font-display text-3xl font-bold tracking-tight">Riwayat</h1>
-                        <p className="mt-2 text-sm text-slate">Riwayat pembayaran iuran dan penggunaan benefit promo di mitra/partner.</p>
+                        <h1 className="font-display text-3xl font-bold tracking-tight">{t('history.title')}</h1>
+                        <p className="mt-2 text-sm text-slate">{t('history.subtitle')}</p>
                     </div>
                     <div className="inline-flex w-fit rounded-full border border-ink/10 bg-white/70 p-1">
-                        {TABS.map((t) => (
+                        {TABS.map((item) => (
                             <button
-                                key={t.key}
-                                onClick={() => switchTab(t.key)}
+                                key={item.key}
+                                onClick={() => switchTab(item.key)}
                                 className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-                                    tab === t.key ? 'bg-ink text-paper' : 'text-slate hover:text-ink'
+                                    tab === item.key ? 'bg-ink text-paper' : 'text-slate hover:text-ink'
                                 }`}
                             >
-                                {t.label}
+                                {t(item.labelKey)}
                             </button>
                         ))}
                     </div>
@@ -93,7 +96,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                 {/* Filter Periode Tanggal */}
                 <form onSubmit={applyDateFilter} className="card-surface flex flex-wrap items-end gap-3 p-4">
                     <div className="flex-1 min-w-[140px]">
-                        <label className="label text-xs mb-1">Dari Tanggal</label>
+                        <label className="label text-xs mb-1">{t('history.fromDate')}</label>
                         <input
                             type="date"
                             value={from}
@@ -102,7 +105,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         />
                     </div>
                     <div className="flex-1 min-w-[140px]">
-                        <label className="label text-xs mb-1">Sampai Tanggal</label>
+                        <label className="label text-xs mb-1">{t('history.toDate')}</label>
                         <input
                             type="date"
                             value={to}
@@ -112,7 +115,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                     </div>
                     <div className="flex gap-2">
                         <button type="submit" className="btn-ink text-xs px-4 py-2">
-                            Filter
+                            {t('history.filter')}
                         </button>
                         {(from || to) && (
                             <button
@@ -120,7 +123,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                                 onClick={resetDateFilter}
                                 className="btn-ghost text-xs px-3 py-2"
                             >
-                                Reset
+                                {t('history.reset')}
                             </button>
                         )}
                     </div>
@@ -131,14 +134,14 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         <Reveal>
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="card-surface flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 sm:px-6">
-                                    <span className="text-sm text-slate">Status saat ini:</span>
-                                    <StatusChip status={membership?.status} label={membership?.status_label === 'ACTIVE' ? 'AKTIF' : (membership?.status_label === 'INACTIVE' ? 'TIDAK AKTIF' : membership?.status_label)} pulse />
+                                    <span className="text-sm text-slate">{t('history.currentStatus')}</span>
+                                    <StatusChip status={membership?.status} label={membership?.status_label === 'ACTIVE' ? t('history.statusActive') : (membership?.status_label === 'INACTIVE' ? t('history.statusInactive') : membership?.status_label)} pulse />
                                     {membership?.expires_at && (
-                                        <span className="text-sm text-slate">Berlaku hingga {formatDate(membership.expires_at)}</span>
+                                        <span className="text-sm text-slate">{t('history.validUntil', { date: formatDate(membership.expires_at) })}</span>
                                     )}
                                 </div>
                                 <div className="rounded-2xl border border-gold/30 bg-gold/10 px-5 py-3">
-                                    <p className="eyebrow">Total Pembayaran</p>
+                                    <p className="eyebrow">{t('history.totalPayment')}</p>
                                     <p className="font-display text-2xl font-bold text-gold-deep">
                                         {formatRupiah(total_payment_made || 0)}
                                     </p>
@@ -147,7 +150,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         </Reveal>
 
                         {paymentList.length === 0 ? (
-                            <EmptyState title="Belum ada pembayaran" description="Riwayat pembayaran keanggotaan Anda akan muncul di sini." />
+                            <EmptyState title={t('history.emptyPaymentsTitle')} description={t('history.emptyPaymentsDesc')} />
                         ) : (
                             <div className="space-y-3">
                                 {paymentList.map((payment, i) => (
@@ -167,7 +170,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                                                 </p>
                                                 {payment.event && (
                                                     <p className="mt-1 text-xs text-slate">
-                                                        <span className="font-mono text-[10px] uppercase tracking-wide text-gold-deep">Urunan Kegiatan</span>
+                                                            <span className="font-mono text-[10px] uppercase tracking-wide text-gold-deep">{t('history.eventContribution')}</span>
                                                         {' · '}
                                                         {payment.event.title}
                                                     </p>
@@ -187,10 +190,10 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                         <Reveal>
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="max-w-lg text-sm text-slate">
-                                    Benefit yang didapatkan dari transaksi belanja di mitra/partner.
+                                    {t('history.usageDesc')}
                                 </p>
                                 <div className="rounded-2xl border border-gold/30 bg-gold/10 px-5 py-3">
-                                    <p className="eyebrow">Total benefit diterima</p>
+                                    <p className="eyebrow">{t('history.totalBenefit')}</p>
                                     <p className="font-display text-2xl font-bold text-gold-deep">
                                         {formatRupiah(total_benefit)}
                                     </p>
@@ -200,8 +203,8 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
 
                         {transactionList.length === 0 ? (
                             <EmptyState
-                                title="Belum ada transaksi"
-                                description="Kunjungi mitra/partner dan tunjukkan kartu digital Anda untuk menikmati promo."
+                                title={t('history.emptyTransactionsTitle')}
+                                description={t('history.emptyTransactionsDesc')}
                             />
                         ) : (
                             <div className="space-y-3">
@@ -233,19 +236,19 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
 
                                             <div className="grid grid-cols-3 gap-x-3 gap-y-2 text-left min-w-0 sm:min-w-[280px] sm:gap-4 sm:text-right">
                                                 <div className="min-w-0">
-                                                    <p className="eyebrow">Total Belanja</p>
+                                                    <p className="eyebrow">{t('history.totalSpent')}</p>
                                                     <p className="mt-0.5 text-xs font-semibold sm:text-sm">
                                                         {formatRupiah(transaction.total_amount)}
                                                     </p>
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="eyebrow">Diskon</p>
+                                                    <p className="eyebrow">{t('history.discount')}</p>
                                                     <p className="mt-0.5 text-xs font-semibold text-sage sm:text-sm">
                                                         -{formatRupiah(transaction.discount_amount)}
                                                     </p>
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="eyebrow">Total Bayar</p>
+                                                    <p className="eyebrow">{t('history.totalPaid')}</p>
                                                     <p className="mt-0.5 text-xs font-bold text-ink sm:text-sm">
                                                         {formatRupiah(transaction.net_amount)}
                                                     </p>
@@ -263,18 +266,18 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                     <>
                         <Reveal>
                             <div className="flex flex-col gap-2">
-                                <p className="eyebrow">Kehadiran Acara</p>
-                                <h2 className="font-display text-2xl font-bold tracking-tight">Kehadiran Acara</h2>
+                                <p className="eyebrow">{t('history.attendanceTitle')}</p>
+                                <h2 className="font-display text-2xl font-bold tracking-tight">{t('history.attendanceTitle')}</h2>
                                 <p className="text-sm text-slate">
-                                    Riwayat absensi acara atau kegiatan komunitas yang Anda hadiri.
+                                    {t('history.attendanceDesc')}
                                 </p>
                             </div>
                         </Reveal>
 
                         {attendanceList.length === 0 ? (
                             <EmptyState
-                                title="Belum ada data kehadiran"
-                                description="Pindai QR kartu member Anda di lokasi acara untuk tercatat."
+                                title={t('history.emptyAttendanceTitle')}
+                                description={t('history.emptyAttendanceDesc')}
                             />
                         ) : (
                             <div className="space-y-3">
@@ -296,7 +299,7 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                                                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
                                                         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
                                                     </span>
-                                                    Hadir
+                                                    {t('history.present')}
                                                 </span>
                                                 <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-slate-soft">
                                                     {a.scanned_at_human || a.scanned_at}

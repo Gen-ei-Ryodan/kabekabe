@@ -29,9 +29,10 @@ class PromoPolicy
             return true;
         }
 
+        // Vendor boleh mengubah promo miliknya sendiri (status apa pun).
+        // Update selalu me-resubmit ke pending sehingga perubahan butuh persetujuan admin ulang.
         return $user->isVendor()
-            && $promo->partner->user_id === $user->id
-            && $promo->status === Promo::STATUS_REJECTED;
+            && $promo->partner->user_id === $user->id;
     }
 
     public function delete(User $user, Promo $promo): bool

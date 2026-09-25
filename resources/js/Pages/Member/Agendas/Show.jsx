@@ -2,14 +2,14 @@ import { Head, Link } from '@inertiajs/react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import { formatDate, formatRupiah } from '@/Utils/format';
 import { handleBackNavigation } from '@/Utils/backNav';
+import { useTranslation } from '@/i18n';
 
 export default function AgendaShow({ agenda }) {
-    const feeLabel =
-        agenda.fee === null || agenda.fee === undefined
-            ? null
-            : agenda.fee > 0
-              ? formatRupiah(agenda.fee)
-              : 'Gratis';
+    const { t } = useTranslation();
+
+    const hasFee = agenda.fee !== null && agenda.fee !== undefined;
+    const isFree = !hasFee || agenda.fee <= 0;
+    const feeLabel = isFree ? t('agenda.free') : t('agenda.fee', { fee: formatRupiah(agenda.fee) });
 
     return (
         <>
@@ -21,7 +21,7 @@ export default function AgendaShow({ agenda }) {
                     onClick={(e) => handleBackNavigation(e, 'agenda')}
                     className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate hover:text-ink"
                 >
-                    ← Kembali
+                    {t('common.back')}
                 </Link>
 
                 <article className="card-surface overflow-hidden">
@@ -56,9 +56,9 @@ export default function AgendaShow({ agenda }) {
                                         {agenda.location}
                                     </span>
                                 )}
-                                {feeLabel && (
+                                {hasFee && (
                                     <span className="inline-flex items-center rounded-full border border-gold/30 bg-gold/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-gold-deep">
-                                        {feeLabel === 'Gratis' ? 'Gratis' : `Biaya ${feeLabel}`}
+                                        {feeLabel}
                                     </span>
                                 )}
                             </div>

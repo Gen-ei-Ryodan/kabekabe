@@ -102,14 +102,32 @@ class RoleAccessTest extends TestCase
                 ->component('Member/Home')
                 ->has('member.member_code')
                 ->where('member.membership_status', 'inactive')
-                ->where('active_package', null)
+                ->missing('active_package')
             );
 
         $this->assertNotNull($member->fresh()->member_code);
         $this->assertNotNull($member->fresh()->card_token);
     }
 
-    public function test_member_home_shows_active_package(): void
+    public function test_member_billing_shows_active_package(): void
+    {
+        $member = User::factory()->member()->create();
+        $member->membership()->create([
+            'status' => 'active',
+            'started_at' => now()->subMonth(),
+            'expires_at' => now()->addMonths(11),
+        ]);
+
+        $this->actingAs($member)->get(route('member.billing.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Member/Account/Billing')
+                ->has('active_package.expires_at')
+                ->where('active_package.days_remaining', fn ($value) => $value > 0)
+            );
+    }
+
+    public function test_member_home_has_no_active_package_prop(): void
     {
         $member = User::factory()->member()->create();
         $member->membership()->create([
@@ -122,9 +140,7 @@ class RoleAccessTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Member/Home')
-                ->where('member.membership_status', 'active')
-                ->has('active_package.expires_at')
-                ->where('active_package.days_remaining', fn ($value) => $value > 0)
+                ->missing('active_package')
             );
     }
 }

@@ -12,4 +12,21 @@ export default {
     'auth.login.titlePartner': 'Login Mitra - KBKB',
     'auth.login.titleAdmin': 'Login Admin - KBKB',
     'auth.login.partnerRegister': 'Daftar jadi Mitra',
+
+    'auth.role.member': 'member',
+    'auth.role.partner': 'mitra',
+
+    'auth.success.title': 'Pendaftaran Berhasil',
+    'auth.success.heading': 'Pengajuan diterima, silahkan tunggu akan dikonfirmasi oleh admin via email',
+    'auth.success.thanksIntro': 'Terima kasih telah mendaftar sebagai',
+    'auth.success.thanksOutro': '. Pendaftaran atas nama {name} telah kami terima dan sedang menunggu persetujuan admin.',
+    'auth.success.pendingTitle': 'Menunggu Persetujuan Admin',
+    'auth.success.pendingBody': 'Tim admin KBKB akan meninjau pendaftaran Anda. Anda akan menerima email konfirmasi berisi status pengajuan beserta password awal untuk masuk ke akun.',
+    'auth.success.emailHeading': 'Informasi Login via Email',
+    'auth.success.emailIntro': 'Password awal dan notifikasi persetujuan akan dikirim ke',
+    'auth.success.emailMid': '. Gunakan ',
+    'auth.success.initialPassword': 'password awal',
+    'auth.success.emailOutro': ' tersebut untuk masuk, lalu segera ganti password demi keamanan akun Anda.',
+    'auth.success.spamNote': 'Jika Anda tidak menemukan email di kotak masuk, silakan periksa folder spam atau promosi.',
+    'auth.success.backToLogin': 'Kembali ke Halaman Masuk',
 };

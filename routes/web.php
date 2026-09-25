@@ -177,6 +177,7 @@ Route::middleware(['auth:partner', 'verified'])->group(function () {
         Route::get('/promos', [VendorPromoController::class, 'index'])->name('promos.index');
         Route::get('/promos/create', [VendorPromoController::class, 'create'])->name('promos.create');
         Route::post('/promos', [VendorPromoController::class, 'store'])->name('promos.store');
+        Route::get('/promos/{promo}', [VendorPromoController::class, 'show'])->name('promos.show');
         Route::get('/promos/{promo}/edit', [VendorPromoController::class, 'edit'])->name('promos.edit');
         Route::put('/promos/{promo}', [VendorPromoController::class, 'update'])->name('promos.update');
         Route::delete('/promos/{promo}', [VendorPromoController::class, 'destroy'])->name('promos.destroy');

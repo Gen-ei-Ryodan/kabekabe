@@ -91,11 +91,12 @@ export default function PromoIndex({ promos, filters }) {
                                     </div>
 
                                     <div className="flex shrink-0 gap-2">
-                                        {promo.status === 'rejected' && (
-                                            <Link href={route('vendor.promos.edit', promo.id)} className="btn-ghost text-xs">
-                                                Revisi & Ajukan Ulang
-                                            </Link>
-                                        )}
+                                        <Link href={route('vendor.promos.show', promo.id)} className="btn-ghost text-xs">
+                                            Detail
+                                        </Link>
+                                        <Link href={route('vendor.promos.edit', promo.id)} className="btn-ghost text-xs">
+                                            {promo.status === 'rejected' ? 'Revisi & Ajukan Ulang' : 'Edit'}
+                                        </Link>
                                         {promo.status !== 'approved' && (
                                             <button
                                                 onClick={() => {

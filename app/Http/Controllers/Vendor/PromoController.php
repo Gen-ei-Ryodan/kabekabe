@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePromoRequest;
 use App\Http\Requests\UpdatePromoRequest;
 use App\Models\Promo;
-use App\Models\User;
 use App\Services\PromoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -86,9 +85,20 @@ class PromoController extends Controller
             ->with('success', 'Promo submitted and awaiting admin approval.');
     }
 
+    public function show(Promo $promo): Response
+    {
+        abort_unless(auth()->user()->can('view', $promo), 403);
+
+        $promo->load('partner');
+
+        return Inertia::render('Vendor/Promos/Show', [
+            'promo' => $promo,
+        ]);
+    }
+
     public function edit(Promo $promo): Response
     {
-        abort_unless($this->userCanEdit(auth()->user(), $promo), 403);
+        abort_unless(auth()->user()->can('update', $promo), 403);
 
         return Inertia::render('Vendor/Promos/Edit', [
             'promo' => $promo,
@@ -126,12 +136,5 @@ class PromoController extends Controller
         return redirect()
             ->route('vendor.promos.index')
             ->with('success', 'Promo deleted.');
-    }
-
-    private function userCanEdit(User $user, Promo $promo): bool
-    {
-        return $user->isVendor()
-            && $promo->partner->user_id === $user->id
-            && $promo->status === Promo::STATUS_REJECTED;
     }
 }

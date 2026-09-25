@@ -82,6 +82,9 @@ export default {
     'billing.fieldValidUntil': 'Valid Until',
     'billing.noPlanTitle': 'You do not have an active membership package yet.',
     'billing.noPlanDesc': 'Choose a package below to activate your membership card.',
+    'billing.activeBadge': 'Active Package',
+    'billing.activeUntil': 'Valid until {date}',
+    'billing.daysRemaining': 'days left',
     'billing.yourBill': 'Your Bill (Order #1)',
     'billing.referenceLabel': 'Reference Number',
     'billing.badgeUnpaid': '1. Unpaid',
@@ -175,6 +178,8 @@ export default {
     'billing.proofFormatHint': 'JPG, PNG, WEBP format (Max 5MB)',
     'billing.uploadingProof': 'Uploading Proof…',
     'billing.sendProof': 'Send Payment Proof',
+    'billing.close': 'Close',
+    'billing.branch': 'KCP Hasanuddin Denpasar',
 
     // ========================== history.* (Transaction History) ==========================
     'history.headTitle': 'History',

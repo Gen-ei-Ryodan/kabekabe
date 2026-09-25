@@ -428,7 +428,6 @@ export default function Home({
     vendor_ranking_by_count = [],
     vendor_ranking_by_amount = [],
     popup = null,
-    active_package = null,
 }) {
     const { t } = useTranslation();
     const hour = new Date().getHours();
@@ -472,34 +471,6 @@ export default function Home({
                 <section className="flex w-full justify-center">
                     <MemberCard member={member} />
                 </section>
-
-                {active_package && (
-                    <section className="card-surface p-4 sm:p-5">
-                        <div className="flex items-center justify-between gap-4">
-                            <div className="min-w-0">
-                                <p className="eyebrow">Paket Aktif</p>
-                                <h3 className="mt-1 truncate font-display text-lg font-bold text-ink">
-                                    {active_package.plan_name || 'Paket Keanggotaan'}
-                                </h3>
-                                {active_package.expires_at && (
-                                    <p className="mt-0.5 text-xs text-slate">
-                                        Berlaku s/d {active_package.expires_at}
-                                    </p>
-                                )}
-                            </div>
-                            {active_package.days_remaining !== null && (
-                                <div className="shrink-0 rounded-xl bg-sage/15 px-3 py-2 text-center">
-                                    <span className="font-display text-xl font-bold text-ink">
-                                        {active_package.days_remaining}
-                                    </span>
-                                    <p className="font-mono text-[9px] uppercase tracking-wider text-slate">
-                                        hari lagi
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-                )}
 
                 <VendorRanking byCount={countRanking} byAmount={amountRanking} />
 

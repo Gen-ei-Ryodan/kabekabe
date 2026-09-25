@@ -12,4 +12,21 @@ export default {
     'auth.login.titlePartner': 'Partner Login - KBKB',
     'auth.login.titleAdmin': 'Admin Login - KBKB',
     'auth.login.partnerRegister': 'Register as partner',
+
+    'auth.role.member': 'member',
+    'auth.role.partner': 'partner',
+
+    'auth.success.title': 'Registration Successful',
+    'auth.success.heading': 'Submission received, please wait for confirmation from admin via email',
+    'auth.success.thanksIntro': 'Thank you for registering as a',
+    'auth.success.thanksOutro': '. The registration for {name} has been received and is awaiting admin approval.',
+    'auth.success.pendingTitle': 'Awaiting Admin Approval',
+    'auth.success.pendingBody': 'The KBKB admin team will review your registration. You will receive a confirmation email with the status of your submission along with the initial password to access your account.',
+    'auth.success.emailHeading': 'Login Information via Email',
+    'auth.success.emailIntro': 'The initial password and approval notification will be sent to',
+    'auth.success.emailMid': '. Use the ',
+    'auth.success.initialPassword': 'initial password',
+    'auth.success.emailOutro': ' to sign in, then change it immediately to keep your account secure.',
+    'auth.success.spamNote': 'If you cannot find the email in your inbox, please check the spam or promotions folder.',
+    'auth.success.backToLogin': 'Back to Login Page',
 };

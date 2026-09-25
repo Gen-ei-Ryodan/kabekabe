@@ -33,6 +33,7 @@ export default {
     'partners.emptyPartners.title': 'Belum ada partner',
     'partners.emptyPartners.desc': 'Belum ada partner terdaftar di kategori ini.',
     'partners.promosCount': '{n} promo',
+    'partners.minSpend': 'Min. {value}',
 
     // Detail partner
     'partners.backToList': '← Kembali ke daftar partner',
@@ -61,6 +62,15 @@ export default {
     'promos.visitPartner': 'Kunjungi {name}',
     'promos.showCardHint': '✓ Tunjukkan kartu digital Anda saat pembayaran',
     'promos.inactiveHint': 'Untuk memperbarui membership Anda, silakan hubungi admin atau perpanjang langganan.',
+
+    // Galeri foto promo (carousel)
+    'promos.gallery.title': 'Galeri Promo',
+    'promos.gallery.promo': 'Foto Promo',
+    'promos.gallery.product': 'Foto Produk',
+    'promos.gallery.logo': 'Logo Perusahaan',
+    'promos.gallery.prev': 'Foto sebelumnya',
+    'promos.gallery.next': 'Foto berikutnya',
+    'promos.gallery.counter': '{i} dari {n}',
 
     // Detail agenda
     'agenda.free': 'Gratis',
