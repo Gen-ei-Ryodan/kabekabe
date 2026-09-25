@@ -145,7 +145,7 @@ export default function Login({ status, portal = 'member' }) {
 
                 <form
                     onSubmit={submit}
-                    className={`relative w-full ${isPartner ? 'max-w-7xl max-sm:-mx-4 max-sm:w-[calc(100%+2rem)]' : 'max-w-3xl'}`}
+                    className={`relative w-full ${isPartner ? 'max-w-7xl max-sm:mx-auto max-sm:max-w-[390px]' : 'max-w-3xl'}`}
                 >
                     {isPartner ? (
                         <>
