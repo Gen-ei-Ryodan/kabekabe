@@ -256,10 +256,14 @@ class ImportMembersCsvCommand extends Command
             return null;
         }
 
-        $year = strlen($parts[2]) === 2 ? '20'.$parts[2] : $parts[2];
+        $yearInt = (int) $year;
+        if ($yearInt < 1970) {
+            $yearInt += 100; // contoh 1936 -> 2036
+        }
 
         try {
-            return Carbon::createFromFormat('!m/d/Y', sprintf('%02d/%02d/%04d', $parts[0], $parts[1], $year));
+            $dt = Carbon::createFromFormat('!m/d/Y', sprintf('%02d/%02d/%04d', $parts[0], $parts[1], $yearInt));
+            return $dt;
         } catch (\Throwable) {
             return null;
         }
