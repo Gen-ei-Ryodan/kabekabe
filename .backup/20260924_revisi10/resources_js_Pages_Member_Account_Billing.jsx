@@ -4,11 +4,9 @@ import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import StatusChip from '@/Components/StatusChip';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { useTranslation } from '@/i18n';
 
-export default function Billing({ membership, plans, admin_fee = 0, active_bill = null, active_package = null }) {
+export default function Billing({ membership, plans, admin_fee = 0, active_bill = null }) {
     const isActive = membership.status === 'active';
-    const { t } = useTranslation();
     const [selectedPlanId, setSelectedPlanId] = useState(active_bill?.plan_id || plans[0]?.id || null);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
@@ -48,15 +46,11 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
 
     const formatCountdown = (seconds) => {
         if (seconds === null || seconds === undefined) return '';
-        if (seconds <= 0) return t('billing.expired');
+        if (seconds <= 0) return 'Kedaluwarsa (24 Jam Habis)';
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
         const s = seconds % 60;
-        return t('billing.countdown', {
-            h: h.toString().padStart(2, '0'),
-            m: m.toString().padStart(2, '0'),
-            s: s.toString().padStart(2, '0'),
-        });
+        return `${h.toString().padStart(2, '0')} jam ${m.toString().padStart(2, '0')} mnt ${s.toString().padStart(2, '0')} dtk`;
     };
 
     // Clipboard copy feedback
@@ -108,17 +102,14 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
             });
             const data = await res.json();
             if (!res.ok || !data.success) {
-                setPromoError(data.message || t('billing.promoInvalid'));
+                setPromoError(data.message || 'Kode promo tidak valid.');
                 setAppliedPromo(null);
             } else {
                 setAppliedPromo(data);
-                setPromoMessage(t('billing.promoApplied', {
-                    code: data.code,
-                    amount: Number(data.discount_amount).toLocaleString('id-ID'),
-                }));
+                setPromoMessage(`Voucher ${data.code} berhasil diterapkan! Potongan Rp${Number(data.discount_amount).toLocaleString('id-ID')}`);
             }
         } catch (e) {
-            setPromoError(t('billing.promoVerifyFailed'));
+            setPromoError('Gagal memverifikasi kode promo.');
         } finally {
             setIsCheckingPromo(false);
         }
@@ -133,7 +124,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
 
     const handleCheckoutManual = async () => {
         if (!selectedPlanId) {
-            setErrorMessage(t('billing.selectPlanFirst'));
+            setErrorMessage('Silakan pilih salah satu paket membership terlebih dahulu.');
             return;
         }
 
@@ -163,14 +154,14 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
             const result = await response.json();
 
             if (!response.ok || !result.success) {
-                setErrorMessage(result.message || t('billing.createBillFailed'));
+                setErrorMessage(result.message || 'Gagal memproses pembuatan tagihan.');
                 setIsLoading(false);
                 return;
             }
 
             if (result.is_free) {
                 setIsLoading(false);
-                alert(result.message || t('billing.freeSuccess'));
+                alert(result.message || 'Selamat! Keanggotaan Anda telah aktif gratis.');
                 router.reload({ only: ['membership', 'active_bill'] });
                 return;
             }
@@ -184,7 +175,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                 plan_name: result.plan_name,
                 duration_months: result.duration_months,
                 stage: result.stage || 'unpaid',
-                stage_label: result.stage_label || t('billing.stepUnpaid'),
+                stage_label: result.stage_label || 'Belum Dibayar',
                 payment_proof_url: null,
                 created_at: result.created_at,
                 expires_at_timestamp: result.expires_at_timestamp,
@@ -194,7 +185,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
             setIsLoading(false);
         } catch (err) {
             console.error(err);
-            setErrorMessage(t('billing.networkError'));
+            setErrorMessage('Terjadi gangguan jaringan saat menghubungi server.');
             setIsLoading(false);
         }
     };
@@ -204,12 +195,12 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            setUploadError(t('billing.fileMustImage'));
+            setUploadError('File harus berupa gambar (JPG, PNG, WEBP).');
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            setUploadError(t('billing.fileMaxSize'));
+            setUploadError('Ukuran file maksimal 5MB.');
             return;
         }
 
@@ -221,7 +212,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
     const handleUploadProof = async (e) => {
         e.preventDefault();
         if (!proofFile || !activePayment?.id) {
-            setUploadError(t('billing.chooseProofFirst'));
+            setUploadError('Silakan pilih file foto bukti pembayaran terlebih dahulu.');
             return;
         }
 
@@ -245,18 +236,18 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
             const result = await response.json();
 
             if (!response.ok || !result.success) {
-                setUploadError(result.message || t('billing.proofUploadFailed'));
+                setUploadError(result.message || 'Gagal mengunggah bukti transfer.');
                 setIsUploadingProof(false);
                 return;
             }
 
-            setUploadSuccess(result.message || t('billing.proofUploadSuccess'));
+            setUploadSuccess(result.message || 'Bukti pembayaran berhasil diunggah! Menunggu konfirmasi admin.');
             setActivePayment((prev) => ({
                 ...prev,
                 stage: 'paid',
-                stage_label: t('billing.badgePaid'),
+                stage_label: 'Sudah Dibayar (Menunggu Verifikasi Admin)',
                 payment_proof_url: result.proof_url || result.payment?.payment_proof_url,
-                paid_at: result.payment?.paid_at || t('billing.justNow'),
+                paid_at: result.payment?.paid_at || 'Baru saja',
             }));
             setProofFile(null);
             setProofPreview(null);
@@ -266,14 +257,14 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
             router.reload({ only: ['active_bill', 'membership'] });
         } catch (err) {
             console.error(err);
-            setUploadError(t('billing.proofUploadError'));
+            setUploadError('Terjadi kesalahan saat mengunggah file bukti transfer.');
             setIsUploadingProof(false);
         }
     };
 
     const handleCancelPayment = async () => {
         if (!activePayment?.id) return;
-        if (!confirm(t('billing.cancelConfirm'))) return;
+        if (!confirm('Apakah Anda yakin ingin membatalkan tagihan pembayaran ini?')) return;
 
         try {
             const response = await fetch(route('member.billing.manual.cancel', activePayment.id), {
@@ -291,11 +282,11 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                 setShowModal(false);
                 router.reload({ only: ['active_bill', 'membership'] });
             } else {
-                alert(result.message || t('billing.cancelFailed'));
+                alert(result.message || 'Gagal membatalkan pembayaran.');
             }
         } catch (err) {
             console.error(err);
-            alert(t('billing.cancelError'));
+            alert('Terjadi kesalahan saat membatalkan pembayaran.');
         }
     };
 
@@ -312,12 +303,12 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
 
     return (
         <>
-            <Head title={t('billing.headTitle')} />
+            <Head title="Billing & Membership" />
 
             <div className="mx-auto max-w-3xl">
                 <header>
-                    <h1 className="font-display text-3xl font-bold tracking-tight text-ink">{t('billing.title')}</h1>
-                    <p className="mt-1 text-sm text-slate">{t('billing.subtitle')}</p>
+                    <h1 className="font-display text-3xl font-bold tracking-tight text-ink">Manajemen Billing & Membership</h1>
+                    <p className="mt-1 text-sm text-slate">Kelola paket aktif dan pembayaran keanggotaan KBKB Anda dengan mudah.</p>
                 </header>
 
                 <div className="mt-8 space-y-8">
@@ -326,61 +317,37 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                         <section className="card-surface p-6 sm:p-8">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="font-display text-lg font-bold text-ink">{t('billing.planTitle')}</h2>
-                                    <p className="text-xs text-slate">{t('billing.planSubtitle')}</p>
+                                    <h2 className="font-display text-lg font-bold text-ink">Paket Membership Anda</h2>
+                                    <p className="text-xs text-slate">Informasi masa berlaku kartu anggota</p>
                                 </div>
-                                <StatusChip status={isActive ? 'active' : 'inactive'} label={membership.status_label} />
+                                <StatusChip tone={isActive ? 'active' : 'inactive'}>
+                                    {membership.status_label}
+                                </StatusChip>
                             </div>
 
-                            {active_package && (
-                                <div className="mt-5 flex items-center justify-between gap-4 rounded-xl border border-sage/30 bg-sage/10 p-4">
-                                    <div className="min-w-0">
-                                        <p className="eyebrow">{t('billing.activeBadge')}</p>
-                                        <h3 className="mt-1 truncate font-display text-lg font-bold text-ink">
-                                            {active_package.plan_name || t('billing.planTitle')}
-                                        </h3>
-                                        {active_package.expires_at && (
-                                            <p className="mt-0.5 text-xs text-slate">
-                                                {t('billing.activeUntil', { date: active_package.expires_at })}
-                                            </p>
-                                        )}
-                                    </div>
-                                    {active_package.days_remaining !== null && active_package.days_remaining !== undefined && (
-                                        <div className="shrink-0 rounded-xl bg-white/80 px-3 py-2 text-center">
-                                            <span className="font-display text-xl font-bold text-ink">
-                                                {active_package.days_remaining}
-                                            </span>
-                                            <p className="font-mono text-[9px] uppercase tracking-wider text-slate">
-                                                {t('billing.daysRemaining')}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {membership.plan && (
+                            {membership.plan ? (
                                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                     <div className="rounded-xl border border-ink/10 bg-paper/60 p-4">
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">{t('billing.fieldPlanName')}</p>
+                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">Nama Paket</p>
                                         <p className="mt-1 font-display text-lg font-bold text-ink">{membership.plan.name}</p>
                                     </div>
                                     <div className="rounded-xl border border-ink/10 bg-paper/60 p-4">
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">{t('billing.fieldDuration')}</p>
-                                        <p className="mt-1 font-display text-lg font-bold text-ink">
-                                            {t('billing.durationValue', {
-                                                m: membership.plan.duration_months,
-                                                d: membership.plan.duration_months * 30,
-                                            })}
-                                        </p>
+                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">Durasi</p>
+                                        <p className="mt-1 font-display text-lg font-bold text-ink">{membership.plan.duration_months} Bulan ({membership.plan.duration_months * 30} Hari)</p>
                                     </div>
                                     <div className="rounded-xl border border-ink/10 bg-paper/60 p-4">
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">{t('billing.fieldSubscriptionFee')}</p>
+                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">Biaya Langganan</p>
                                         <p className="mt-1 font-display text-lg font-bold text-gold-deep">Rp{membership.plan.price}</p>
                                     </div>
                                     <div className="rounded-xl border border-ink/10 bg-paper/60 p-4">
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">{t('billing.fieldValidUntil')}</p>
+                                        <p className="text-xs font-medium uppercase tracking-wider text-slate">Berlaku Hingga</p>
                                         <p className="mt-1 font-display text-lg font-bold text-ink">{membership.expires_at ?? '-'}</p>
                                     </div>
+                                </div>
+                            ) : (
+                                <div className="mt-6 rounded-xl border border-dashed border-ink/20 bg-paper/50 p-6 text-center">
+                                    <p className="text-ink font-medium">Anda belum memiliki paket membership aktif.</p>
+                                    <p className="mt-1 text-xs text-slate">Pilih paket di bawah untuk mengaktifkan kartu anggota Anda.</p>
                                 </div>
                             )}
                         </section>
@@ -410,14 +377,14 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                     : 'bg-gold animate-ping'
                                             }`} />
                                             <span className="text-xs font-bold uppercase tracking-wider text-gold-deep">
-                                                {t('billing.yourBill')}
+                                                Tagihan Anda (Order #1)
                                             </span>
                                         </div>
                                         <h2 className="mt-1 font-display text-xl font-bold text-ink">
                                             {activePayment.plan_name}
                                         </h2>
                                         <p className="text-xs text-slate">
-                                            {t('billing.referenceLabel')}: <span className="font-mono font-bold text-ink">{activePayment.invoice_number}</span>
+                                            Nomor Referensi: <span className="font-mono font-bold text-ink">{activePayment.invoice_number}</span>
                                         </p>
                                     </div>
 
@@ -425,19 +392,19 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                         {activePayment.stage === 'unpaid' && (
                                             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3.5 py-1 text-xs font-bold text-amber-800 border border-amber-300">
                                                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                                                {t('billing.badgeUnpaid')}
+                                                1. Belum Dibayar
                                             </span>
                                         )}
                                         {activePayment.stage === 'paid' && (
                                             <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 px-3.5 py-1 text-xs font-bold text-sky-800 border border-sky-300">
                                                 <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
-                                                {t('billing.badgePaid')}
+                                                2. Menunggu Verifikasi Admin
                                             </span>
                                         )}
                                         {activePayment.stage === 'processed' && (
                                             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-bold text-emerald-800 border border-emerald-300">
                                                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                                {t('billing.badgeProcessed')}
+                                                3. Sudah Diproses (Lunas)
                                             </span>
                                         )}
                                     </div>
@@ -469,9 +436,9 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                     {activePayment.stage === 'unpaid' ? '1' : '✓'}
                                                 </div>
                                                 <span className={`mt-2 text-xs font-bold ${activePayment.stage === 'unpaid' ? 'text-amber-800' : 'text-emerald-700'}`}>
-                                                    {t('billing.stepUnpaid')}
+                                                    Belum Dibayar
                                                 </span>
-                                                <span className="text-[10px] text-slate hidden sm:block">{t('billing.stepUnpaidHint')}</span>
+                                                <span className="text-[10px] text-slate hidden sm:block">Transfer Siap Dibayar</span>
                                             </div>
 
                                             {/* Tahap 2: Sudah Dibayar */}
@@ -492,9 +459,9 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                         ? 'text-emerald-700'
                                                         : 'text-slate'
                                                 }`}>
-                                                    {t('billing.stepPaid')}
+                                                    Sudah Dibayar
                                                 </span>
-                                                <span className="text-[10px] text-slate hidden sm:block">{t('billing.stepPaidHint')}</span>
+                                                <span className="text-[10px] text-slate hidden sm:block">Bukti Diunggah</span>
                                             </div>
 
                                             {/* Tahap 3: Sudah Diproses */}
@@ -509,9 +476,9 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                 <span className={`mt-2 text-xs font-bold ${
                                                     activePayment.stage === 'processed' ? 'text-emerald-700' : 'text-slate'
                                                 }`}>
-                                                    {t('billing.stepProcessed')}
+                                                    Sudah Diproses
                                                 </span>
-                                                <span className="text-[10px] text-slate hidden sm:block">{t('billing.stepProcessedHint')}</span>
+                                                <span className="text-[10px] text-slate hidden sm:block">Membership Aktif</span>
                                             </div>
                                         </div>
                                     </div>
@@ -521,41 +488,41 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                 <div className="mt-8 rounded-2xl border border-ink/10 bg-white/90 p-5 shadow-xs">
                                     <div className="grid gap-4 sm:grid-cols-3">
                                         <div>
-                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">{t('billing.totalLabel')}</p>
+                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">Total Tagihan</p>
                                             <p className="mt-1 font-mono text-xl font-extrabold text-gold-deep">
                                                 Rp{Number(activePayment.amount).toLocaleString('id-ID')}
                                             </p>
                                         </div>
 
                                         <div>
-                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">{t('billing.paymentMethod')}</p>
+                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">Metode Pembayaran</p>
                                             <p className="mt-1 font-medium text-ink flex items-center gap-1.5 text-sm">
-                                                <span>🏦</span> {t('billing.methodBankTransfer')}
+                                                <span>🏦</span> Transfer Bank BCA
                                             </p>
                                         </div>
 
                                         <div>
                                             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">
-                                                {activePayment.stage === 'unpaid' ? t('billing.deadlineLabel') : t('billing.transactionTimeLabel')}
+                                                {activePayment.stage === 'unpaid' ? 'Batas Waktu (24 Jam)' : 'Waktu Transaksi'}
                                             </p>
                                             {activePayment.stage === 'unpaid' ? (
                                                 <div className="mt-1">
                                                     {timeLeft !== null && timeLeft > 0 ? (
                                                         <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
                                                             <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
-                                                            <span>{t('billing.timeLeft', { x: formatCountdown(timeLeft) })}</span>
+                                                            <span>Tersisa {formatCountdown(timeLeft)}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-xs font-bold text-rose-600">{t('billing.expired')}</span>
+                                                        <span className="text-xs font-bold text-rose-600">Kedaluwarsa (24 Jam Habis)</span>
                                                     )}
                                                 </div>
                                             ) : activePayment.stage === 'paid' ? (
                                                 <p className="mt-1 text-xs font-medium text-slate">
-                                                    {t('billing.proofSentLabel')} <span className="text-ink font-semibold">{activePayment.paid_at || '-'}</span>
+                                                    Bukti Dikirim: <span className="text-ink font-semibold">{activePayment.paid_at || '-'}</span>
                                                 </p>
                                             ) : (
                                                 <p className="mt-1 text-xs font-medium text-emerald-700">
-                                                    {t('billing.approvedLabel')} <span className="font-semibold">{activePayment.approved_at || '-'}</span>
+                                                    Lunas Disetujui: <span className="font-semibold">{activePayment.approved_at || '-'}</span>
                                                 </p>
                                             )}
                                         </div>
@@ -565,7 +532,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     {activePayment.stage === 'unpaid' && (
                                         <div className="mt-5 pt-4 border-t border-ink/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                             <p className="text-xs text-slate">
-                                                {t('billing.unpaidInfo')}
+                                                Tagihan tetap tersimpan meskipun Anda menutup halaman. Klik tombol untuk melihat detail rekening dan mengirim bukti transfer.
                                             </p>
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <button
@@ -573,7 +540,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                     onClick={handleCancelPayment}
                                                     className="px-3 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition"
                                                 >
-                                                    {t('billing.cancelBill')}
+                                                    Batalkan Tagihan
                                                 </button>
                                                 <button
                                                     type="button"
@@ -581,7 +548,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                     className="btn-gold px-4 py-2 text-xs font-bold shadow-md shadow-gold/20 flex items-center gap-1.5"
                                                 >
                                                     <span>🏦</span>
-                                                    <span>{t('billing.transferUploadProof')}</span>
+                                                    <span>Transfer & Unggah Bukti</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -592,8 +559,8 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                             <div className="text-xs text-slate flex items-start gap-2">
                                                 <span className="text-base text-sky-600">ℹ️</span>
                                                 <div>
-                                                    <span className="font-semibold text-ink">{t('billing.proofSentTitle')}</span>
-                                                    <p className="mt-0.5">{t('billing.proofSentDesc')}</p>
+                                                    <span className="font-semibold text-ink">Bukti transfer telah berhasil dikirim.</span>
+                                                    <p className="mt-0.5">Admin KBKB sedang memverifikasi pembayaran Anda. Tidak perlu transfer ulang.</p>
                                                 </div>
                                             </div>
                                             <button
@@ -602,7 +569,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                 className="btn-ink px-4 py-2 text-xs font-semibold shrink-0 flex items-center gap-1.5"
                                             >
                                                 <span>👁️</span>
-                                                <span>{t('billing.viewProofAccount')}</span>
+                                                <span>Lihat Bukti & Rekening</span>
                                             </button>
                                         </div>
                                     )}
@@ -612,8 +579,8 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                             <div className="text-xs text-slate flex items-start gap-2">
                                                 <span className="text-base text-emerald-600">🎉</span>
                                                 <div>
-                                                    <span className="font-semibold text-emerald-800">{t('billing.doneTitle')}</span>
-                                                    <p className="mt-0.5">{t('billing.doneDesc')}</p>
+                                                    <span className="font-semibold text-emerald-800">Pembayaran selesai & membership telah aktif!</span>
+                                                    <p className="mt-0.5">Masa aktif kartu anggota Anda telah berhasil diperpanjang.</p>
                                                 </div>
                                             </div>
                                             <button
@@ -622,7 +589,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                 className="btn-ink px-4 py-2 text-xs font-semibold shrink-0 flex items-center gap-1.5"
                                             >
                                                 <span>📄</span>
-                                                <span>{t('billing.viewProofDetail')}</span>
+                                                <span>Lihat Bukti & Detail Tagihan</span>
                                             </button>
                                         </div>
                                     )}
@@ -636,12 +603,12 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                         <section className="card-surface p-6 sm:p-8">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
-                                    <h2 className="font-display text-lg font-bold text-ink">{t('billing.buyTitle')}</h2>
-                                    <p className="text-xs text-slate">{t('billing.buySubtitle')}</p>
+                                    <h2 className="font-display text-lg font-bold text-ink">Beli / Perpanjang Membership</h2>
+                                    <p className="text-xs text-slate">Pembayaran mudah via transfer bank ke rekening KBKB.</p>
                                 </div>
                                 <span className="inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep">
                                     <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse"></span>
-                                    {t('billing.transferBadge')}
+                                    Transfer Rekening KBKB
                                 </span>
                             </div>
 
@@ -651,7 +618,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <div>
-                                    <span className="font-semibold">{t('billing.activeRuleTitle')}</span> {t('billing.activeRuleLead')} <strong>{t('billing.activeRuleStrong')}</strong>.
+                                    <span className="font-semibold">Aturan Masa Aktif (30 Hari per Bulan):</span> Jika kartu Anda masih aktif, perpanjangan akan otomatis menambah hari dari tanggal kedaluwarsa sebelumnya. Sisa hari aktif Anda <strong>tidak akan hangus</strong>.
                                 </div>
                             </div>
 
@@ -670,8 +637,8 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                 <div className="mt-4 rounded-xl border border-gold/40 bg-gold/10 p-3.5 text-xs text-ink flex items-start gap-2.5">
                                     <span className="text-base">💡</span>
                                     <div>
-                                        <span className="font-bold">{t('billing.activeNotice', { invoice: activePayment.invoice_number, plan: activePayment.plan_name })}</span>
-                                        <p className="mt-0.5 text-slate">{t('billing.activeNoticeDesc')}</p>
+                                        <span className="font-bold">Tagihan Anda ({activePayment.invoice_number}) untuk paket {activePayment.plan_name} sedang aktif.</span>
+                                        <p className="mt-0.5 text-slate">Anda dapat membuka detail rekening di atas untuk membayar, atau memilih paket lain di bawah untuk memperbarui tagihan Anda.</p>
                                     </div>
                                 </div>
                             )}
@@ -680,20 +647,20 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             <div className="mt-6">
                                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                                     <label className="text-sm font-semibold text-ink">
-                                        {t('billing.chooseDuration')}
+                                        1. Pilih Durasi Langganan:
                                     </label>
                                     <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-0.5 text-[11px] font-bold text-gold-deep">
-                                        {t('billing.recommendedBadge')}
+                                        🔥 Rekomendasi Komunitas
                                     </span>
                                 </div>
                                 <div className="grid gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                                     {plans.map((plan) => {
                                         const isSelected = selectedPlanId === plan.id;
                                         const promoBadge =
-                                            plan.duration_months === 5 ? t('billing.save1Month') :
-                                            plan.duration_months === 10 ? t('billing.save2Months') :
-                                            plan.duration_months === 12 ? t('billing.save2Months') :
-                                            plan.duration_months === 15 ? t('billing.save3Months') : null;
+                                            plan.duration_months === 5 ? 'HEMAT 1 BLN' :
+                                            plan.duration_months === 10 ? 'HEMAT 2 BLN' :
+                                            plan.duration_months === 12 ? 'HEMAT 2 BLN' :
+                                            plan.duration_months === 15 ? 'HEMAT 3 BLN' : null;
 
                                         return (
                                             <button
@@ -712,9 +679,9 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                     </span>
                                                 )}
                                                 <div className="flex w-full items-center justify-between gap-1">
-                                                    <span className="font-display text-sm font-bold text-ink">{t('billing.monthsCount', { n: plan.duration_months })}</span>
+                                                    <span className="font-display text-sm font-bold text-ink">{plan.duration_months} Bulan</span>
                                                     <span className="rounded-full bg-paper px-2 py-0.5 text-[10px] font-semibold text-slate">
-                                                        {t('billing.daysCount', { n: plan.duration_months * 30 })}
+                                                        {plan.duration_months * 30} Hari
                                                     </span>
                                                 </div>
                                                 <p className="mt-2.5 font-mono text-base font-bold text-gold-deep">Rp{plan.price}</p>
@@ -727,7 +694,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             {/* 2. Input Kode Promo / Voucher */}
                             <div className="mt-6 rounded-xl border border-ink/15 bg-paper/40 p-4">
                                 <label className="block text-xs font-bold uppercase tracking-wider text-slate mb-2">
-                                    {t('billing.promoLabel')}
+                                    Punya Kode Promo / Voucher Diskon?
                                 </label>
                                 {appliedPromo ? (
                                     <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm">
@@ -740,7 +707,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                             onClick={removePromoCode}
                                             className="text-xs font-semibold text-rose-600 hover:underline"
                                         >
-                                            {t('billing.removeVoucher')}
+                                            Hapus Voucher
                                         </button>
                                     </div>
                                 ) : (
@@ -749,7 +716,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                             type="text"
                                             value={promoInput}
                                             onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                                            placeholder={t('billing.promoPlaceholder')}
+                                            placeholder="Contoh: KBKBFREE atau KBKB50"
                                             className="block flex-1 rounded-xl border-ink/20 bg-white px-3 py-2 font-mono text-sm uppercase placeholder-slate/50 focus:border-gold focus:ring-1 focus:ring-gold"
                                         />
                                         <button
@@ -758,7 +725,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                             disabled={isCheckingPromo || !promoInput.trim()}
                                             className="btn-gold shrink-0 text-xs px-4"
                                         >
-                                            {isCheckingPromo ? t('billing.checking') : t('billing.usePromo')}
+                                            {isCheckingPromo ? 'Memeriksa…' : 'Gunakan'}
                                         </button>
                                     </div>
                                 )}
@@ -770,31 +737,31 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             <div className="mt-6 rounded-xl border border-ink/10 bg-paper/70 p-4">
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between text-slate">
-                                        <span>{t('billing.membershipFee', { name: selectedPlan?.name || '-' })}</span>
+                                        <span>Biaya Membership ({selectedPlan?.name || '-'})</span>
                                         <span className="font-medium text-ink">Rp{planPrice.toLocaleString('id-ID')}</span>
                                     </div>
                                     {discountValue > 0 && (
                                         <div className="flex justify-between text-emerald-700 font-medium">
-                                            <span>{t('billing.voucherDiscount', { code: appliedPromo?.code })}</span>
+                                            <span>Potongan Voucher ({appliedPromo?.code})</span>
                                             <span>-Rp{discountValue.toLocaleString('id-ID')}</span>
                                         </div>
                                     )}
                                     <div className="pt-2 border-t border-ink/10 flex justify-between font-bold text-ink">
-                                        <span>{t('billing.totalPayment')}</span>
+                                        <span>Total Tagihan Pembayaran</span>
                                         <span className="font-mono text-lg text-gold-deep">Rp{totalBill.toLocaleString('id-ID')}</span>
                                     </div>
                                 </div>
                                 <p className="mt-2 text-[11px] text-slate italic">
                                     {totalBill === 0
-                                        ? t('billing.voucherFreeNote')
-                                        : t('billing.afterBuyNote')}
+                                        ? 'Voucher 100% aktif! Anda dapat mengaktifkan keanggotaan tanpa biaya transfer.'
+                                        : '*Setelah klik Beli, nomor referensi unik dan detail rekening akan muncul untuk pembayaran.'}
                                 </p>
                             </div>
 
                             {/* Tombol Eksekusi Bayar */}
                             <div className="mt-8 pt-4 border-t border-ink/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <div className="text-xs text-slate">
-                                    {t('billing.autoExtendNote')}
+                                    Masa aktif otomatis diperpanjang setelah pembayaran dikonfirmasi oleh admin KBKB.
                                 </div>
 
                                 <PrimaryButton
@@ -808,27 +775,27 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            {t('billing.processingBill')}
+                                            Memproses Tagihan...
                                         </span>
                                     ) : totalBill === 0 ? (
                                         <span className="flex items-center gap-2">
                                             <span>🎁</span>
-                                            {t('billing.claimFree')}
+                                            Klaim & Aktivasi Membership Gratis (Rp0)
                                         </span>
                                     ) : activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id === selectedPlanId ? (
                                         <span className="flex items-center gap-2">
                                             <span className="text-base">🏦</span>
-                                            {t('billing.openActiveBill', { amount: totalBill.toLocaleString('id-ID') })}
+                                            Buka Tagihan Aktif (Rp{totalBill.toLocaleString('id-ID')})
                                         </span>
                                     ) : activePayment && activePayment.stage === 'unpaid' && activePayment.plan_id !== selectedPlanId ? (
                                         <span className="flex items-center gap-2">
                                             <span className="text-base">🔄</span>
-                                            {t('billing.changePlanNewBill', { amount: totalBill.toLocaleString('id-ID') })}
+                                            Ganti Paket & Buat Tagihan Baru (Rp{totalBill.toLocaleString('id-ID')})
                                         </span>
                                     ) : (
                                         <span className="flex items-center gap-2">
                                             <span className="text-base">🏦</span>
-                                            {t('billing.buyNowTransfer', { amount: totalBill.toLocaleString('id-ID') })}
+                                            Beli Sekarang & Transfer (Rp{totalBill.toLocaleString('id-ID')})
                                         </span>
                                     )}
                                 </PrimaryButton>
@@ -855,17 +822,17 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                         : 'bg-gold/15 text-gold-deep'
                                 }`}>
                                     {activePayment.stage === 'processed'
-                                        ? t('billing.modalBadgeProcessed')
+                                        ? 'Pembayaran Lunas & Selesai'
                                         : activePayment.stage === 'paid'
-                                        ? t('billing.modalBadgePaid')
-                                        : t('billing.modalBadgeUnpaid')}
+                                        ? 'Menunggu Verifikasi Admin'
+                                        : 'Pembayaran Transfer Bank'}
                                 </span>
                                 <h3 className="font-display text-xl font-bold text-ink">
                                     {activePayment.stage === 'processed'
-                                        ? t('billing.modalTitleProcessed')
+                                        ? 'Detail Pembayaran Membership'
                                         : activePayment.stage === 'paid'
-                                        ? t('billing.modalTitlePaid')
-                                        : t('billing.modalTitleUnpaid')}
+                                        ? 'Status Pembayaran Membership'
+                                        : 'Pembayaran Membership KBKB'}
                                 </h3>
                             </div>
                             <button
@@ -882,9 +849,9 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-800 flex items-start gap-2.5">
                                 <span className="text-base">🎉</span>
                                 <div>
-                                    <p className="font-bold">{t('billing.alertProcessedTitle')}</p>
+                                    <p className="font-bold">Pembayaran Telah Diverifikasi & Lunas</p>
                                     <p className="mt-0.5">
-                                        {t('billing.alertProcessedBody', { date: activePayment.approved_at || t('billing.today') })}
+                                        Pembayaran membership Anda telah disetujui admin pada {activePayment.approved_at || 'hari ini'}. Kartu anggota Anda telah aktif.
                                     </p>
                                 </div>
                             </div>
@@ -892,9 +859,9 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs text-sky-800 flex items-start gap-2.5">
                                 <span className="text-base">✅</span>
                                 <div>
-                                    <p className="font-bold">{t('billing.alertPaidTitle')}</p>
+                                    <p className="font-bold">Bukti Transfer Berhasil Dikirim</p>
                                     <p className="mt-0.5">
-                                        {t('billing.alertPaidBody')}
+                                        Data Anda sudah tercatat di sistem kami. Admin sedang memverifikasi pembayaran Anda untuk segera mengaktifkan status membership.
                                     </p>
                                 </div>
                             </div>
@@ -902,11 +869,11 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                     <span className="text-base">⏳</span>
-                                    <span>{t('billing.alertUnpaidWaiting')}</span>
+                                    <span>Menunggu pembayaran & unggah bukti transfer.</span>
                                 </div>
                                 {timeLeft !== null && timeLeft > 0 && (
                                     <span className="font-mono font-bold text-[11px] text-amber-900 shrink-0 bg-amber-200/80 px-2 py-0.5 rounded-md">
-                                        {t('billing.timeLeftShort', { x: formatCountdown(timeLeft) })}
+                                        Sisa {formatCountdown(timeLeft)}
                                     </span>
                                 )}
                             </div>
@@ -915,7 +882,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                         {/* Invoice & Total Information */}
                         <div className="grid grid-cols-2 gap-3">
                             <div className="rounded-xl border border-ink/10 bg-paper/70 p-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">{t('billing.referenceLabel')}</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">Nomor Referensi</p>
                                 <div className="mt-1 flex items-center justify-between">
                                     <span className="font-mono text-xs sm:text-sm font-bold text-ink truncate mr-1">
                                         {activePayment.invoice_number}
@@ -925,13 +892,13 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                         onClick={() => copyToClipboard(activePayment.invoice_number, 'invoice')}
                                         className="text-[10px] font-bold text-gold-deep hover:underline shrink-0"
                                     >
-                                        {copiedInvoice ? t('billing.copied') : t('billing.copy')}
+                                        {copiedInvoice ? 'Disalin!' : 'Salin'}
                                     </button>
                                 </div>
                             </div>
 
                             <div className="rounded-xl border border-ink/10 bg-paper/70 p-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">{t('billing.totalLabel')}</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate">Total Tagihan</p>
                                 <div className="mt-1 flex items-center justify-between">
                                     <span className="font-mono text-xs sm:text-sm font-bold text-gold-deep">
                                         Rp{Number(activePayment.amount).toLocaleString('id-ID')}
@@ -941,7 +908,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                         onClick={() => copyToClipboard(activePayment.amount, 'amount')}
                                         className="text-[10px] font-bold text-gold-deep hover:underline shrink-0"
                                     >
-                                        {copiedAmount ? t('billing.copied') : t('billing.copy')}
+                                        {copiedAmount ? 'Disalin!' : 'Salin'}
                                     </button>
                                 </div>
                             </div>
@@ -952,7 +919,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-amber-50/60 via-white to-gold/5 p-5">
                                 <div className="w-full max-w-sm space-y-3">
                                     <div className="text-center mb-2">
-                                        <p className="text-[11px] font-bold uppercase tracking-wider text-gold-deep">{t('billing.transferDestination')}</p>
+                                        <p className="text-[11px] font-bold uppercase tracking-wider text-gold-deep">Tujuan Transfer</p>
                                     </div>
                                     
                                     <div className="rounded-xl border border-ink/10 bg-white p-4 shadow-xs">
@@ -962,16 +929,16 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                             </div>
                                             <div>
                                                 <p className="font-mono text-lg font-extrabold text-ink tracking-wide">0405358889</p>
-                                                <p className="text-[11px] text-slate font-medium">{t('billing.accountName')}</p>
+                                                <p className="text-[11px] text-slate font-medium">a.n Yayasan Karya Berkat Karunia</p>
                                             </div>
                                         </div>
                                         <div className="mt-3 pt-3 border-t border-ink/10">
-                                            <p className="text-[11px] text-slate">{t('billing.branch')}</p>
+                                            <p className="text-[11px] text-slate">KCP Hasanuddin Denpasar</p>
                                         </div>
                                     </div>
 
                                     <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-3 text-[11px] text-amber-900">
-                                        <span className="font-semibold">{t('billing.important')}</span> {t('billing.transferImportantLead')} <strong className="font-mono">Rp{Number(activePayment.amount).toLocaleString('id-ID')}</strong> {t('billing.transferImportantMid')} <strong className="font-mono">{activePayment.invoice_number}</strong> {t('billing.transferImportantTail')}
+                                        <span className="font-semibold">Penting:</span> Transfer sesuai nominal tagihan <strong className="font-mono">Rp{Number(activePayment.amount).toLocaleString('id-ID')}</strong> dan sertakan nomor referensi <strong className="font-mono">{activePayment.invoice_number}</strong> di berita transfer.
                                     </div>
                                 </div>
                             </div>
@@ -982,15 +949,15 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             <div className="flex items-center justify-between">
                                 <h4 className="font-display text-sm font-bold text-ink">
                                     {activePayment.stage === 'processed'
-                                        ? t('billing.proofTitleVerified')
+                                        ? 'Bukti Pembayaran Terverifikasi'
                                         : activePayment.payment_proof_url
-                                        ? t('billing.proofTitleUploaded')
-                                        : t('billing.proofTitleUpload')}
+                                        ? 'Bukti Pembayaran Terunggah'
+                                        : 'Unggah Bukti Pembayaran'}
                                 </h4>
                                 {activePayment.stage === 'processed' ? (
-                                    <span className="text-[11px] font-semibold text-emerald-600">{t('billing.proofDone')}</span>
+                                    <span className="text-[11px] font-semibold text-emerald-600">✓ Selesai & Lunas</span>
                                 ) : activePayment.payment_proof_url ? (
-                                    <span className="text-[11px] font-semibold text-sky-600">{t('billing.proofSent')}</span>
+                                    <span className="text-[11px] font-semibold text-sky-600">✓ Berhasil dikirim</span>
                                 ) : null}
                             </div>
 
@@ -999,19 +966,19 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     <div className="rounded-xl border border-ink/10 overflow-hidden bg-paper/50 p-2">
                                         <img
                                             src={activePayment.payment_proof_url}
-                                            alt={t('billing.proofAlt')}
+                                            alt="Bukti Transfer"
                                             className="max-h-48 w-full object-contain rounded-lg mx-auto"
                                         />
                                     </div>
                                     {activePayment.stage !== 'processed' && (
                                         <p className="text-[11px] text-slate text-center">
-                                            {t('billing.replaceProofQuestion')}
+                                            Perlu mengganti foto bukti pembayaran?
                                             <button
                                                 type="button"
                                                 onClick={() => fileInputRef.current?.click()}
                                                 className="ml-1 text-gold-deep font-bold underline"
                                             >
-                                                {t('billing.reupload')}
+                                                Unggah Ulang
                                             </button>
                                         </p>
                                     )}
@@ -1019,7 +986,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                             ) : (
                                 <div className="space-y-3">
                                     <p className="text-xs text-slate">
-                                        {t('billing.proofInstructions')}
+                                        Setelah berhasil transfer melalui rekening di atas, foto struk atau tangkapan layar (screenshot) bukti transfer dan unggah di sini:
                                     </p>
 
                                     <div
@@ -1030,16 +997,16 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                             <div className="space-y-2">
                                                 <img
                                                     src={proofPreview}
-                                                    alt={t('billing.proofPreviewAlt')}
+                                                    alt="Preview Bukti"
                                                     className="max-h-36 rounded-lg object-contain mx-auto shadow-sm"
                                                 />
-                                                <p className="text-xs font-semibold text-gold-deep">{t('billing.clickToReplaceFile')}</p>
+                                                <p className="text-xs font-semibold text-gold-deep">Klik untuk ganti file</p>
                                             </div>
                                         ) : (
                                             <>
                                                 <span className="text-3xl mb-1">📸</span>
-                                                <p className="text-xs font-semibold text-ink">{t('billing.clickToChooseProof')}</p>
-                                                <p className="text-[10px] text-slate mt-0.5">{t('billing.proofFormatHint')}</p>
+                                                <p className="text-xs font-semibold text-ink">Klik untuk memilih foto bukti pembayaran</p>
+                                                <p className="text-[10px] text-slate mt-0.5">Format JPG, PNG, WEBP (Maks 5MB)</p>
                                             </>
                                         )}
                                     </div>
@@ -1070,7 +1037,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     disabled={isUploadingProof}
                                     className="w-full btn-gold py-2.5 text-xs font-bold shadow-sm justify-center"
                                 >
-                                    {isUploadingProof ? t('billing.uploadingProof') : t('billing.sendProof')}
+                                    {isUploadingProof ? 'Mengunggah Bukti…' : 'Kirim Bukti Pembayaran'}
                                 </button>
                             )}
                         </div>
@@ -1083,7 +1050,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                     onClick={handleCancelPayment}
                                     className="text-xs font-medium text-red-600 hover:underline"
                                 >
-                                    {t('billing.cancelBill')}
+                                    Batalkan Tagihan
                                 </button>
                             ) : <div />}
 
@@ -1092,7 +1059,7 @@ export default function Billing({ membership, plans, admin_fee = 0, active_bill 
                                 onClick={() => setShowModal(false)}
                                 className="btn-ink text-xs px-5 py-2"
                             >
-                                {t('billing.close')}
+                                Tutup
                             </button>
                         </div>
                     </div>

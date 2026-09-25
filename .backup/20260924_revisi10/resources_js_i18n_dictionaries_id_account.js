@@ -80,9 +80,8 @@ export default {
     'billing.durationValue': '{m} Bulan ({d} Hari)',
     'billing.fieldSubscriptionFee': 'Biaya Langganan',
     'billing.fieldValidUntil': 'Berlaku Hingga',
-    'billing.activeBadge': 'Paket Aktif',
-    'billing.activeUntil': 'Berlaku hingga {date}',
-    'billing.daysRemaining': 'hari tersisa',
+    'billing.noPlanTitle': 'Anda belum memiliki paket membership aktif.',
+    'billing.noPlanDesc': 'Pilih paket di bawah untuk mengaktifkan kartu anggota Anda.',
     'billing.yourBill': 'Tagihan Anda (Order #1)',
     'billing.referenceLabel': 'Nomor Referensi',
     'billing.badgeUnpaid': '1. Belum Dibayar',
@@ -176,8 +175,6 @@ export default {
     'billing.proofFormatHint': 'Format JPG, PNG, WEBP (Maks 5MB)',
     'billing.uploadingProof': 'Mengunggah Bukti…',
     'billing.sendProof': 'Kirim Bukti Pembayaran',
-    'billing.close': 'Tutup',
-    'billing.branch': 'KCP Hasanuddin Denpasar',
 
     // ========================== history.* (Riwayat Transaksi) ==========================
     'history.headTitle': 'Riwayat',

@@ -167,7 +167,7 @@ export default function Login({ status, portal = 'member' }) {
                             </div>
 
                             {/* Desktop (sm ke atas): kartu landscape, form overlay di area kanan kosong (bawah teks PARTNER, kanan garis emas).
-                                Di bawah lg ruang kosong gambar terlalu pendek untuk form, jadi form jadi blok biasa di bawah poster. */}
+                                Di bawah xl ruang kosong gambar terlalu pendek untuk form (menimpa teks PARTNER), jadi form jadi blok biasa di bawah poster. */}
                             <div className="hidden sm:block">
                                 <div className="login-card relative w-full overflow-hidden rounded-[28px] bg-black shadow-card">
                                     <img
@@ -178,7 +178,7 @@ export default function Login({ status, portal = 'member' }) {
                                         draggable="false"
                                     />
 
-                                    <div className="mx-auto w-full max-w-sm space-y-2.5 px-6 py-8 lg:absolute lg:bottom-[4%] lg:right-[3.5%] lg:mx-0 lg:w-[46%] lg:max-w-[420px] lg:space-y-1.5 lg:px-0 lg:py-0">
+                                    <div className="mx-auto w-full max-w-sm space-y-2.5 px-6 py-8 xl:absolute xl:bottom-[4%] xl:left-[45%] xl:right-[5%] xl:mx-auto xl:w-auto xl:max-w-[420px] xl:space-y-1.5 xl:px-0 xl:py-0">
                                         {fields('partner-d')}
                                     </div>
                                 </div>

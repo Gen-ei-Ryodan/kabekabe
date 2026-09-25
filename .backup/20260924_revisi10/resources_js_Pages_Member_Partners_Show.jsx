@@ -3,24 +3,21 @@ import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 import { rememberBackSource } from '@/Utils/backNav';
-import { useTranslation } from '@/i18n';
 
 export default function PartnerShow({ partner }) {
-    const { t } = useTranslation();
-
     return (
         <>
             <Head title={partner.name} />
 
             <div className="mx-auto max-w-3xl">
                 <Link href={route('member.partners.index')} className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate hover:text-ink">
-                    {t('partners.backToList')}
+                    ← Back to partners
                 </Link>
 
                 <div className="card-surface overflow-hidden">
                     <div className="flex flex-col gap-6 bg-ink p-8 text-paper sm:flex-row sm:items-center sm:gap-8 sm:p-10">
                         {partner.logo_url ? (
-                            <img src={partner.logo_url} alt={partner.name} className="h-20 w-20 rounded-2xl bg-white object-contain" />
+                            <img src={partner.logo_url} alt={partner.name} className="h-20 w-20 rounded-2xl object-cover" />
                         ) : (
                             <span className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gold/15 font-display text-3xl font-bold text-gold-light">
                                 {partner.name.charAt(0)}
@@ -35,19 +32,19 @@ export default function PartnerShow({ partner }) {
 
                     <div className="grid gap-8 p-8 sm:p-10 md:grid-cols-2">
                         <div>
-                            <p className="eyebrow">{t('partners.info')}</p>
+                            <p className="eyebrow">Information</p>
                             <dl className="mt-3 space-y-3 text-sm">
-                                <div className="flex gap-3"><dt className="w-20 shrink-0 text-slate">{t('partners.address')}</dt><dd>{partner.address || '-'}</dd></div>
-                                <div className="flex gap-3"><dt className="w-20 shrink-0 text-slate">{t('partners.phone')}</dt><dd className="font-mono">{partner.phone || '-'}</dd></div>
-                                <div className="flex gap-3"><dt className="w-20 shrink-0 text-slate">{t('partners.email')}</dt><dd>{partner.email || '-'}</dd></div>
+                                <div className="flex gap-3"><dt className="w-20 shrink-0 text-slate">Address</dt><dd>{partner.address || '-'}</dd></div>
+                                <div className="flex gap-3"><dt className="w-20 shrink-0 text-slate">Phone</dt><dd className="font-mono">{partner.phone || '-'}</dd></div>
+                                <div className="flex gap-3"><dt className="w-20 shrink-0 text-slate">Email</dt><dd>{partner.email || '-'}</dd></div>
                             </dl>
                         </div>
 
                         <div>
-                            <p className="eyebrow">{t('partners.activePromos')}</p>
+                            <p className="eyebrow">Active promos here</p>
                             <div className="mt-3 space-y-3">
                                 {partner.promos.length === 0 ? (
-                                    <p className="text-sm text-slate">{t('partners.noActivePromos')}</p>
+                                    <p className="text-sm text-slate">No active promos right now.</p>
                                 ) : (
                                     partner.promos.map((promo) => (
                                         <Link key={promo.id} href={route('member.promos.show', promo.id)} onClick={() => rememberBackSource('promo')} className="block rounded-xl border border-ink/10 bg-paper p-4 transition-colors hover:border-gold/40">
@@ -60,7 +57,7 @@ export default function PartnerShow({ partner }) {
                                             <p className="mt-1 text-sm font-medium">{promo.title}</p>
                                             {promo.promo_image_url && (
                                                 <div className="mt-2">
-                                                    <img src={promo.promo_image_url} alt={promo.title} className="h-24 w-full rounded-lg bg-white object-contain" />
+                                                    <img src={promo.promo_image_url} alt={promo.title} className="h-24 w-full rounded-lg object-cover" />
                                                 </div>
                                             )}
                                         </Link>
@@ -74,7 +71,7 @@ export default function PartnerShow({ partner }) {
                 <Reveal className="mt-8">
                     <div className="rounded-2xl border border-gold/30 bg-gold/10 p-6 text-center">
                         <p className="text-sm text-ink">
-                            {t('partners.promoHintLead')} <span className="font-semibold">{t('partners.promoHintStatus')}</span>.
+                            Show your digital card at the counter to use a promo. Make sure your membership status is <span className="font-semibold">ACTIVE</span>.
                         </p>
                     </div>
                 </Reveal>

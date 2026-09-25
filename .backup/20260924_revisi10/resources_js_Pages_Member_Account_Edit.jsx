@@ -91,10 +91,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                                 {t('account.avatarLockedHint')}
                                             </p>
                                             <a
-                                                href={`https://wa.me/628113888888?text=${encodeURIComponent(t('account.waPhotoRequest', {
-                                                    name: account.name,
-                                                    member: account.member_code || '-',
-                                                }))}`}
+                                                href={`https://wa.me/628113888888?text=${encodeURIComponent(`Halo Admin KBKB, saya ingin mengajukan penggantian foto profil member:\nNama: ${account.name}\nNo. Member: ${account.member_code || '-'}`)}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1 text-xs font-semibold text-gold-deep hover:underline"
@@ -109,8 +106,8 @@ export default function AccountEdit({ account, password_otp_sent }) {
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="label" htmlFor="name">{t('account.nameLabel')}</label>
-                                        <span className="text-[10px] text-slate-soft font-mono">{t('account.nameLocked')}</span>
+                                        <label className="label" htmlFor="name">Nama Lengkap</label>
+                                        <span className="text-[10px] text-slate-soft font-mono">Terkunci (Hanya Admin)</span>
                                     </div>
                                     <input
                                         id="name"
@@ -121,57 +118,57 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         readOnly
                                     />
                                     <p className="mt-1 text-[11px] text-slate-soft">
-                                        {t('account.nameHint')}
+                                        Nama member tidak dapat diubah sendiri. Hubungi admin jika terdapat kesalahan penulisan nama.
                                     </p>
                                 </div>
 
                                 <div className="sm:col-span-2">
-                                    <label className="label" htmlFor="email">{t('account.emailLabel')}</label>
+                                    <label className="label" htmlFor="email">Alamat Email</label>
                                     <input id="email" type="email" className="input" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                                     {errors.email && <p className="mt-1 text-xs text-ember">{errors.email}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="religion">{t('account.religionLabel')}</label>
+                                    <label className="label" htmlFor="religion">Agama</label>
                                     <select
                                         id="religion"
                                         className="input"
                                         value={data.religion}
                                         onChange={(e) => setData('religion', e.target.value)}
                                     >
-                                        <option value="">{t('account.religionPlaceholder')}</option>
-                                        <option value="islam">{t('account.religion.islam')}</option>
-                                        <option value="kristen">{t('account.religion.kristen')}</option>
-                                        <option value="katolik">{t('account.religion.katolik')}</option>
-                                        <option value="hindu">{t('account.religion.hindu')}</option>
-                                        <option value="buddha">{t('account.religion.buddha')}</option>
-                                        <option value="konghucu">{t('account.religion.konghucu')}</option>
-                                        <option value="lainnya">{t('account.religion.lainnya')}</option>
+                                        <option value="">-- Pilih Agama --</option>
+                                        <option value="islam">Islam</option>
+                                        <option value="kristen">Kristen Protestan</option>
+                                        <option value="katolik">Katolik</option>
+                                        <option value="hindu">Hindu</option>
+                                        <option value="buddha">Buddha</option>
+                                        <option value="konghucu">Konghucu</option>
+                                        <option value="lainnya">Lainnya</option>
                                     </select>
                                     {errors.religion && <p className="mt-1 text-xs text-ember">{errors.religion}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="whatsapp">{t('account.whatsappLabel')}</label>
-                                    <input id="whatsapp" type="text" className="input" value={data.whatsapp} onChange={(e) => setData('whatsapp', e.target.value)} placeholder={t('account.whatsappPlaceholder')} />
+                                    <label className="label" htmlFor="whatsapp">Nomor WhatsApp</label>
+                                    <input id="whatsapp" type="text" className="input" value={data.whatsapp} onChange={(e) => setData('whatsapp', e.target.value)} placeholder="08..." />
                                     {errors.whatsapp && <p className="mt-1 text-xs text-ember">{errors.whatsapp}</p>}
                                 </div>
 
                                 <div className="sm:col-span-2">
-                                    <label className="label" htmlFor="address">{t('account.addressLabel')}</label>
+                                    <label className="label" htmlFor="address">Alamat Domisili</label>
                                     <textarea
                                         id="address"
                                         rows={3}
                                         className="input"
                                         value={data.address}
                                         onChange={(e) => setData('address', e.target.value)}
-                                        placeholder={t('account.addressPlaceholder')}
+                                        placeholder="Tuliskan alamat lengkap..."
                                     />
                                     {errors.address && <p className="mt-1 text-xs text-ember">{errors.address}</p>}
                                 </div>
 
                                 <div className="sm:col-span-2">
-                                    <label className="label" htmlFor="company">{t('account.companyLabel')}</label>
+                                    <label className="label" htmlFor="company">Nama Perusahaan / Bisnis</label>
                                     <input id="company" type="text" className="input" value={data.company} onChange={(e) => setData('company', e.target.value)} />
                                     {errors.company && <p className="mt-1 text-xs text-ember">{errors.company}</p>}
                                 </div>
@@ -181,13 +178,13 @@ export default function AccountEdit({ account, password_otp_sent }) {
 
                     <Reveal>
                         <section className="card-surface p-6 sm:p-8">
-                            <h2 className="font-display text-lg font-bold text-ink">{t('account.securityTitle')}</h2>
-                            <p className="mt-1 text-xs text-slate">{t('account.securityHint1')}</p>
-                            <p className="mt-1 text-xs text-slate">{t('account.securityHint2')}</p>
+                            <h2 className="font-display text-lg font-bold text-ink">Keamanan & Password</h2>
+                            <p className="mt-1 text-xs text-slate">Kosongkan jika tidak ingin mengubah password.</p>
+                            <p className="mt-1 text-xs text-slate">Password baru wajib minimal 8 karakter dan kombinasi huruf + angka. Penggantian password dikonfirmasi melalui kode OTP yang dikirim ke email Anda.</p>
 
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
-                                    <label className="label" htmlFor="current_password">{t('account.currentPasswordLabel')}</label>
+                                    <label className="label" htmlFor="current_password">Password Saat Ini (Wajib jika ingin ganti password)</label>
                                     <TextInput
                                         id="current_password"
                                         type="password"
@@ -201,7 +198,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="password">{t('account.newPasswordLabel')}</label>
+                                    <label className="label" htmlFor="password">Password Baru</label>
                                     <TextInput
                                         id="password"
                                         type="password"
@@ -212,11 +209,11 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         onChange={(e) => setData('password', e.target.value)}
                                     />
                                     {errors.password && <p className="mt-1 text-xs text-ember">{errors.password}</p>}
-                                    <p className="mt-1 text-[11px] text-slate-soft">{t('account.passwordHint')}</p>
+                                    <p className="mt-1 text-[11px] text-slate-soft">Minimal 8 karakter, kombinasi huruf &amp; angka.</p>
                                 </div>
 
                                 <div>
-                                    <label className="label" htmlFor="password_confirmation">{t('account.confirmPasswordLabel')}</label>
+                                    <label className="label" htmlFor="password_confirmation">Konfirmasi Password Baru</label>
                                     <TextInput
                                         id="password_confirmation"
                                         type="password"
@@ -232,7 +229,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                 {willChangePassword && (
                                     <div className="sm:col-span-2 rounded-xl border border-gold/40 bg-gold/10 p-4">
                                         <label className="label" htmlFor="otp">
-                                            {t('account.otpLabel')} {otpSent && <span className="text-ember">*</span>}
+                                            Kode OTP dari Email {otpSent && <span className="text-ember">*</span>}
                                         </label>
                                         <input
                                             id="otp"
@@ -242,7 +239,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                             autoComplete="one-time-code"
                                             maxLength={6}
                                             className="input font-mono tracking-[0.4em]"
-                                            placeholder={t('account.otpPlaceholder')}
+                                            placeholder="••••••"
                                             value={data.otp}
                                             onChange={(e) => setData('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
                                         />
@@ -250,8 +247,8 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                                             <p className="text-[11px] text-slate">
                                                 {otpSent
-                                                    ? t('account.otpSentInfo', { email: account.email })
-                                                    : t('account.otpNotSentInfo')}
+                                                    ? `Kode 6 digit dikirim ke ${account.email} (berlaku 10 menit). Masukkan kode lalu klik Simpan Perubahan.`
+                                                    : 'Klik "Simpan Perubahan" untuk mengirim kode OTP ke email Anda terlebih dahulu.'}
                                             </p>
                                             <button
                                                 type="button"
@@ -259,7 +256,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                                 disabled={processing}
                                                 className="text-[11px] font-bold text-gold-deep hover:underline disabled:opacity-50"
                                             >
-                                                {otpSent ? t('account.resendOtp') : t('account.sendOtp')}
+                                                {otpSent ? 'Kirim Ulang Kode OTP' : 'Kirim Kode OTP'}
                                             </button>
                                         </div>
                                     </div>
@@ -271,8 +268,12 @@ export default function AccountEdit({ account, password_otp_sent }) {
                     <div className="flex justify-stretch gap-3 sm:justify-end">
                         <button type="submit" className="btn-gold w-full sm:w-auto" disabled={processing}>
                             {processing
-                                ? t('account.processing')
-                                : t('account.saveChanges')}
+                                ? 'Memproses…'
+                                : data.password && !otpSent
+                                    ? 'Kirim OTP ke Email'
+                                    : data.password
+                                        ? 'Verifikasi OTP & Simpan'
+                                        : 'Simpan Perubahan'}
                         </button>
                     </div>
                 </form>

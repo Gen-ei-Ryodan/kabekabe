@@ -10,9 +10,9 @@ export default function PromoShow({ promo, member_active }) {
     const { t } = useTranslation();
 
     const images = [
-        promo.promo_image_url && { src: promo.promo_image_url, label: t('promos.gallery.promo'), fit: 'object-cover' },
-        promo.product_image_url && { src: promo.product_image_url, label: t('promos.gallery.product'), fit: 'object-cover' },
-        promo.logo_url && { src: promo.logo_url, label: t('promos.gallery.logo'), fit: 'object-contain bg-paper/50' },
+        promo.promo_image_url && { src: promo.promo_image_url, label: t('promos.gallery.promo'), fit: 'object-contain bg-white' },
+        promo.product_image_url && { src: promo.product_image_url, label: t('promos.gallery.product'), fit: 'object-contain bg-white' },
+        promo.logo_url && { src: promo.logo_url, label: t('promos.gallery.logo'), fit: 'object-contain bg-white' },
     ].filter(Boolean);
 
     const [active, setActive] = useState(0);

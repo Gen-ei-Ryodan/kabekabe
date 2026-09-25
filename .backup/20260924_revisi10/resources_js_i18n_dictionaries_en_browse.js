@@ -1,0 +1,68 @@
+// English dictionary — member browse pages (namespaces: home.*, partners.*, promos.*, agenda.*)
+export default {
+    // Member home
+    'home.headTitle': 'Home',
+    'home.greeting.morning': 'Good morning',
+    'home.greeting.afternoon': 'Good afternoon',
+    'home.greeting.evening': 'Good evening',
+    'home.greeting.night': 'Good night',
+    'home.sr.cardReady': 'Your digital member card is ready to use.',
+    'home.ranking.title': 'Top Vendor Ranking',
+    'home.ranking.aria': 'Vendor Ranking',
+    'home.ranking.byCount.title': 'By Transaction',
+    'home.ranking.byCount.subtitle': 'Highest Transaction Frequency',
+    'home.ranking.byCount.empty': 'No transaction data yet',
+    'home.ranking.byAmount.title': 'By Amount',
+    'home.ranking.byAmount.subtitle': 'Highest Total Spend',
+    'home.ranking.byAmount.empty': 'No spending data yet',
+    'home.popup.eyebrow': 'Members Only',
+    'home.popup.from': 'from {name}',
+    'home.popup.cta': 'View Promo',
+    'home.promoLabel': 'Promo',
+    'home.agendaLabel': 'Agenda',
+    'home.promo.view': 'View →',
+
+    // Promo & Partner (index)
+    'partners.headTitle': 'Promo & Partner',
+    'partners.tab.promos': 'Promos',
+    'partners.tab.partners': 'Partners',
+    'partners.filter.all': 'All',
+    'partners.searchPlaceholder': 'Search promo or partner name...',
+    'partners.emptyPromos.title': 'No active promos',
+    'partners.emptyPromos.desc': 'No promos available for this category right now.',
+    'partners.emptyPartners.title': 'No partners yet',
+    'partners.emptyPartners.desc': 'No partners registered in this category yet.',
+    'partners.promosCount': '{n} promos',
+
+    // Partner detail
+    'partners.backToList': '← Back to partners',
+    'partners.info': 'Information',
+    'partners.address': 'Address',
+    'partners.phone': 'Phone',
+    'partners.email': 'Email',
+    'partners.activePromos': 'Active promos here',
+    'partners.noActivePromos': 'No active promos right now.',
+    'partners.promoHintLead': 'Show your digital card at the counter to use a promo. Make sure your membership status is',
+    'partners.promoHintStatus': 'ACTIVE',
+
+    // Promo detail
+    'promos.freeItem': 'Free Item',
+    'promos.freeItemDesc': 'Free item worth {value}',
+    'promos.exclusiveDiscount': 'Exclusive member discount',
+    'promos.status.available': 'Available to you',
+    'promos.status.needActive': 'Active status required',
+    'promos.about': 'About This Promo',
+    'promos.minPurchase': 'Minimum Purchase',
+    'promos.benefit': 'Benefit / Discount',
+    'promos.period': 'Period',
+    'promos.noMinimum': 'No Minimum',
+    'promos.percentOff': '{n}% off total',
+    'promos.terms': 'Terms & Conditions',
+    'promos.visitPartner': 'Visit {name}',
+    'promos.showCardHint': '✓ Show your digital card when paying',
+    'promos.inactiveHint': 'To update your membership, please contact the admin or renew your subscription.',
+
+    // Agenda detail
+    'agenda.free': 'Free',
+    'agenda.fee': 'Fee {fee}',
+};

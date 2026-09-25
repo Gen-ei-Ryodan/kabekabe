@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
-use App\Models\MembershipPlan;
-use App\Models\Payment;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,23 +17,23 @@ class BillingController extends Controller
         $isActive = $user->hasActiveMembership();
 
         // 1. Auto-expire unpaid pending payments older than 24 hours
-        Payment::where('member_id', $user->id)
-            ->where('status', Payment::STATUS_PENDING)
+        \App\Models\Payment::where('member_id', $user->id)
+            ->where('status', \App\Models\Payment::STATUS_PENDING)
             ->whereNull('proof_path')
             ->where('created_at', '<', now()->subHours(24))
-            ->update(['status' => Payment::STATUS_EXPIRED]);
+            ->update(['status' => \App\Models\Payment::STATUS_EXPIRED]);
 
         // 2. Fetch 1 active order (pending within 24h or already has proof, or recently approved within 24h)
-        $activePayment = Payment::where('member_id', $user->id)
+        $activePayment = \App\Models\Payment::where('member_id', $user->id)
             ->where(function ($q) {
                 $q->where(function ($sub) {
-                    $sub->where('status', Payment::STATUS_PENDING)
+                    $sub->where('status', \App\Models\Payment::STATUS_PENDING)
                         ->where(function ($s2) {
                             $s2->whereNotNull('proof_path')
-                                ->orWhere('created_at', '>=', now()->subHours(24));
+                               ->orWhere('created_at', '>=', now()->subHours(24));
                         });
                 })->orWhere(function ($sub) {
-                    $sub->where('status', Payment::STATUS_APPROVED)
+                    $sub->where('status', \App\Models\Payment::STATUS_APPROVED)
                         ->where('approved_at', '>=', now()->subHours(24));
                 });
             })
@@ -48,7 +46,7 @@ class BillingController extends Controller
             $stage = 'unpaid';
             $stageLabel = 'Belum Dibayar';
 
-            if ($activePayment->status === Payment::STATUS_APPROVED) {
+            if ($activePayment->status === \App\Models\Payment::STATUS_APPROVED) {
                 $stage = 'processed';
                 $stageLabel = 'Sudah Diproses (Lunas)';
             } elseif ($activePayment->proof_path) {
@@ -79,15 +77,6 @@ class BillingController extends Controller
         }
 
         return Inertia::render('Member/Account/Billing', [
-            'active_package' => $isActive ? [
-                'plan_name' => $membership?->plan?->name
-                    ?? $membership?->getLatestPlan()?->name
-                    ?? null,
-                'expires_at' => $membership?->expires_at?->format('d M Y'),
-                'days_remaining' => $membership?->expires_at
-                    ? max(0, (int) now()->diffInDays($membership->expires_at, false))
-                    : null,
-            ] : null,
             'membership' => [
                 'status' => $isActive ? 'active' : 'inactive',
                 'status_label' => $isActive ? 'ACTIVE' : 'INACTIVE',
@@ -102,7 +91,7 @@ class BillingController extends Controller
             ],
             'admin_fee' => (int) config('services.doku.admin_fee', 0),
             'active_bill' => $activeBill,
-            'plans' => MembershipPlan::where('is_active', true)
+            'plans' => \App\Models\MembershipPlan::where('is_active', true)
                 ->orderBy('duration_months')
                 ->get()
                 ->map(fn ($plan) => [
