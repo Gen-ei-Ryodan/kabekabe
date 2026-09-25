@@ -46,7 +46,7 @@ export default function Login({ status, portal = 'member' }) {
                     value={data.email}
                     className={fieldClass}
                     autoComplete="username"
-                    isFocused={prefix !== 'partner'}
+                    isFocused={prefix === 'mobile' || prefix === 'desktop'}
                     onChange={(e) => setData('email', e.target.value)}
                 />
                 <InputError
@@ -145,23 +145,45 @@ export default function Login({ status, portal = 'member' }) {
 
                 <form
                     onSubmit={submit}
-                    className={`relative w-full max-w-3xl ${isPartner ? 'max-sm:-mx-4 max-sm:w-[calc(100%+2rem)]' : ''}`}
+                    className={`relative w-full ${isPartner ? 'max-w-7xl max-sm:-mx-4 max-sm:w-[calc(100%+2rem)]' : 'max-w-3xl'}`}
                 >
                     {isPartner ? (
-                        /* Partner: poster utuh — image jadi background kartu, form overlay di area bawah image (sama seperti member). */
-                        <div className="login-card relative mx-auto aspect-[1024/1536] min-h-[700px] w-full max-w-lg overflow-hidden rounded-[28px] bg-black shadow-card sm:min-h-[740px]">
-                            <img
-                                src="/images/auth/partner-portrait.png"
-                                alt=""
-                                aria-hidden="true"
-                                className="absolute inset-0 h-full w-full select-none object-cover object-top"
-                                draggable="false"
-                            />
+                        <>
+                            {/* Mobile (sm ke bawah): kartu portrait, form overlay di area bawah gambar */}
+                            <div className="sm:hidden">
+                                <div className="login-card relative aspect-[1024/1536] min-h-[700px] w-full overflow-hidden rounded-[28px] bg-black shadow-card">
+                                    <img
+                                        src="/images/auth/partner-portrait.png"
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="absolute inset-0 h-full w-full select-none object-cover object-top"
+                                        draggable="false"
+                                    />
 
-                            <div className="absolute inset-x-5 bottom-5 top-[54%] flex flex-col justify-end space-y-2.5 sm:inset-x-8 sm:bottom-8 sm:space-y-3">
-                                {fields('partner')}
+                                    <div className="absolute inset-x-5 bottom-5 top-[54%] flex flex-col justify-end space-y-2.5">
+                                        {fields('partner')}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+
+                            {/* Desktop (sm ke atas): kartu landscape, form overlay di area kanan kosong (bawah teks PARTNER, kanan garis emas).
+                                Di bawah lg ruang kosong gambar terlalu pendek untuk form, jadi form jadi blok biasa di bawah poster. */}
+                            <div className="hidden sm:block">
+                                <div className="login-card relative w-full overflow-hidden rounded-[28px] bg-black shadow-card">
+                                    <img
+                                        src="/images/auth/partner-landscape.jpeg"
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="block h-auto w-full select-none"
+                                        draggable="false"
+                                    />
+
+                                    <div className="mx-auto w-full max-w-sm space-y-2.5 px-6 py-8 lg:absolute lg:bottom-[4%] lg:right-[3.5%] lg:mx-0 lg:w-[46%] lg:max-w-[420px] lg:space-y-1.5 lg:px-0 lg:py-0">
+                                        {fields('partner-d')}
+                                    </div>
+                                </div>
+                            </div>
+                        </>
                     ) : (
                         <>
                             {/* Mobile: form inside portrait image card */}
