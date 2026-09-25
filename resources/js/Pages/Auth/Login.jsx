@@ -31,6 +31,16 @@ export default function Login({ status, portal = 'member' }) {
     const fieldClass =
         'block w-full rounded-xl border border-white/15 bg-white/10 px-3.5 py-2.5 text-base text-white placeholder:text-white/40 backdrop-blur-sm focus:border-gold-light focus:ring-2 focus:ring-gold-light/40 sm:text-sm';
 
+    const partnerBadge = (className) =>
+        !isPartner && (
+            <Link
+                href={route('partner.login')}
+                className={`btn-gold rounded-full px-3 py-1.5 text-xs font-semibold shadow-md ${className}`}
+            >
+                {t('auth.login.partnerLogin')}
+            </Link>
+        );
+
     const fields = (prefix) => (
         <>
             <div>
@@ -79,17 +89,6 @@ export default function Login({ status, portal = 'member' }) {
             <PrimaryButton className="w-full justify-center" disabled={processing}>
                 {processing ? t('auth.login.processing') : t('auth.login.submit')}
             </PrimaryButton>
-
-            {!isPartner && (
-                <div>
-                    <Link
-                        href={route('partner.login')}
-                        className="flex w-full items-center justify-center rounded-xl border border-white/30 bg-white/10 px-3.5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-                    >
-                        {t('auth.login.partnerLogin')}
-                    </Link>
-                </div>
-            )}
 
             <div className="text-center">
                 <Link
@@ -199,6 +198,8 @@ export default function Login({ status, portal = 'member' }) {
                         <>
                             {/* Mobile: form inside portrait image card */}
                             <div className="flex flex-col items-center sm:hidden">
+                                {partnerBadge('mb-3 self-end sm:hidden')}
+
                                 <div className="login-card relative overflow-hidden rounded-[28px] shadow-card">
                                     <img
                                         src="/bgmobile.jpeg"
@@ -224,6 +225,8 @@ export default function Login({ status, portal = 'member' }) {
                                         className="block h-auto w-full object-cover object-center select-none"
                                         draggable="false"
                                     />
+
+                                    {partnerBadge('absolute right-5 top-5 z-10')}
 
                                     <div className="absolute inset-0 p-6 sm:p-10 md:p-12">
                                         <div className="absolute bottom-6 right-6 w-full max-w-xs space-y-4 sm:bottom-10 sm:right-10 sm:max-w-sm md:bottom-12 md:right-12">
