@@ -12,6 +12,7 @@ export default {
     'auth.login.titlePartner': 'Partner Login - KBKB',
     'auth.login.titleAdmin': 'Admin Login - KBKB',
     'auth.login.partnerRegister': 'Register as partner',
+    'auth.login.partnerLogin': 'Login as Partner',
 
     'auth.role.member': 'member',
     'auth.role.partner': 'partner',

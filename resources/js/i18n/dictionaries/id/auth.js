@@ -12,6 +12,7 @@ export default {
     'auth.login.titlePartner': 'Login Mitra - KBKB',
     'auth.login.titleAdmin': 'Login Admin - KBKB',
     'auth.login.partnerRegister': 'Daftar jadi Mitra',
+    'auth.login.partnerLogin': 'Login sebagai Partner',
 
     'auth.role.member': 'member',
     'auth.role.partner': 'mitra',

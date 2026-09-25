@@ -80,6 +80,17 @@ export default function Login({ status, portal = 'member' }) {
                 {processing ? t('auth.login.processing') : t('auth.login.submit')}
             </PrimaryButton>
 
+            {!isPartner && (
+                <div>
+                    <Link
+                        href={route('partner.login')}
+                        className="flex w-full items-center justify-center rounded-xl border border-white/30 bg-white/10 px-3.5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                    >
+                        {t('auth.login.partnerLogin')}
+                    </Link>
+                </div>
+            )}
+
             <div className="text-center">
                 <Link
                     href={route('password.request')}
