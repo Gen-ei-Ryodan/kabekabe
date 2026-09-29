@@ -161,6 +161,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
         Route::get('/transactions/{transaction}', [AdminTransactionController::class, 'show'])->name('transactions.show');
 
+        Route::get('/login-logs', [App\Http\Controllers\Admin\LoginLogController::class, 'index'])->name('login-logs.index');
+
         Route::get('/reports/export', [AdminReportController::class, 'export'])->name('reports.export');
         Route::get('/reports', AdminReportController::class)->name('reports.index');
     });

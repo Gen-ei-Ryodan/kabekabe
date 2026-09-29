@@ -9,7 +9,6 @@ use App\Models\Payment;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ManualPaymentController extends Controller
 {
@@ -43,17 +42,10 @@ class ManualPaymentController extends Controller
 
         $finalPrice = max(0, $planPrice - $discountAmount);
 
-        // Jika 100% Free: langsung aktivasi membership tanpa transfer
-        if ($finalPrice === 0 && $discountAmount > 0) {
-            $payment = $this->payments->createPending($member, $plan);
-            $payment->forceFill([
-                'amount' => 0,
-                'paid_at' => now(),
-                'notes' => "Aktivasi Promo 100% Bebas Biaya ({$discountCode->code})",
-            ])->save();
-
-            $this->payments->approve($payment, null, "Aktivasi Membership via Voucher {$discountCode->code}");
-            $discountCode->increment('used_count');
+        // Total bayar Rp0 (promo 100% / paket gratis): tetap dicatat sebagai payment amount 0,
+        // lalu aktivasi langsung tanpa transfer. Satu jalur dengan checkout DOKU.
+        if ($finalPrice === 0) {
+            $payment = $this->payments->claimFreeMembership($member, $plan, $discountCode, 'manual');
 
             return response()->json([
                 'success' => true,
@@ -61,7 +53,9 @@ class ManualPaymentController extends Controller
                 'payment_id' => $payment->id,
                 'invoice_number' => $payment->invoice_number,
                 'amount' => 0,
-                'message' => 'Selamat! Keanggotaan Anda telah aktif gratis via voucher diskon.',
+                'message' => $discountCode
+                    ? 'Selamat! Keanggotaan Anda telah aktif gratis via voucher diskon.'
+                    : 'Selamat! Keanggotaan Anda telah aktif tanpa biaya.',
             ]);
         }
 
@@ -76,6 +70,7 @@ class ManualPaymentController extends Controller
         if ($existing) {
             if ($existing->plan_id === $plan->id && (int) $existing->amount === (int) $finalPrice) {
                 $expiresAt = $existing->created_at->addHours(24);
+
                 return response()->json([
                     'success' => true,
                     'is_free' => false,
@@ -96,7 +91,7 @@ class ManualPaymentController extends Controller
             // Jika member memilih paket berbeda, expire order lama agar order tetap 1
             $existing->update([
                 'status' => Payment::STATUS_EXPIRED,
-                'notes' => ($existing->notes ? $existing->notes . ' | ' : '') . 'Diganti dengan order baru oleh member.',
+                'notes' => ($existing->notes ? $existing->notes.' | ' : '').'Diganti dengan order baru oleh member.',
             ]);
         }
 
@@ -104,7 +99,7 @@ class ManualPaymentController extends Controller
         $payment = $this->payments->createPending($member, $plan);
         $notes = "Manual Transfer Payment | Paket: {$plan->name}";
         if ($discountAmount > 0) {
-            $notes .= " | Voucher ({$discountCode->code}): -Rp" . number_format($discountAmount, 0, ',', '.');
+            $notes .= " | Voucher ({$discountCode->code}): -Rp".number_format($discountAmount, 0, ',', '.');
         }
 
         $payment->forceFill([
@@ -152,7 +147,7 @@ class ManualPaymentController extends Controller
         if ($payment->status !== Payment::STATUS_PENDING) {
             return response()->json([
                 'success' => false,
-                'message' => 'Status invoice ini tidak dapat diunggah bukti lagi (' . $payment->status . ').',
+                'message' => 'Status invoice ini tidak dapat diunggah bukti lagi ('.$payment->status.').',
             ], 422);
         }
 
@@ -166,7 +161,7 @@ class ManualPaymentController extends Controller
         $payment->forceFill([
             'proof_path' => $path,
             'paid_at' => now(),
-            'notes' => trim(($payment->notes ? $payment->notes . ' | ' : '') . 'Bukti transfer diunggah member pada ' . now()->translatedFormat('d M Y H:i:s')),
+            'notes' => trim(($payment->notes ? $payment->notes.' | ' : '').'Bukti transfer diunggah member pada '.now()->translatedFormat('d M Y H:i:s')),
         ])->save();
 
         return response()->json([
@@ -198,7 +193,7 @@ class ManualPaymentController extends Controller
         if ($payment->status === Payment::STATUS_PENDING && ! $payment->proof_path) {
             $payment->update([
                 'status' => Payment::STATUS_EXPIRED,
-                'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . 'Dibatalkan oleh member.',
+                'notes' => ($payment->notes ? $payment->notes.' | ' : '').'Dibatalkan oleh member.',
             ]);
 
             return response()->json([

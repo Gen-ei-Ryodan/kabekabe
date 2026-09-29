@@ -263,6 +263,8 @@ class PartnerController extends Controller
     public function approve(Request $request, Partner $partner): RedirectResponse
     {
         $validated = $request->validate([
+            // member_option: 'member' = kaitkan ke member, 'non_member' = tanpa kaitan member.
+            'member_option' => ['nullable', 'in:member,non_member'],
             'member_user_id' => [
                 'nullable',
                 'integer',
@@ -277,13 +279,24 @@ class PartnerController extends Controller
             'expires_at' => $partner->expires_at ?? now()->addYear(),
         ];
 
-        if (! empty($validated['member_user_id'])) {
+        $option = $validated['member_option'] ?? (
+            (! empty($validated['member_user_id']) || $partner->member_user_id) ? 'member' : 'non_member'
+        );
+        $linked = false;
+
+        if ($option === 'member' && ! empty($validated['member_user_id'])) {
             $member = User::query()->findOrFail($validated['member_user_id']);
 
             $data['member_user_id'] = $member->id;
             $data['is_member'] = true;
             $data['member_id_number'] = $member->member_code;
             $data['member_name'] = $member->name;
+            $linked = true;
+        } elseif ($option === 'non_member') {
+            // Partner tetap bisa di-approve tanpa akun member.
+            $data['member_user_id'] = null;
+            $data['is_member'] = false;
+            $data['member_id_number'] = null;
         }
 
         $partner->forceFill($data)->save();
@@ -297,7 +310,10 @@ class PartnerController extends Controller
             $emailSent = app(ApprovalNotifier::class)->notifyApproved($partner->user);
         }
 
-        $message = "Pendaftaran partner {$partner->name} berhasil disetujui.";
+        $message = "Pendaftaran partner {$partner->name} berhasil disetujui"
+            .($linked
+                ? " dan dikaitkan ke member {$partner->member_name}."
+                : ($partner->member_user_id ? '.' : ' (Non Member).'));
         $message .= $partner->user
             ? ($emailSent
                 ? " Email notifikasi & password awal dikirim ke {$partner->user->email}."

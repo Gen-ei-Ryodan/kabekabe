@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 #[Fillable(['name', 'nickname', 'email', 'password', 'otp_code', 'otp_expires_at', 'otp_purpose', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'avatar_changes_count', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'birth_place', 'hobbies', 'marital_status', 'place_of_worship_address', 'city', 'address', 'district', 'business_fields', 'business_address', 'business_district', 'business_city', 'industry', 'businesses', 'is_household'])]
-#[Hidden(['password', 'remember_token', 'otp_code'])]
+#[Hidden(['password', 'remember_token', 'otp_code', 'login_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -46,6 +46,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'otp_expires_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'notification_settings' => 'array',
             'birth_date' => 'date',
             'must_change_password' => 'boolean',

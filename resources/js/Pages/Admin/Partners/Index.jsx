@@ -13,6 +13,7 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
     const [memberQuery, setMemberQuery] = useState('');
     const [memberResults, setMemberResults] = useState([]);
     const [selectedMember, setSelectedMember] = useState(null);
+    const [memberOption, setMemberOption] = useState('non_member');
 
     useEffect(() => {
         if (!approveTarget || memberQuery.trim() === '') {
@@ -40,12 +41,20 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
         setMemberQuery('');
         setMemberResults([]);
         setSelectedMember(null);
+        setMemberOption('non_member');
     };
 
     const confirmApprove = () => {
+        if (memberOption === 'member' && !selectedMember) {
+            alert('Pilih salah satu member dari hasil pencarian, atau ubah pilihan ke "Non Member".');
+            return;
+        }
+
         router.put(
             route('admin.partners.approve', approveTarget.id),
-            selectedMember ? { member_user_id: selectedMember.id } : {},
+            memberOption === 'member' && selectedMember
+                ? { member_option: 'member', member_user_id: selectedMember.id }
+                : { member_option: 'non_member' },
             { preserveScroll: true, onSuccess: closeApproveModal },
         );
     };
@@ -320,8 +329,58 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                         </p>
 
                         <div className="mt-5">
+                            <span className="label">Kaitkan ke member</span>
+                            <div className="mt-1 grid gap-2 sm:grid-cols-2">
+                                <label
+                                    className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition-colors ${
+                                        memberOption === 'non_member'
+                                            ? 'border-gold/50 bg-gold/10'
+                                            : 'border-ink/10 bg-paper hover:bg-white'
+                                    }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="approve-member-option"
+                                        className="mt-1"
+                                        checked={memberOption === 'non_member'}
+                                        onChange={() => {
+                                            setMemberOption('non_member');
+                                            setSelectedMember(null);
+                                            setMemberQuery('');
+                                            setMemberResults([]);
+                                        }}
+                                    />
+                                    <span>
+                                        <span className="block font-semibold text-ink">Non Member</span>
+                                        <span className="block text-xs text-slate">Partner aktif tanpa akun member.</span>
+                                    </span>
+                                </label>
+                                <label
+                                    className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition-colors ${
+                                        memberOption === 'member'
+                                            ? 'border-gold/50 bg-gold/10'
+                                            : 'border-ink/10 bg-paper hover:bg-white'
+                                    }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="approve-member-option"
+                                        className="mt-1"
+                                        checked={memberOption === 'member'}
+                                        onChange={() => setMemberOption('member')}
+                                    />
+                                    <span>
+                                        <span className="block font-semibold text-ink">Kaitkan ke Member</span>
+                                        <span className="block text-xs text-slate">Pilih member yang sudah terdaftar.</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        {memberOption === 'member' && (
+                        <div className="mt-4">
                             <label className="label" htmlFor="approve-member-search">
-                                Kaitkan ke member (opsional)
+                                Cari member
                             </label>
                             <input
                                 id="approve-member-search"
@@ -377,6 +436,7 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                 </div>
                             )}
                         </div>
+                        )}
 
                         <div className="mt-6 flex justify-end gap-2">
                             <button onClick={closeApproveModal} className="btn-ghost text-xs">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\MembershipDiscountCode;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Services\PaymentGateway\DokuService;
@@ -25,7 +26,7 @@ class DokuPaymentController extends Controller
         ]);
 
         $plan = MembershipPlan::where('is_active', true)->findOrFail($validated['plan_id']);
-        $discountCode = \App\Models\MembershipDiscountCode::where('code', strtoupper(trim($validated['code'])))->first();
+        $discountCode = MembershipDiscountCode::where('code', strtoupper(trim($validated['code'])))->first();
 
         if (! $discountCode || ! $discountCode->isValid()) {
             return response()->json([
@@ -73,7 +74,7 @@ class DokuPaymentController extends Controller
         $discountCode = null;
 
         if (! empty($validated['promo_code'])) {
-            $discountCode = \App\Models\MembershipDiscountCode::where('code', strtoupper(trim($validated['promo_code'])))->first();
+            $discountCode = MembershipDiscountCode::where('code', strtoupper(trim($validated['promo_code'])))->first();
             if ($discountCode && $discountCode->isValid()) {
                 $discountAmount = $discountCode->calculateDiscount($planPrice);
             }
@@ -81,16 +82,10 @@ class DokuPaymentController extends Controller
 
         $finalPlanPrice = max(0, $planPrice - $discountAmount);
 
-        // Jika 100% Free: langsung aktivasi membership tanpa payment gateway
-        if ($finalPlanPrice === 0 && $discountAmount > 0) {
-            $payment = $payments->createPending($member, $plan);
-            $payment->forceFill([
-                'amount' => 0,
-                'notes' => "Aktivasi Promo 100% Bebas Biaya ({$discountCode->code})",
-            ])->save();
-
-            $payments->approve($payment, null, "Aktivasi Membership via Voucher {$discountCode->code}");
-            $discountCode->increment('used_count');
+        // Total bayar Rp0 (promo 100% / paket gratis): tetap dicatat sebagai payment amount 0,
+        // lalu aktivasi langsung tanpa payment gateway. Satu jalur dengan checkout manual.
+        if ($finalPlanPrice === 0) {
+            $payment = $payments->claimFreeMembership($member, $plan, $discountCode, 'doku');
 
             return response()->json([
                 'success' => true,
@@ -98,7 +93,9 @@ class DokuPaymentController extends Controller
                 'payment_id' => $payment->id,
                 'invoice_number' => $payment->invoice_number,
                 'amount' => 0,
-                'message' => 'Selamat! Keanggotaan Anda telah aktif 100% gratis.',
+                'message' => $discountCode
+                    ? 'Selamat! Keanggotaan Anda telah aktif 100% gratis.'
+                    : 'Selamat! Keanggotaan Anda telah aktif tanpa biaya.',
             ]);
         }
 
@@ -108,11 +105,11 @@ class DokuPaymentController extends Controller
 
         // Create pending payment record with total amount (discounted price + admin fee)
         $payment = $payments->createPending($member, $plan);
-        $paymentNotes = "Harga Paket: Rp" . number_format($planPrice, 0, ',', '.');
+        $paymentNotes = 'Harga Paket: Rp'.number_format($planPrice, 0, ',', '.');
         if ($discountAmount > 0) {
-            $paymentNotes .= " | Diskon ({$discountCode->code}): -Rp" . number_format($discountAmount, 0, ',', '.');
+            $paymentNotes .= " | Diskon ({$discountCode->code}): -Rp".number_format($discountAmount, 0, ',', '.');
         }
-        $paymentNotes .= " | Biaya Layanan Gateway: Rp" . number_format($adminFee, 0, ',', '.');
+        $paymentNotes .= ' | Biaya Layanan Gateway: Rp'.number_format($adminFee, 0, ',', '.');
 
         $payment->forceFill([
             'amount' => $totalAmount,
@@ -258,14 +255,13 @@ class DokuPaymentController extends Controller
 
             // 5. Handle Payment Success
             if ($trxStatus === 'SUCCESS') {
-                $paymentNotes = ($payment->notes ? $payment->notes . ' | ' : '') . "Paid via DOKU ({$channelId}) at " . now()->toIso8601String();
+                // PaymentService::approve menggabungkan catatan lama (promo/diskon) dengan catatan baru.
                 $payment->forceFill([
                     'paid_at' => now(),
-                    'notes' => $paymentNotes,
                 ])->save();
 
                 // Approves payment and safely extends membership (calculating 30-day blocks without wiping existing active days)
-                $payments->approve($payment, null, $paymentNotes);
+                $payments->approve($payment, null, "Paid via DOKU ({$channelId}) at ".now()->toIso8601String());
 
                 Log::info("DOKU Payment {$invoiceNumber} approved successfully for member {$payment->member_id}");
 
@@ -276,7 +272,7 @@ class DokuPaymentController extends Controller
             if (in_array($trxStatus, ['FAILED', 'EXPIRED'], true)) {
                 $payment->update([
                     'status' => $trxStatus === 'EXPIRED' ? Payment::STATUS_EXPIRED : Payment::STATUS_REJECTED,
-                    'notes' => ($payment->notes ? $payment->notes . ' | ' : '') . "DOKU status: {$trxStatus}",
+                    'notes' => ($payment->notes ? $payment->notes.' | ' : '')."DOKU status: {$trxStatus}",
                 ]);
 
                 return response()->json(['message' => 'SUCCESS'], 200);

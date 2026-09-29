@@ -14,6 +14,7 @@ const NAV = [
     { name: 'Notifikasi', route: 'admin.notifications.index', icon: '◌' },
     { name: 'Transaksi', route: 'admin.transactions.index', icon: '⤹' },
     { name: 'Laporan', route: 'admin.reports.index', icon: '⌁' },
+    { name: 'Log Aktivitas', route: 'admin.login-logs.index', icon: '◷' },
 ];
 
 export default function AdminLayout({ children }) {

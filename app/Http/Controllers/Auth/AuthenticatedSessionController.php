@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureSingleDeviceLogin;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use App\Services\LoginLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -96,7 +98,8 @@ class AuthenticatedSessionController extends Controller
 
         if ($user->approval_status === User::APPROVAL_PENDING) {
             Auth::guard($guard)->logout();
-            $request->session()->invalidate();
+            // regenerate (bukan invalidate) agar sesi guard lain di browser ini tetap hidup.
+            $request->session()->regenerate();
             $request->session()->regenerateToken();
 
             return back()->withErrors([
@@ -106,7 +109,8 @@ class AuthenticatedSessionController extends Controller
 
         if ($user->approval_status === User::APPROVAL_REJECTED) {
             Auth::guard($guard)->logout();
-            $request->session()->invalidate();
+            // regenerate (bukan invalidate) agar sesi guard lain di browser ini tetap hidup.
+            $request->session()->regenerate();
             $request->session()->regenerateToken();
 
             return back()->withErrors([
@@ -115,6 +119,12 @@ class AuthenticatedSessionController extends Controller
         }
 
         $request->session()->regenerate();
+
+        // Single device login: device baru mengganti token, device lama ter-kick otomatis.
+        EnsureSingleDeviceLogin::issueToken($user, $guard, $request);
+
+        // Riwayat aktivitas login untuk dashboard admin.
+        app(LoginLogger::class)->record($user, $guard, $portal, $request);
 
         if ($user->must_change_password) {
             return redirect()->route($guard === 'partner' ? 'partner.password.change-initial' : 'password.change-initial');

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Membership;
+use App\Models\MembershipDiscountCode;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Models\User;
@@ -45,13 +47,14 @@ class PaymentService
                 'status' => Payment::STATUS_APPROVED,
                 'approved_by' => $admin?->id,
                 'approved_at' => now(),
-                'notes' => $notes,
+                // Gabung, jangan timpa: keterangan promo/diskon wajib tetap tercatat.
+                'notes' => $this->mergeNotes($payment->notes, $notes),
                 'previous_expires_at' => $previous,
                 'new_expires_at' => $newExpiry,
             ])->save();
 
             $membership->forceFill([
-                'status' => \App\Models\Membership::STATUS_ACTIVE,
+                'status' => Membership::STATUS_ACTIVE,
                 'started_at' => $membership->started_at ?? $paidAt,
                 'expires_at' => $newExpiry,
             ])->save();
@@ -85,7 +88,7 @@ class PaymentService
         $this->notifications->send(
             $payment->member,
             'Pembayaran Ditolak',
-            "Pembayaran {$payment->invoice_number} ditolak. " . ($reason ?: 'Silakan hubungi admin untuk informasi lebih lanjut.'),
+            "Pembayaran {$payment->invoice_number} ditolak. ".($reason ?: 'Silakan hubungi admin untuk informasi lebih lanjut.'),
             'membership',
             '/member/history',
         );
@@ -101,9 +104,65 @@ class PaymentService
             ->update(['status' => Payment::STATUS_EXPIRED]);
     }
 
+    /**
+     * Satu jalur untuk klaim promo/checkout senilai Rp0.
+     * Selalu membuat record payment dengan amount 0 + keterangan diskon/promo terpakai.
+     */
+    public function claimFreeMembership(
+        User $member,
+        MembershipPlan $plan,
+        ?MembershipDiscountCode $discountCode = null,
+        string $channel = 'promo',
+    ): Payment {
+        return DB::transaction(function () use ($member, $plan, $discountCode, $channel) {
+            $planPrice = (int) $plan->price;
+            $discountAmount = $discountCode ? $discountCode->calculateDiscount($planPrice) : 0;
+
+            $payment = $this->createPending($member, $plan);
+
+            $notes = "Checkout Rp0 ({$channel}) | Harga Paket: Rp".number_format($planPrice, 0, ',', '.');
+            if ($discountCode) {
+                $notes .= " | Promo ({$discountCode->code}): -Rp".number_format($discountAmount, 0, ',', '.');
+            }
+            $notes .= ' | Total Dibayar: Rp0';
+
+            $payment->forceFill([
+                'amount' => 0,
+                'paid_at' => now(),
+                'notes' => $notes,
+            ])->save();
+
+            $this->approve($payment, null, $discountCode
+                ? "Aktivasi Membership via Voucher {$discountCode->code}"
+                : 'Aktivasi Membership Gratis (Rp0)');
+
+            if ($discountCode) {
+                $discountCode->increment('used_count');
+            }
+
+            return $payment->fresh();
+        });
+    }
+
+    private function mergeNotes(?string $existing, ?string $extra): ?string
+    {
+        $existing = trim((string) $existing);
+        $extra = trim((string) $extra);
+
+        if ($extra === '') {
+            return $existing !== '' ? $existing : null;
+        }
+
+        if ($existing === '' || str_contains($existing, $extra)) {
+            return $existing === '' ? $extra : $existing;
+        }
+
+        return $existing.' | '.$extra;
+    }
+
     private function nextInvoiceNumber(): string
     {
-        return 'INV-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
+        return 'INV-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
     }
 
     private function nextExpiry(?Carbon $currentExpiry, int $months, ?Carbon $paymentDate = null): Carbon
