@@ -62,6 +62,13 @@ export default {
     'promos.visitPartner': 'Kunjungi {name}',
     'promos.showCardHint': '✓ Tunjukkan kartu digital Anda saat pembayaran',
     'promos.inactiveHint': 'Untuk memperbarui membership Anda, silakan hubungi admin atau perpanjang langganan.',
+    'promos.status.expired': 'Promo Berakhir',
+    'promos.status.upcoming': 'Akan Datang',
+    'promos.expired.title': 'Promo ini sudah berakhir 📅',
+    'promos.expired.desc': 'Masa berlaku promo telah selesai. Tenang, masih banyak promo aktif lain yang bisa Anda nikmati.',
+    'promos.upcoming.title': 'Promo ini belum dimulai',
+    'promos.upcoming.desc': 'Promo berlaku mulai {date}. Kembali lagi pada tanggal tersebut untuk menggunakannya.',
+    'promos.browseOthers': 'Lihat Promo Lain',
 
     // Galeri foto promo (carousel)
     'promos.gallery.title': 'Galeri Promo',

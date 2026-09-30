@@ -62,6 +62,13 @@ export default {
     'promos.visitPartner': 'Visit {name}',
     'promos.showCardHint': '✓ Show your digital card when paying',
     'promos.inactiveHint': 'To update your membership, please contact the admin or renew your subscription.',
+    'promos.status.expired': 'Promo Ended',
+    'promos.status.upcoming': 'Coming Soon',
+    'promos.expired.title': 'This promo has ended 📅',
+    'promos.expired.desc': 'The promo period is over. Plenty of other active promos are still waiting for you.',
+    'promos.upcoming.title': 'This promo has not started yet',
+    'promos.upcoming.desc': 'The promo is valid from {date}. Come back on that date to use it.',
+    'promos.browseOthers': 'Browse Other Promos',
 
     // Promo photo gallery (carousel)
     'promos.gallery.title': 'Promo Gallery',

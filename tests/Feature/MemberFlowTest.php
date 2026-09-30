@@ -104,6 +104,57 @@ class MemberFlowTest extends TestCase
         $this->actingAs($member)->get(route('member.promos.show', $promo))->assertNotFound();
     }
 
+    public function test_promo_show_for_expired_approved_promo_returns_ok_with_expired_state(): void
+    {
+        $member = $this->activeMember();
+
+        $promo = Promo::factory()->create([
+            'status' => Promo::STATUS_APPROVED,
+            'is_active' => true,
+            'start_date' => now()->subDays(10),
+            'end_date' => now()->subDay(),
+        ]);
+
+        $this->actingAs($member)->get(route('member.promos.show', $promo))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Member/Promos/Show')
+                ->where('state', 'expired')
+            );
+    }
+
+    public function test_promo_show_for_upcoming_promo_returns_ok_with_upcoming_state(): void
+    {
+        $member = $this->activeMember();
+
+        $promo = Promo::factory()->create([
+            'status' => Promo::STATUS_APPROVED,
+            'is_active' => true,
+            'start_date' => now()->addDays(2),
+            'end_date' => now()->addDays(20),
+        ]);
+
+        $this->actingAs($member)->get(route('member.promos.show', $promo))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Member/Promos/Show')
+                ->where('state', 'upcoming')
+            );
+    }
+
+    public function test_promo_show_returns_404_for_rejected_promo(): void
+    {
+        $member = $this->activeMember();
+
+        $promo = Promo::factory()->create([
+            'status' => Promo::STATUS_REJECTED,
+            'start_date' => now()->subDay(),
+            'end_date' => now()->addDays(10),
+        ]);
+
+        $this->actingAs($member)->get(route('member.promos.show', $promo))->assertNotFound();
+    }
+
     public function test_promo_show_for_active_promo_exposes_member_active_flag(): void
     {
         $member = $this->activeMember();

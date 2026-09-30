@@ -6,8 +6,18 @@ import { formatDate, formatRupiah } from '@/Utils/format';
 import { handleBackNavigation } from '@/Utils/backNav';
 import { useTranslation } from '@/i18n';
 
-export default function PromoShow({ promo, member_active }) {
+export default function PromoShow({ promo, member_active, state = null }) {
     const { t } = useTranslation();
+
+    const chip =
+        state === 'expired'
+            ? { status: 'expired', label: t('promos.status.expired') }
+            : state === 'upcoming'
+              ? { status: 'pending', label: t('promos.status.upcoming') }
+              : {
+                    status: member_active ? 'active' : 'inactive',
+                    label: member_active ? t('promos.status.available') : t('promos.status.needActive'),
+                };
 
     const images = [
         promo.promo_image_url && { src: promo.promo_image_url, label: t('promos.gallery.promo'), fit: 'object-contain bg-white' },
@@ -57,15 +67,31 @@ export default function PromoShow({ promo, member_active }) {
                             </p>
                         </div>
                         <div className="flex flex-col items-start gap-2 sm:items-end">
-                            <StatusChip
-                                status={member_active ? 'active' : 'inactive'}
-                                label={member_active ? t('promos.status.available') : t('promos.status.needActive')}
-                            />
+                            <StatusChip status={chip.status} label={chip.label} />
                             <p className="font-mono text-xs text-paper/50">
                                 {formatDate(promo.start_date)} — {formatDate(promo.end_date)}
                             </p>
                         </div>
                     </div>
+
+                    {state && (
+                        <div
+                            className={`border-t px-5 py-4 text-sm sm:px-8 ${
+                                state === 'expired'
+                                    ? 'border-ember/20 bg-ember/10 text-ember'
+                                    : 'border-gold/30 bg-gold/10 text-gold-deep'
+                            }`}
+                        >
+                            <p className="font-semibold">
+                                {state === 'expired' ? t('promos.expired.title') : t('promos.upcoming.title')}
+                            </p>
+                            <p className="mt-1 opacity-90">
+                                {state === 'expired'
+                                    ? t('promos.expired.desc')
+                                    : t('promos.upcoming.desc', { date: formatDate(promo.start_date) })}
+                            </p>
+                        </div>
+                    )}
 
                     {current && (
                         <div className="border-t border-ink/10 bg-paper/30 p-5 sm:p-8">
@@ -167,7 +193,11 @@ export default function PromoShow({ promo, member_active }) {
                             <Link href={route('member.partners.show', promo.partner.id)} className="btn-ink">
                                 {t('promos.visitPartner', { name: promo.partner.name })}
                             </Link>
-                            {member_active ? (
+                            {state ? (
+                                <Link href={route('member.partners.index', { tab: 'promos' })} className="btn-gold">
+                                    {t('promos.browseOthers')}
+                                </Link>
+                            ) : member_active ? (
                                 <p className="inline-flex items-center rounded-full bg-sage/10 px-4 py-2.5 text-sm font-semibold text-sage">
                                     {t('promos.showCardHint')}
                                 </p>
