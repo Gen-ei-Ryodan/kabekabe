@@ -3,6 +3,7 @@ import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 import { rememberBackSource } from '@/Utils/backNav';
+import { categoryLabel } from '@/Utils/category';
 import { useTranslation } from '@/i18n';
 
 export default function PartnerShow({ partner }) {
@@ -27,7 +28,7 @@ export default function PartnerShow({ partner }) {
                             </span>
                         )}
                         <div>
-                            <p className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">{partner.category}</p>
+                            <p className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">{categoryLabel(t, partner.category)}</p>
                             <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">{partner.name}</h1>
                             <p className="mt-2 text-paper/70">{partner.description}</p>
                         </div>

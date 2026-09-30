@@ -6,6 +6,7 @@ import EmptyState from '@/Components/EmptyState';
 import Reveal from '@/Components/Reveal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 import { rememberBackSource } from '@/Utils/backNav';
+import { categoryLabel } from '@/Utils/category';
 import { useTranslation } from '@/i18n';
 
 const TABS = [
@@ -68,7 +69,7 @@ function PartnerCard({ partner }) {
                 <div className="flex items-center gap-2">
                     <h3 className="truncate font-display text-sm font-bold leading-snug text-ink">{partner.name}</h3>
                 </div>
-                <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-gold-deep">{partner.category}</p>
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-gold-deep">{categoryLabel(t, partner.category)}</p>
                 <p className="mt-1.5 line-clamp-2 text-xs text-slate">{partner.description}</p>
                 <div className="mt-2 flex items-center justify-between border-t border-ink/5 pt-2">
                     <span className="text-[11px] text-slate-soft">{t('partners.promosCount', { n: partner.promos_count })}</span>
@@ -137,7 +138,7 @@ export default function PartnerIndex({ partners, promos, categories, filters }) 
                         category === cat ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
                     }`}
                 >
-                    {cat === 'all' ? t('partners.filter.all') : cat}
+                    {cat === 'all' ? t('partners.filter.all') : categoryLabel(t, cat)}
                 </button>
             ))}
         </div>

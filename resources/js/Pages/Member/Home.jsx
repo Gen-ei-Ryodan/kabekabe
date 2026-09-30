@@ -84,12 +84,21 @@ function VendorRanking({ byCount = [], byAmount = [] }) {
 }
 
 function PromoPopup({ open, onClose, popup }) {
+    const { t } = useTranslation();
     const promo = popup?.promo;
     if (!promo) return null;
 
     return (
         <Modal show={open} maxWidth="md" closeable={true} onClose={onClose}>
-            <div className="overflow-hidden rounded-xl">
+            <div className="relative overflow-hidden rounded-xl">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label={t('common.close')}
+                    className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-base font-bold text-ink shadow-lift transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-gold/60"
+                >
+                    ✕
+                </button>
                 <div className="relative flex min-h-56 max-h-[70vh] items-center justify-center overflow-hidden bg-ink sm:min-h-72">
                     {popup.image_url ? (
                         <img src={popup.image_url} alt="" className="block max-h-[70vh] max-w-full object-contain" />

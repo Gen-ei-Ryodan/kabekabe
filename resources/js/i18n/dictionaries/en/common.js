@@ -58,4 +58,15 @@ export default {
     // Partner register
     'partner.category': 'Partner Category',
     'partner.industry': 'Industry',
+
+    // Label kategori partner (nilai data di database → label Inggris)
+    'category.Elektronik & Gadget': 'Electronics & Gadgets',
+    'category.Elektronik': 'Electronics',
+    'category.Kecantikan': 'Beauty',
+    'category.Kesehatan': 'Health',
+    'category.Olahraga': 'Sports',
+    'category.Otomotif': 'Automotive',
+    'category.Pembangunan': 'Construction',
+    'category.Lain-lain': 'Others',
+    'category.Lain-Lain': 'Others',
 };
