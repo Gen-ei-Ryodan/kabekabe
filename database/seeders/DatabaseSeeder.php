@@ -6,6 +6,7 @@ use App\Models\AppNotification;
 use App\Models\CommunityInfo;
 use App\Models\HomeBanner;
 use App\Models\HomePopup;
+use App\Models\MemberScan;
 use App\Models\MembershipPlan;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -30,22 +31,26 @@ class DatabaseSeeder extends Seeder
         $transactionService = app(TransactionService::class);
 
         // ---------- Admin ----------
-        $admin = User::create([
-            'name' => 'Admin Sentra',
-            'email' => 'admin@sentra.test',
-            'password' => 'password',
-            'role' => User::ROLE_ADMIN,
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@sentra.test'],
+            [
+                'name' => 'Admin Sentra',
+                'password' => 'password',
+                'role' => User::ROLE_ADMIN,
+            ]
+        );
 
         // ---------- Membership Plans ----------
         $plans = collect(range(1, 12))->map(function ($months) {
             $days = $months * 30;
-            return MembershipPlan::create([
-                'name' => "{$months} Bulan ({$days} Hari)",
-                'duration_months' => $months,
-                'price' => $months * 100000,
-                'is_active' => true,
-            ]);
+            return MembershipPlan::firstOrCreate(
+                ['duration_months' => $months],
+                [
+                    'name' => "{$months} Bulan ({$days} Hari)",
+                    'price' => $months * 100000,
+                    'is_active' => true,
+                ]
+            );
         });
 
         // ---------- Partners & Vendors ----------
@@ -60,24 +65,28 @@ class DatabaseSeeder extends Seeder
         $partners = collect($partnerData)->map(function ($data) use ($admin) {
             [$name, $category, $desc, $address, $vendorName, $vendorEmail] = $data;
 
-            $vendor = User::create([
-                'name' => $vendorName,
-                'email' => $vendorEmail,
-                'password' => 'password',
-                'role' => User::ROLE_VENDOR,
-            ]);
+            $vendor = User::firstOrCreate(
+                ['email' => $vendorEmail],
+                [
+                    'name' => $vendorName,
+                    'password' => 'password',
+                    'role' => User::ROLE_VENDOR,
+                ]
+            );
 
-            return Partner::create([
-                'user_id' => $vendor->id,
-                'name' => $name,
-                'slug' => Str::slug($name) . '-' . Str::lower(Str::random(4)),
-                'category' => $category,
-                'description' => $desc,
-                'address' => $address,
-                'phone' => '+62 21 ' . random_int(100000, 999999),
-                'email' => 'contact@' . Str::slug($name) . '.test',
-                'is_active' => true,
-            ]);
+            return Partner::firstOrCreate(
+                ['name' => $name],
+                [
+                    'user_id' => $vendor->id,
+                    'slug' => Str::slug($name) . '-' . Str::lower(Str::random(4)),
+                    'category' => $category,
+                    'description' => $desc,
+                    'address' => $address,
+                    'phone' => '+62 21 ' . random_int(100000, 999999),
+                    'email' => 'contact@' . Str::slug($name) . '.test',
+                    'is_active' => true,
+                ]
+            );
         });
 
         $kfc = $partners->first(fn ($p) => $p->name === 'KFC');
@@ -142,9 +151,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         foreach ($promos as $promo) {
-            Promo::create([
-                'partner_id' => $promo['partner']->id,
+            Promo::firstOrCreate([
                 'title' => $promo['title'],
+            ], [
+                'partner_id' => $promo['partner']->id,
                 'description' => $promo['description'],
                 'discount_type' => $promo['type'],
                 'discount_value' => $promo['value'],
@@ -161,9 +171,8 @@ class DatabaseSeeder extends Seeder
         }
 
         // ---------- Members ----------
-        $memberA = User::create([
+        $memberA = User::firstOrCreate(['email' => 'member@sentra.test'], [
             'name' => 'Budi Santoso',
-            'email' => 'member@sentra.test',
             'password' => 'password',
             'role' => User::ROLE_MEMBER,
             'phone' => '+62 812 3456 7890',
@@ -172,9 +181,8 @@ class DatabaseSeeder extends Seeder
         ]);
         $membershipService->activate($memberA, 12);
 
-        $memberB = User::create([
+        $memberB = User::firstOrCreate(['email' => 'sari@sentra.test'], [
             'name' => 'Sari Wulandari',
-            'email' => 'sari@sentra.test',
             'password' => 'password',
             'role' => User::ROLE_MEMBER,
             'phone' => '+62 813 2222 1111',
@@ -183,9 +191,8 @@ class DatabaseSeeder extends Seeder
         ]);
         $membershipService->activate($memberB, 3);
 
-        $memberC = User::create([
+        $memberC = User::firstOrCreate(['email' => 'agus@sentra.test'], [
             'name' => 'Agus Pratama',
-            'email' => 'agus@sentra.test',
             'password' => 'password',
             'role' => User::ROLE_MEMBER,
             'phone' => '+62 821 9090 8080',
@@ -199,15 +206,17 @@ class DatabaseSeeder extends Seeder
         $members = collect([$memberA, $memberB, $memberC]);
 
         foreach (range(1, 22) as $i) {
-            $m = User::create([
-                'name' => fake()->name(),
-                'email' => 'member' . $i . '@sentra.test',
-                'password' => 'password',
-                'role' => User::ROLE_MEMBER,
-                'phone' => fake()->phoneNumber(),
-                'whatsapp' => fake()->phoneNumber(),
-                'company' => fake()->company(),
-            ]);
+            $m = User::firstOrCreate(
+                ['email' => 'member' . $i . '@sentra.test'],
+                [
+                    'name' => fake()->name(),
+                    'password' => 'password',
+                    'role' => User::ROLE_MEMBER,
+                    'phone' => fake()->phoneNumber(),
+                    'whatsapp' => fake()->phoneNumber(),
+                    'company' => fake()->company(),
+                ]
+            );
 
             if ($i % 4 !== 0) {
                 $membershipService->activate($m, random_int(1, 12));
@@ -217,7 +226,8 @@ class DatabaseSeeder extends Seeder
         }
 
         // ---------- Payments ----------
-        $payment = $paymentService->createPending($memberA, $plans->first(fn ($p) => $p->duration_months === 3));
+        $payment = Payment::query()->where('member_id', $memberA->id)->first()
+            ?? $paymentService->createPending($memberA, $plans->first(fn ($p) => $p->duration_months === 3));
         $payment->update(['proof_path' => 'payment-proofs/demo.png']);
 
         // ---------- Transactions ----------
@@ -238,12 +248,26 @@ class DatabaseSeeder extends Seeder
 
             $promo = $approvedPromos->first(fn ($p) => $p->partner_id === $partner->id);
 
+            $alreadyRecorded = Transaction::query()
+                ->where('member_id', $member->id)
+                ->where('partner_id', $partner->id)
+                ->where('note', $note)
+                ->exists();
+
+            if ($alreadyRecorded) {
+                continue;
+            }
+
+            // TransactionService memerlukan scan member yang masih berlaku (jendela 48 jam).
+            $scan = MemberScan::startFor($member->id, $partner->user_id);
+
             $transactionService->record(
                 $partner,
                 $member,
                 $promo,
                 $total,
                 $note,
+                scan: $scan,
             );
         }
 
@@ -253,9 +277,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ---------- Community Infos ----------
-        CommunityInfo::create([
-            'type' => CommunityInfo::TYPE_EVENT,
+        CommunityInfo::firstOrCreate([
             'title' => 'Sentra Community Gathering 2026',
+        ], [
+            'type' => CommunityInfo::TYPE_EVENT,
             'content' => 'Acara tahunan komunitas untuk mempererat kebersamaan antar member. Hadirkan sesi networking, workshop, dan hiburan.',
             'event_date' => now()->addDays(14)->setHour(13),
             'location' => 'Ballroom Hotel Mulia, Jakarta',
@@ -265,9 +290,10 @@ class DatabaseSeeder extends Seeder
             'created_by' => $admin->id,
         ]);
 
-        CommunityInfo::create([
-            'type' => CommunityInfo::TYPE_AGENDA,
+        CommunityInfo::firstOrCreate([
             'title' => 'Jadwal Gathering Bulan Ini',
+        ], [
+            'type' => CommunityInfo::TYPE_AGENDA,
             'content' => 'Rangkaian agenda gathering bulan ini: pembagian goodie bag, sesi sharing session, dan city tour.',
             'event_date' => now()->addDays(7)->setHour(9),
             'location' => 'Area Monas, Jakarta',
@@ -332,9 +358,10 @@ class DatabaseSeeder extends Seeder
 
         foreach ($members as $member) {
             foreach ($templates as $tpl) {
-                AppNotification::create([
+                AppNotification::firstOrCreate([
                     'user_id' => $member->id,
                     'title' => $tpl['title'],
+                ], [
                     'body' => $tpl['body'],
                     'type' => $tpl['type'],
                     'action_url' => $tpl['action_url'] ?? null,
