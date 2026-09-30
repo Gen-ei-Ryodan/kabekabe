@@ -55,10 +55,13 @@ class Promo extends Model
 
     public function isActive(): bool
     {
+        // end_date disimpan sebagai tanggal (cast 'date' → pukul 00:00), jadi
+        // promo harus dianggap berlaku sampai akhir hari terakhirnya (23:59:59),
+        // konsisten dengan scopeVisibleToMembers() yang memakai end_date >= hari ini.
         return $this->status === self::STATUS_APPROVED
             && $this->is_active
             && $this->start_date?->isPast()
-            && $this->end_date?->isFuture();
+            && $this->end_date?->copy()->endOfDay()->isFuture();
     }
 
     public function scopeVisibleToMembers(Builder $query): Builder
