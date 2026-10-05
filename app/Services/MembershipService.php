@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Membership;
+use App\Models\Partner;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class MembershipService
 {
@@ -105,18 +108,18 @@ class MembershipService
         }
 
         if (! empty($notes)) {
-            $partner->status = \App\Models\Partner::STATUS_ACTIVE;
+            $partner->status = Partner::STATUS_ACTIVE;
             $partner->is_active = true;
             $partner->save();
 
-            \App\Models\Payment::create([
-                'invoice_number' => 'FREE-' . strtoupper(\Illuminate\Support\Str::random(8)),
+            Payment::create([
+                'invoice_number' => 'FREE-'.strtoupper(Str::random(8)),
                 'member_id' => $member->id,
                 'period_months' => ceil($freeDays / 30),
                 'amount' => 0,
-                'status' => \App\Models\Payment::STATUS_APPROVED,
+                'status' => Payment::STATUS_APPROVED,
                 'paid_at' => now(),
-                'notes' => implode(', ', $notes) . ' [FREE]',
+                'notes' => implode(', ', $notes).' [FREE]',
                 'approved_at' => now(),
                 'approved_by' => auth()->id(),
             ]);

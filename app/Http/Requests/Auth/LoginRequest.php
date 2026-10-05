@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -36,13 +37,26 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials on the given guard.
      *
+     * Email member & partner boleh sama, jadi kredensial selalu di-scoping ke role.
+     *
      * @throws ValidationException
      */
-    public function authenticate(string $guard = 'web'): void
+    public function authenticate(string $guard = 'web', string $role = User::ROLE_MEMBER): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::guard($guard)->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = $this->only('email', 'password');
+
+        if (! Auth::guard($guard)->attempt($credentials + ['role' => $role], $this->boolean('remember'))) {
+            // Email yang sama mungkin terdaftar di portal lain → pesan yang lebih membantu.
+            if (Auth::guard($guard)->attempt($credentials)) {
+                Auth::guard($guard)->logout();
+
+                throw ValidationException::withMessages([
+                    'email' => 'Akun ini tidak sesuai dengan halaman login tersebut. Silakan gunakan halaman login yang benar.',
+                ]);
+            }
+
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

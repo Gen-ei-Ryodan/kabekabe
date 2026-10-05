@@ -17,6 +17,7 @@ class CommunityInfo extends Model
     use HasFactory;
 
     public const TYPE_EVENT = 'event';
+
     public const TYPE_AGENDA = 'agenda';
 
     public const TYPES = [self::TYPE_EVENT, self::TYPE_AGENDA];
@@ -72,7 +73,7 @@ class CommunityInfo extends Model
             return null;
         }
 
-        return '/storage/' . $this->image;
+        return '/storage/'.$this->image;
     }
 
     public function getImageUrlAttribute(): ?string

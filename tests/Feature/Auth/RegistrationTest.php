@@ -131,11 +131,30 @@ class RegistrationTest extends TestCase
             ->missing('generatedPassword'));
     }
 
+    public function test_member_registration_creates_master_identity(): void
+    {
+        $this->post('/register', $this->memberPayload([
+            'email' => 'identity@example.com',
+        ]))->assertOk();
+
+        $user = User::query()->where('email', 'identity@example.com')->firstOrFail();
+
+        $this->assertNotNull($user->master_identity_id);
+
+        $identity = $user->masterIdentity;
+
+        $this->assertSame('identity@example.com', $identity->email);
+        $this->assertSame('Test Member', $identity->name);
+        $this->assertSame('Badung', $identity->city);
+        $this->assertSame(['Bulutangkis', 'Golf'], $identity->hobbies);
+    }
+
     public function test_new_partner_can_register_and_creates_partner_record(): void
     {
         $response = $this->post('/register', $this->partnerPayload());
 
-        $response->assertStatus(200);
+        // Belum dianggap terverifikasi: diarahkan ke halaman OTP dulu.
+        $response->assertRedirect(route('partner.otp.show'));
 
         $this->assertDatabaseHas('users', [
             'name' => 'Budi Santoso',
@@ -144,6 +163,12 @@ class RegistrationTest extends TestCase
             'approval_status' => User::APPROVAL_PENDING,
             'must_change_password' => true,
         ]);
+
+        $user = User::query()->where('email', 'partner@example.com')->firstOrFail();
+
+        $this->assertNull($user->email_verified_at);
+        $this->assertNotNull($user->otp_code);
+        $this->assertSame('partner_register', $user->otp_purpose);
 
         $this->assertDatabaseHas('partners', [
             'name' => 'PT Kopi Nikmat',
@@ -156,6 +181,33 @@ class RegistrationTest extends TestCase
             'status' => 'inactive',
             'is_active' => false,
         ]);
+    }
+
+    public function test_partner_registration_requires_valid_otp_before_approval(): void
+    {
+        $this->post('/register', $this->partnerPayload([
+            'email' => 'otp-check@example.com',
+        ]))->assertRedirect(route('partner.otp.show'));
+
+        $user = User::query()->where('email', 'otp-check@example.com')->firstOrFail();
+        $code = $user->otp_code;
+
+        $this->get(route('partner.otp.show'))->assertOk();
+
+        // Kode salah → tetap belum terverifikasi.
+        $this->post(route('partner.otp.verify'), ['otp' => '000000'])
+            ->assertSessionHasErrors('otp');
+
+        $this->assertNull($user->fresh()->email_verified_at);
+
+        // Kode benar → verifikasi sukses, status tetap menunggu approval admin.
+        $this->post(route('partner.otp.verify'), ['otp' => $code])
+            ->assertRedirect(route('partner.register.thankyou'));
+
+        $user->refresh();
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertNull($user->otp_code);
+        $this->assertSame(User::APPROVAL_PENDING, $user->approval_status);
     }
 
     private function partnerPayload(array $overrides = []): array
@@ -186,7 +238,7 @@ class RegistrationTest extends TestCase
         $this->post('/register', $this->partnerPayload([
             'email' => 'kategori1@example.com',
             'industry' => ['Salon', 'F&B - Coffee Shop'],
-        ]))->assertStatus(200);
+        ]))->assertRedirect(route('partner.otp.show'));
 
         $this->assertDatabaseHas('partners', [
             'email' => 'kategori1@example.com',
@@ -198,7 +250,7 @@ class RegistrationTest extends TestCase
             'email' => 'kategori2@example.com',
             'trade_name' => 'Kopi Lain 2',
             'industry' => ['Konsultan'],
-        ]))->assertStatus(200);
+        ]))->assertRedirect(route('partner.otp.show'));
 
         $this->assertDatabaseHas('partners', [
             'email' => 'kategori2@example.com',

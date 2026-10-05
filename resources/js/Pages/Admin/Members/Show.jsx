@@ -1,12 +1,44 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import Avatar from '@/Components/Avatar';
+import InputError from '@/Components/InputError';
 import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
 
-export default function MemberShow({ member, membership, payments, transactions }) {
+const toDateInput = (value) => (value ? String(value).slice(0, 10) : '');
+
+export default function MemberShow({ member, membership, payments, transactions, plans = [] }) {
     const daysLeft = membership?.expires_at ? daysUntil(membership.expires_at) : null;
     const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
+
+    const membershipForm = useForm({
+        status: membership?.status === 'active' ? 'active' : 'inactive',
+        started_at: toDateInput(membership?.started_at),
+        expires_at: toDateInput(membership?.expires_at),
+    });
+
+    const paymentForm = useForm({
+        paid_at: new Date().toISOString().slice(0, 10),
+        amount: '',
+        method: '',
+        notes: '',
+        plan_id: '',
+    });
+
+    const saveMembership = (e) => {
+        e.preventDefault();
+        membershipForm.put(route('admin.members.membership', member.id), {
+            preserveScroll: true,
+        });
+    };
+
+    const saveManualPayment = (e) => {
+        e.preventDefault();
+        paymentForm.post(route('admin.members.payments.store', member.id), {
+            preserveScroll: true,
+            onSuccess: () => paymentForm.reset('amount', 'method', 'notes', 'plan_id'),
+        });
+    };
 
     return (
         <>
@@ -118,6 +150,141 @@ export default function MemberShow({ member, membership, payments, transactions 
                             ))}
                         </dl>
                     </div>
+                </section>
+
+                <section className="grid gap-6 lg:grid-cols-2">
+                    <form onSubmit={saveMembership} className="card-surface p-6 space-y-4">
+                        <div>
+                            <h2 className="font-display text-lg font-bold">Aktivasi Membership</h2>
+                            <p className="mt-1 text-xs text-slate">Atur status aktif dan masa berlaku member secara manual.</p>
+                        </div>
+
+                        <div>
+                            <label className="label" htmlFor="membership-status">Status</label>
+                            <select
+                                id="membership-status"
+                                className="input"
+                                value={membershipForm.data.status}
+                                onChange={(e) => membershipForm.setData('status', e.target.value)}
+                            >
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
+                            </select>
+                            <InputError message={membershipForm.errors.status} className="mt-1" />
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label className="label" htmlFor="membership-started">Tanggal Aktif</label>
+                                <input
+                                    id="membership-started"
+                                    type="date"
+                                    className="input"
+                                    value={membershipForm.data.started_at}
+                                    onChange={(e) => membershipForm.setData('started_at', e.target.value)}
+                                />
+                                <InputError message={membershipForm.errors.started_at} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="membership-expires">Aktif Sampai</label>
+                                <input
+                                    id="membership-expires"
+                                    type="date"
+                                    className="input"
+                                    value={membershipForm.data.expires_at}
+                                    onChange={(e) => membershipForm.setData('expires_at', e.target.value)}
+                                />
+                                <InputError message={membershipForm.errors.expires_at} className="mt-1" />
+                            </div>
+                        </div>
+
+                        <button type="submit" disabled={membershipForm.processing} className="btn-ink">
+                            {membershipForm.processing ? 'Menyimpan…' : 'Simpan Membership'}
+                        </button>
+                    </form>
+
+                    <form onSubmit={saveManualPayment} className="card-surface p-6 space-y-4">
+                        <div>
+                            <h2 className="font-display text-lg font-bold">Riwayat Pembayaran Manual</h2>
+                            <p className="mt-1 text-xs text-slate">
+                                Catat pembayaran yang diterima di luar sistem. Pilih paket hanya bila pembayaran ini
+                                sekaligus memperpanjang masa aktif member.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label className="label" htmlFor="payment-date">Tanggal Bayar *</label>
+                                <input
+                                    id="payment-date"
+                                    type="date"
+                                    className="input"
+                                    value={paymentForm.data.paid_at}
+                                    onChange={(e) => paymentForm.setData('paid_at', e.target.value)}
+                                />
+                                <InputError message={paymentForm.errors.paid_at} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="payment-amount">Nominal (Rp) *</label>
+                                <input
+                                    id="payment-amount"
+                                    type="number"
+                                    min="0"
+                                    step="1000"
+                                    className="input"
+                                    value={paymentForm.data.amount}
+                                    onChange={(e) => paymentForm.setData('amount', e.target.value)}
+                                    placeholder="150000"
+                                />
+                                <InputError message={paymentForm.errors.amount} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="payment-method">Metode</label>
+                                <input
+                                    id="payment-method"
+                                    className="input"
+                                    value={paymentForm.data.method}
+                                    onChange={(e) => paymentForm.setData('method', e.target.value)}
+                                    placeholder="Transfer Bank / Cash"
+                                />
+                                <InputError message={paymentForm.errors.method} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="payment-plan">Paket (opsional)</label>
+                                <select
+                                    id="payment-plan"
+                                    className="input"
+                                    value={paymentForm.data.plan_id}
+                                    onChange={(e) => paymentForm.setData('plan_id', e.target.value)}
+                                >
+                                    <option value="">— Tanpa paket (riwayat saja) —</option>
+                                    {plans.map((plan) => (
+                                        <option key={plan.id} value={plan.id}>
+                                            {plan.name} · {formatRupiah(plan.price)}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={paymentForm.errors.plan_id} className="mt-1" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="label" htmlFor="payment-notes">Catatan</label>
+                            <textarea
+                                id="payment-notes"
+                                rows={2}
+                                className="input"
+                                value={paymentForm.data.notes}
+                                onChange={(e) => paymentForm.setData('notes', e.target.value)}
+                                placeholder="Catatan pembayaran (opsional)"
+                            />
+                            <InputError message={paymentForm.errors.notes} className="mt-1" />
+                        </div>
+
+                        <button type="submit" disabled={paymentForm.processing} className="btn-gold">
+                            {paymentForm.processing ? 'Menyimpan…' : 'Catat Pembayaran'}
+                        </button>
+                    </form>
                 </section>
 
                 {member.hobbies && member.hobbies.length > 0 && (

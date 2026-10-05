@@ -19,6 +19,12 @@ class PasswordOtpService
     /** Tujuan OTP: konfirmasi ganti password di halaman akun member. */
     public const PURPOSE_CHANGE = 'change_password';
 
+    /** Tujuan OTP: verifikasi email calon partner setelah registrasi. */
+    public const PURPOSE_PARTNER_REGISTER = 'partner_register';
+
+    /** Tujuan OTP: partner menyetujui linking ke calon member saat registrasi member. */
+    public const PURPOSE_PARTNER_LINK = 'partner_link';
+
     /** Masa berlaku kode OTP dalam menit. */
     public const TTL_MINUTES = 10;
 

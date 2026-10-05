@@ -52,7 +52,7 @@ class Transaction extends Model
             return null;
         }
 
-        return '/storage/' . $this->proof_path;
+        return '/storage/'.$this->proof_path;
     }
 
     public function getProofUrlAttribute(): ?string

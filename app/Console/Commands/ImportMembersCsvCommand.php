@@ -264,6 +264,7 @@ class ImportMembersCsvCommand extends Command
 
         try {
             $dt = Carbon::createFromFormat('!m/d/Y', sprintf('%02d/%02d/%04d', $parts[0], $parts[1], $yearInt));
+
             return $dt;
         } catch (\Throwable) {
             return null;

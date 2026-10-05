@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'nickname', 'email', 'password', 'otp_code', 'otp_expires_at', 'otp_purpose', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'avatar_changes_count', 'member_code', 'card_token', 'notification_settings', 'gender', 'religion', 'birth_date', 'birth_place', 'hobbies', 'marital_status', 'place_of_worship_address', 'city', 'address', 'district', 'business_fields', 'business_address', 'business_district', 'business_city', 'industry', 'businesses', 'is_household'])]
+#[Fillable(['name', 'nickname', 'email', 'password', 'otp_code', 'otp_expires_at', 'otp_purpose', 'role', 'approval_status', 'must_change_password', 'phone', 'whatsapp', 'company', 'avatar', 'avatar_changes_count', 'member_code', 'card_token', 'master_identity_id', 'notification_settings', 'gender', 'religion', 'birth_date', 'birth_place', 'hobbies', 'marital_status', 'place_of_worship_address', 'city', 'address', 'district', 'business_fields', 'business_address', 'business_district', 'business_city', 'industry', 'businesses', 'is_household'])]
 #[Hidden(['password', 'remember_token', 'otp_code', 'login_token'])]
 class User extends Authenticatable
 {
@@ -106,6 +107,17 @@ class User extends Authenticatable
     public function partner(): HasOne
     {
         return $this->hasOne(Partner::class, 'user_id');
+    }
+
+    /** 1 member boleh terhubung ke banyak partner. */
+    public function linkedPartners(): HasMany
+    {
+        return $this->hasMany(Partner::class, 'member_user_id');
+    }
+
+    public function masterIdentity(): BelongsTo
+    {
+        return $this->belongsTo(MasterIdentity::class, 'master_identity_id');
     }
 
     public function scans(): HasMany

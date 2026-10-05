@@ -33,6 +33,8 @@ export default function Register() {
         business_city: '',
         industry: [],
         hobbies: [],
+        is_partner: 'no',
+        partner_email: '',
         // Partner specific
         pic_name: '',
         pic_phone: '',
@@ -53,6 +55,11 @@ export default function Register() {
     const [hobbySearch, setHobbySearch] = useState('');
     const [customHobbyInput, setCustomHobbyInput] = useState('');
     const [businessFieldInput, setBusinessFieldInput] = useState('');
+    // Linking partner: 'idle' | 'sending' | 'sent' | 'verifying' | 'verified'
+    const [linkState, setLinkState] = useState('idle');
+    const [linkInfo, setLinkInfo] = useState('');
+    const [linkError, setLinkError] = useState('');
+    const [partnerOtp, setPartnerOtp] = useState('');
 
     const toggleHobby = (hobby) => {
         if (data.hobbies.includes(hobby)) {
@@ -109,6 +116,84 @@ export default function Register() {
         h.toLowerCase().includes(hobbySearch.toLowerCase())
     );
 
+    const readCsrfToken = () => {
+        const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : '';
+    };
+
+    const postJson = async (url, body) => {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-XSRF-TOKEN': readCsrfToken(),
+            },
+            body: JSON.stringify(body),
+        });
+        const payload = await res.json().catch(() => ({}));
+        return { ok: res.ok, payload };
+    };
+
+    const requestPartnerOtp = async () => {
+        const email = (data.partner_email || '').trim();
+        if (!email) {
+            setLinkError('Isi email partner Anda terlebih dahulu.');
+            return;
+        }
+
+        setLinkError('');
+        setLinkInfo('');
+        setLinkState('sending');
+
+        try {
+            const { ok, payload } = await postJson(route('register.partner-link.request'), {
+                partner_email: email,
+            });
+
+            if (!ok) {
+                setLinkError(payload?.errors?.partner_email?.[0] || payload?.message || 'Gagal mengirim OTP.');
+                setLinkState('idle');
+                return;
+            }
+
+            setLinkState('sent');
+            setLinkInfo(`Kode OTP 6 digit dikirim ke ${payload.email || email}. Mintalah kode tersebut pada partner Anda.`);
+        } catch {
+            setLinkError('Tidak bisa terhubung ke server. Coba lagi.');
+            setLinkState('idle');
+        }
+    };
+
+    const verifyPartnerOtp = async () => {
+        if (!partnerOtp || partnerOtp.length !== 6) {
+            setLinkError('Masukkan 6 digit kode OTP.');
+            return;
+        }
+
+        setLinkError('');
+        setLinkState('verifying');
+
+        try {
+            const { ok, payload } = await postJson(route('register.partner-link.verify'), {
+                otp: partnerOtp,
+            });
+
+            if (!ok) {
+                setLinkError(payload?.errors?.otp?.[0] || payload?.message || 'Kode OTP salah.');
+                setLinkState('sent');
+                return;
+            }
+
+            setLinkState('verified');
+            setLinkInfo(`Partner terverifikasi: ${payload.partner}. Link akan dibuat otomatis setelah pendaftaran disimpan.`);
+        } catch {
+            setLinkError('Tidak bisa terhubung ke server. Coba lagi.');
+            setLinkState('sent');
+        }
+    };
+
     const submit = (e) => {
         e.preventDefault();
         if (data.role === 'member' && !data.is_household) {
@@ -127,6 +212,10 @@ export default function Register() {
                 alert('Silakan pilih minimal 1 bidang industri.');
                 return;
             }
+        }
+        if (data.role === 'member' && data.is_partner === 'yes' && linkState !== 'verified') {
+            alert('Verifikasi OTP ke email partner terlebih dahulu, atau ubah pilihan menjadi "Bukan Partner".');
+            return;
         }
         post(route('register'));
     };
@@ -1164,6 +1253,125 @@ export default function Register() {
                             )}
                         </section>
                     </div>
+                )}
+
+                {/* Are you a Partner? */}
+                {data.role === 'member' && (
+                    <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
+                        <div className="border-b border-ink/10 pb-3">
+                            <h2 className="font-display text-base font-bold text-ink">Are you a Partner?</h2>
+                            <p className="text-xs text-slate mt-0.5">
+                                Sudah punya akun Mitra Usaha KBKB? Hubungkan akun partner Anda dengan keanggotaan ini.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setData('is_partner', 'no');
+                                    setLinkState('idle');
+                                    setLinkInfo('');
+                                    setLinkError('');
+                                    setPartnerOtp('');
+                                }}
+                                className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-all ${
+                                    data.is_partner !== 'yes'
+                                        ? 'border-gold bg-gold/10 text-gold-deep ring-2 ring-gold/40'
+                                        : 'border-ink/15 bg-white/70 text-slate hover:bg-ink/5'
+                                }`}
+                            >
+                                Bukan Partner
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setData('is_partner', 'yes')}
+                                className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-all ${
+                                    data.is_partner === 'yes'
+                                        ? 'border-gold bg-gold/10 text-gold-deep ring-2 ring-gold/40'
+                                        : 'border-ink/15 bg-white/70 text-slate hover:bg-ink/5'
+                                }`}
+                            >
+                                Ya, Partner KBKB
+                            </button>
+                        </div>
+
+                        {data.is_partner === 'yes' && (
+                            <div className="space-y-3">
+                                <div>
+                                    <InputLabel htmlFor="partner_email" value="Email partner *" />
+                                    <TextInput
+                                        id="partner_email"
+                                        type="email"
+                                        value={data.partner_email}
+                                        disabled={linkState === 'verified'}
+                                        onChange={(e) => {
+                                            setData('partner_email', e.target.value);
+                                            if (linkState !== 'idle') {
+                                                setLinkState('idle');
+                                                setLinkInfo('');
+                                                setLinkError('');
+                                                setPartnerOtp('');
+                                            }
+                                        }}
+                                        className="mt-1 block w-full"
+                                        placeholder="email partner yang terdaftar di KBKB"
+                                    />
+                                </div>
+
+                                {linkState !== 'verified' && linkState !== 'sent' && (
+                                    <button
+                                        type="button"
+                                        onClick={requestPartnerOtp}
+                                        disabled={linkState === 'sending'}
+                                        className="rounded-xl border border-gold/50 bg-gold/15 px-4 py-2 text-sm font-semibold text-gold-deep hover:bg-gold/25 disabled:opacity-50"
+                                    >
+                                        {linkState === 'sending' ? 'Mengirim OTP…' : 'Kirim OTP ke Email Partner'}
+                                    </button>
+                                )}
+
+                                {linkState === 'sent' && (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <TextInput
+                                            inputMode="numeric"
+                                            autoComplete="one-time-code"
+                                            maxLength={6}
+                                            value={partnerOtp}
+                                            onChange={(e) => setPartnerOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                            className="block w-40 text-center font-mono tracking-[0.35em]"
+                                            placeholder="000000"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={verifyPartnerOtp}
+                                            className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-ink/90"
+                                        >
+                                            Verifikasi OTP
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={requestPartnerOtp}
+                                            disabled={linkState === 'sending'}
+                                            className="text-sm font-semibold text-gold-deep hover:underline disabled:opacity-50"
+                                        >
+                                            Kirim ulang
+                                        </button>
+                                    </div>
+                                )}
+
+                                {linkState === 'verified' && (
+                                    <div className="rounded-xl border border-sage/40 bg-sage/15 px-4 py-3 text-sm font-medium text-ink">
+                                        {linkInfo || 'Partner terverifikasi.'}
+                                    </div>
+                                )}
+
+                                {linkInfo && linkState !== 'verified' && (
+                                    <p className="text-xs text-slate">{linkInfo}</p>
+                                )}
+                                <InputError message={linkError || errors.partner_email} className="mt-1" />
+                            </div>
+                        )}
+                    </section>
                 )}
 
                 {/* Notifikasi Sistem & Submit */}

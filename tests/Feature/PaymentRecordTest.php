@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\MembershipDiscountCode;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Models\User;
@@ -23,8 +22,6 @@ class PaymentRecordTest extends TestCase
     {
         parent::setUp();
 
-        config(['services.doku.admin_fee' => 0]);
-
         $this->member = User::factory()->create(['role' => User::ROLE_MEMBER]);
         $this->admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $this->plan = MembershipPlan::factory()->create([
@@ -35,118 +32,99 @@ class PaymentRecordTest extends TestCase
         ]);
     }
 
-    private function discountCode(int $percent = 100): MembershipDiscountCode
+    public function test_admin_manual_payment_with_plan_extends_membership(): void
     {
-        return MembershipDiscountCode::create([
-            'code' => 'PROMO'.$percent,
-            'name' => 'Promo '.$percent.'%',
-            'discount_type' => MembershipDiscountCode::TYPE_PERCENT,
-            'discount_value' => $percent,
-            'is_active' => true,
-        ]);
-    }
+        $this->actingAs($this->admin)->post(route('admin.members.payments.store', $this->member), [
+            'paid_at' => '2026-10-01',
+            'amount' => 75000,
+            'method' => 'Transfer Bank',
+            'notes' => 'Bayar tunai di kantor.',
+            'plan_id' => $this->plan->id,
+        ])->assertRedirect();
 
-    public function test_manual_free_promo_checkout_records_zero_amount_payment(): void
-    {
-        $code = $this->discountCode(100);
-
-        $this->actingAs($this->member)
-            ->postJson(route('member.billing.manual.checkout'), [
-                'plan_id' => $this->plan->id,
-                'promo_code' => $code->code,
-            ])
-            ->assertOk()
-            ->assertJsonPath('is_free', true)
-            ->assertJsonPath('amount', 0);
-
-        $payment = Payment::latest('id')->first();
+        $payment = Payment::query()->where('member_id', $this->member->id)->first();
 
         $this->assertNotNull($payment);
-        $this->assertSame($this->member->id, $payment->member_id);
-        $this->assertSame(0, (int) $payment->amount);
         $this->assertSame(Payment::STATUS_APPROVED, $payment->status);
-        $this->assertStringContainsString($code->code, (string) $payment->notes);
-        $this->assertStringContainsString('Harga Paket: Rp100.000', (string) $payment->notes);
-        $this->assertStringContainsString('Total Dibayar: Rp0', (string) $payment->notes);
+        $this->assertSame(75000, (int) $payment->amount);
+        $this->assertSame('Transfer Bank', $payment->method);
+        $this->assertSame('2026-10-01', $payment->paid_at->toDateString());
+        $this->assertStringContainsString('Bayar tunai di kantor.', (string) $payment->notes);
+        $this->assertSame($this->plan->id, $payment->plan_id);
 
-        $this->assertTrue($this->member->fresh()->hasActiveMembership());
-        $this->assertSame(1, $code->fresh()->used_count);
+        $this->member->load('membership');
+        $this->assertTrue($this->member->hasActiveMembership());
     }
 
-    public function test_doku_free_promo_checkout_records_zero_amount_payment(): void
+    public function test_admin_manual_payment_without_plan_is_history_only(): void
     {
-        $code = $this->discountCode(100);
+        $this->actingAs($this->admin)->post(route('admin.members.payments.store', $this->member), [
+            'paid_at' => '2026-09-20',
+            'amount' => 250000,
+            'method' => 'Cash',
+            'notes' => 'Pembayaran offline tanpa paket.',
+        ])->assertRedirect();
 
-        $this->actingAs($this->member)
-            ->postJson(route('member.billing.doku.checkout'), [
-                'plan_id' => $this->plan->id,
-                'promo_code' => $code->code,
-            ])
-            ->assertOk()
-            ->assertJsonPath('type', 'free_promo')
-            ->assertJsonPath('amount', 0);
-
-        $payment = Payment::latest('id')->first();
+        $payment = Payment::query()->where('member_id', $this->member->id)->first();
 
         $this->assertNotNull($payment);
-        $this->assertSame(0, (int) $payment->amount);
         $this->assertSame(Payment::STATUS_APPROVED, $payment->status);
-        $this->assertStringContainsString($code->code, (string) $payment->notes);
+        $this->assertNull($payment->plan_id);
+        $this->assertSame(250000, (int) $payment->amount);
+        $this->assertSame('Cash', $payment->method);
+        $this->assertSame('2026-09-20', $payment->paid_at->toDateString());
 
-        $this->assertTrue($this->member->fresh()->hasActiveMembership());
-        $this->assertSame(1, $code->fresh()->used_count);
+        // Riwayat manual tanpa paket tidak mengubah masa aktif membership.
+        $this->member->load('membership');
+        $this->assertFalse($this->member->hasActiveMembership());
     }
 
-    public function test_zero_price_plan_without_promo_still_records_payment(): void
+    public function test_admin_manual_payment_requires_amount_and_paid_date(): void
     {
-        $freePlan = MembershipPlan::factory()->create([
-            'name' => 'Gratis',
-            'duration_months' => 6,
-            'price' => 0,
-            'is_active' => true,
-        ]);
-
-        $this->actingAs($this->member)
-            ->postJson(route('member.billing.manual.checkout'), ['plan_id' => $freePlan->id])
-            ->assertOk()
-            ->assertJsonPath('is_free', true)
-            ->assertJsonPath('amount', 0);
-
-        $payment = Payment::latest('id')->first();
-
-        $this->assertNotNull($payment);
-        $this->assertSame(0, (int) $payment->amount);
-        $this->assertSame(Payment::STATUS_APPROVED, $payment->status);
-        $this->assertStringContainsString('Total Dibayar: Rp0', (string) $payment->notes);
-        $this->assertStringContainsString('Aktivasi Membership Gratis (Rp0)', (string) $payment->notes);
-    }
-
-    public function test_partial_promo_discount_note_survives_admin_approval(): void
-    {
-        $code = $this->discountCode(50);
-
-        $this->actingAs($this->member)
-            ->postJson(route('member.billing.manual.checkout'), [
-                'plan_id' => $this->plan->id,
-                'promo_code' => $code->code,
-            ])
-            ->assertOk()
-            ->assertJsonPath('is_free', false)
-            ->assertJsonPath('amount', 50000);
-
-        $payment = Payment::latest('id')->first();
-        $this->assertNotNull($payment);
-        $this->assertSame(Payment::STATUS_PENDING, $payment->status);
-        $this->assertStringContainsString($code->code, (string) $payment->notes);
-
         $this->actingAs($this->admin)
-            ->put(route('admin.payments.approve', $payment->id), ['notes' => 'Bukti transfer valid'])
+            ->post(route('admin.members.payments.store', $this->member), [])
+            ->assertSessionHasErrors(['paid_at', 'amount']);
+    }
+
+    public function test_admin_can_activate_member_manually_with_status_and_dates(): void
+    {
+        $this->actingAs($this->admin)
+            ->put(route('admin.members.membership', $this->member), [
+                'status' => 'active',
+                'started_at' => '2026-10-01',
+                'expires_at' => '2027-09-30',
+            ])
             ->assertRedirect();
 
-        $payment->refresh();
-        $this->assertSame(Payment::STATUS_APPROVED, $payment->status);
-        // Keterangan promo tidak boleh hilang saat approve.
-        $this->assertStringContainsString($code->code, (string) $payment->notes);
-        $this->assertStringContainsString('Bukti transfer valid', (string) $payment->notes);
+        $this->member->load('membership');
+
+        $this->assertTrue($this->member->hasActiveMembership());
+        $this->assertSame('active', $this->member->membership->status);
+        $this->assertSame('2026-10-01', $this->member->membership->started_at->toDateString());
+        $this->assertSame('2027-09-30', $this->member->membership->expires_at->toDateString());
+
+        // Nonaktifkan lagi lewat endpoint yang sama.
+        $this->actingAs($this->admin)
+            ->put(route('admin.members.membership', $this->member), [
+                'status' => 'inactive',
+                'started_at' => '2026-10-01',
+                'expires_at' => '2027-09-30',
+            ])
+            ->assertRedirect();
+
+        $this->member->load('membership');
+        $this->assertSame('inactive', $this->member->membership->status);
+        $this->assertFalse($this->member->hasActiveMembership());
+    }
+
+    public function test_admin_membership_update_validates_dates(): void
+    {
+        $this->actingAs($this->admin)
+            ->put(route('admin.members.membership', $this->member), [
+                'status' => 'bogus',
+                'started_at' => '2027-01-01',
+                'expires_at' => '2026-01-01',
+            ])
+            ->assertSessionHasErrors(['status', 'expires_at']);
     }
 }

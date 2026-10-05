@@ -1,7 +1,7 @@
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link } from '@inertiajs/react';
 
-export default function ThankYou() {
+export default function ThankYou({ status }) {
     return (
         <GuestLayout>
             <Head title="Registration Complete" />
@@ -17,6 +17,12 @@ export default function ThankYou() {
                 <p className="mt-2 text-sm text-slate">
                     Your partner registration has been submitted successfully. Our team will review your application and get back to you soon.
                 </p>
+
+                {status && (
+                    <div className="mx-auto mt-4 max-w-md rounded-xl border border-sage/40 bg-sage/15 px-4 py-3 text-sm font-medium text-ink">
+                        {status}
+                    </div>
+                )}
 
                 <div className="mt-8">
                     <Link

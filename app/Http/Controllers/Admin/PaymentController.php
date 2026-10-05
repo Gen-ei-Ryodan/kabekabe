@@ -132,6 +132,56 @@ class PaymentController extends Controller
             ->with('success', 'Payment recorded and membership updated.');
     }
 
+    /**
+     * Riwayat pembayaran manual oleh admin dari halaman detail member.
+     * Dengan paket  -> perpanjang membership; tanpa paket -> catatan riwayat saja.
+     */
+    public function storeManual(Request $request, User $member): RedirectResponse
+    {
+        abort_unless($member->isMember(), 404);
+
+        $validated = $request->validate([
+            'paid_at' => ['required', 'date'],
+            'amount' => ['required', 'integer', 'min:0'],
+            'method' => ['nullable', 'string', 'max:50'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'plan_id' => ['nullable', 'integer', 'exists:membership_plans,id'],
+        ]);
+
+        $plan = ! empty($validated['plan_id']) ? MembershipPlan::query()->find($validated['plan_id']) : null;
+
+        DB::transaction(function () use ($member, $validated, $plan, $request) {
+            if ($plan) {
+                $payment = $this->payments->createPending($member, $plan);
+
+                $payment->forceFill([
+                    'amount' => $validated['amount'],
+                    'paid_at' => $validated['paid_at'],
+                    'method' => $validated['method'] ?? null,
+                ])->save();
+
+                $this->payments->approve($payment, $request->user(), $validated['notes'] ?? null);
+
+                return;
+            }
+
+            $member->payments()->create([
+                'invoice_number' => $this->payments->nextInvoiceNumber(),
+                'plan_id' => null,
+                'period_months' => 0,
+                'amount' => $validated['amount'],
+                'status' => Payment::STATUS_APPROVED,
+                'paid_at' => $validated['paid_at'],
+                'method' => $validated['method'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'approved_by' => $request->user()->id,
+                'approved_at' => now(),
+            ]);
+        });
+
+        return back()->with('success', "Pembayaran manual untuk {$member->name} tercatat.");
+    }
+
     public function importTemplate(ImportTemplateDownloader $templates): StreamedResponse
     {
         return $templates->download(

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\MemberScan;
+use App\Models\Promo;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\TransactionService;
@@ -64,7 +65,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response|\Illuminate\Http\RedirectResponse
+    public function create(Request $request): Response|RedirectResponse
     {
         $partner = auth()->user()->partner;
 
@@ -179,7 +180,7 @@ class TransactionController extends Controller
 
         $promo = null;
         if ($request->filled('promo_id')) {
-            $promo = \App\Models\Promo::query()->where('partner_id', $partner->id)->whereKey($request->integer('promo_id'))->firstOrFail();
+            $promo = Promo::query()->where('partner_id', $partner->id)->whereKey($request->integer('promo_id'))->firstOrFail();
         }
 
         $scan = $request->filled('scan_id')

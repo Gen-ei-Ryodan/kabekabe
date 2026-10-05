@@ -11,13 +11,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['user_id', 'member_user_id', 'name', 'trade_name', 'slug', 'category', 'description', 'address', 'employee_count', 'established_since', 'is_member', 'member_id_number', 'member_name', 'member_birth_date', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'pic_name', 'pic_phone', 'district', 'city', 'industry', 'joined_at'])]
+#[Fillable(['user_id', 'member_user_id', 'master_identity_id', 'name', 'trade_name', 'slug', 'category', 'description', 'address', 'employee_count', 'established_since', 'is_member', 'member_id_number', 'member_name', 'member_birth_date', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'pic_name', 'pic_phone', 'district', 'city', 'industry', 'joined_at'])]
 #[Appends('logo_url')]
 class Partner extends Model
 {
     use HasFactory;
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
 
     protected function casts(): array
@@ -41,6 +42,16 @@ class Partner extends Model
         return $this->belongsTo(User::class, 'member_user_id');
     }
 
+    public function masterIdentity(): BelongsTo
+    {
+        return $this->belongsTo(MasterIdentity::class, 'master_identity_id');
+    }
+
+    public function isLinkedToMember(): bool
+    {
+        return $this->member_user_id !== null;
+    }
+
     public function promos(): HasMany
     {
         return $this->hasMany(Promo::class, 'partner_id');
@@ -62,7 +73,7 @@ class Partner extends Model
             return null;
         }
 
-        return '/storage/' . $this->logo;
+        return '/storage/'.$this->logo;
     }
 
     public function getLogoUrlAttribute(): ?string
@@ -90,6 +101,6 @@ class Partner extends Model
 
     public static function slugFor(string $name): string
     {
-        return Str::slug($name) . '-' . Str::lower(Str::random(4));
+        return Str::slug($name).'-'.Str::lower(Str::random(4));
     }
 }

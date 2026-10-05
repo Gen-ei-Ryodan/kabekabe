@@ -13,12 +13,17 @@ use Illuminate\Support\Str;
 class FaspayService
 {
     public const CHANNEL_VIRTUAL_ACCOUNT = 'va';
+
     public const CHANNEL_EWALLET = 'ewallet';
+
     public const CHANNEL_QRIS = 'qris';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_EXPIRED = 'expired';
 
     public function __construct(
@@ -28,7 +33,7 @@ class FaspayService
 
     public function createInvoice(Payment $payment, string $channel = self::CHANNEL_QRIS): array
     {
-        $trxId = 'FASPAY-' . strtoupper(Str::random(12));
+        $trxId = 'FASPAY-'.strtoupper(Str::random(12));
 
         return [
             'success' => true,

@@ -12,7 +12,6 @@ const NAV = [
     { nameKey: 'nav.history', route: 'member.history.index' },
     { nameKey: 'nav.promoPartner', route: 'member.partners.index' },
     { nameKey: 'nav.notifications', route: 'member.notifications.index', badge: true },
-    { nameKey: 'nav.billing', route: 'member.billing.index' },
     { nameKey: 'nav.profile', route: 'member.account.edit' },
 ];
 

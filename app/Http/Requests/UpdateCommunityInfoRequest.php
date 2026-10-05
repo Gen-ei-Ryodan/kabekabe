@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\CommunityInfo;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCommunityInfoRequest extends FormRequest

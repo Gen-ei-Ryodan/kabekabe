@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CommunityController as AdminCommunityController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\HomeBannerController as AdminHomeBannerController;
+use App\Http\Controllers\Admin\LoginLogController;
 use App\Http\Controllers\Admin\MemberController as AdminMemberController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\PartnerController as AdminPartnerController;
@@ -12,15 +13,15 @@ use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Member\AccountController;
 use App\Http\Controllers\Member\AgendaController;
-use App\Http\Controllers\Member\BillingController;
 use App\Http\Controllers\Member\DokuPaymentController;
 use App\Http\Controllers\Member\HistoryController;
 use App\Http\Controllers\Member\HomeController;
-use App\Http\Controllers\Member\ManualPaymentController;
 use App\Http\Controllers\Member\NotificationController as MemberNotificationController;
 use App\Http\Controllers\Member\PartnerController as MemberPartnerController;
 use App\Http\Controllers\Member\PromoController as MemberPromoController;
 use App\Http\Controllers\Partner\RegisterController as PartnerRegisterController;
+use App\Http\Controllers\Partner\VerifyOtpController as PartnerVerifyOtpController;
+use App\Http\Controllers\Vendor\BillingController;
 use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Vendor\PromoController as VendorPromoController;
 use App\Http\Controllers\Vendor\ReportController as VendorReportController;
@@ -73,13 +74,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('throttle:5,1')
             ->name('account.password.send-otp');
 
-        Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
-        Route::post('/billing/manual/checkout', [ManualPaymentController::class, 'checkout'])->name('billing.manual.checkout');
-        Route::post('/billing/manual/payments/{payment}/proof', [ManualPaymentController::class, 'uploadProof'])->name('billing.manual.proof');
-        Route::post('/billing/manual/payments/{payment}/cancel', [ManualPaymentController::class, 'cancel'])->name('billing.manual.cancel');
-        Route::post('/billing/doku/check-promo', [DokuPaymentController::class, 'checkPromo'])->name('billing.doku.promo');
-        Route::post('/billing/doku/checkout', [DokuPaymentController::class, 'checkout'])->name('billing.doku.checkout');
-        Route::get('/billing/doku/{payment}/status', [DokuPaymentController::class, 'checkStatus'])->name('billing.doku.status');
+        // Billing & pembayaran online sisi member dinonaktifkan total;
+        // aktivasi membership dilakukan manual oleh admin.
     });
 
     // ---------- ADMIN ----------
@@ -99,6 +95,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/members/{member}/approve', [AdminMemberController::class, 'approve'])->name('members.approve');
         Route::put('/members/{member}/reject', [AdminMemberController::class, 'reject'])->name('members.reject');
         Route::put('/members/{member}/status', [AdminMemberController::class, 'toggleStatus'])->name('members.toggle');
+        // Aktivasi manual member + pencatatan riwayat pembayaran manual admin.
+        Route::put('/members/{member}/membership', [AdminMemberController::class, 'updateMembership'])->name('members.membership');
+        Route::post('/members/{member}/payments', [AdminPaymentController::class, 'storeManual'])->name('members.payments.store');
         Route::delete('/members/{member}', [AdminMemberController::class, 'destroy'])->name('members.destroy');
 
         Route::get('/partners', [AdminPartnerController::class, 'index'])->name('partners.index');
@@ -161,7 +160,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
         Route::get('/transactions/{transaction}', [AdminTransactionController::class, 'show'])->name('transactions.show');
 
-        Route::get('/login-logs', [App\Http\Controllers\Admin\LoginLogController::class, 'index'])->name('login-logs.index');
+        Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login-logs.index');
 
         Route::get('/reports/export', [AdminReportController::class, 'export'])->name('reports.export');
         Route::get('/reports', AdminReportController::class)->name('reports.index');
@@ -190,9 +189,9 @@ Route::middleware(['auth:partner', 'verified'])->group(function () {
 
         Route::get('/reports', VendorReportController::class)->name('reports.index');
 
-        Route::get('/billing', [App\Http\Controllers\Vendor\BillingController::class, 'index'])->name('billing.index');
-        Route::post('/billing/ads', [App\Http\Controllers\Vendor\BillingController::class, 'storeAd'])->name('billing.ads.store');
-        Route::post('/billing/ads/{ad}/pay', [App\Http\Controllers\Vendor\BillingController::class, 'payAd'])->name('billing.ads.pay');
+        Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing/ads', [BillingController::class, 'storeAd'])->name('billing.ads.store');
+        Route::post('/billing/ads/{ad}/pay', [BillingController::class, 'payAd'])->name('billing.ads.pay');
     });
 });
 
@@ -201,7 +200,12 @@ Route::post('/api/doku/notifications', [DokuPaymentController::class, 'notificat
 
 // ---------- PARTNER REGISTRATION (Public) ----------
 Route::get('/partner/register', [PartnerRegisterController::class, 'show'])->name('partner.register.show');
-Route::post('/partner/register', [PartnerRegisterController::class, 'store'])->name('partner.register.store');
+Route::post('/partner/register', [PartnerRegisterController::class, 'store'])->middleware('throttle:5,1')->name('partner.register.store');
 Route::get('/partner/thank-you', [PartnerRegisterController::class, 'thankyou'])->name('partner.register.thankyou');
+
+// Verifikasi OTP email PIC partner sebelum menunggu approval admin.
+Route::get('/partner/verify-otp', [PartnerVerifyOtpController::class, 'show'])->name('partner.otp.show');
+Route::post('/partner/verify-otp', [PartnerVerifyOtpController::class, 'store'])->middleware('throttle:10,1')->name('partner.otp.verify');
+Route::post('/partner/resend-otp', [PartnerVerifyOtpController::class, 'resend'])->middleware('throttle:3,1')->name('partner.otp.resend');
 
 require __DIR__.'/auth.php';

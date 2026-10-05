@@ -73,8 +73,13 @@ class MemberScan extends Model
 
     public function getExpiresInHumanAttribute(): ?string
     {
-        if (! $this->expires_at) return null;
-        if ($this->isExpired()) return 'Expired';
+        if (! $this->expires_at) {
+            return null;
+        }
+        if ($this->isExpired()) {
+            return 'Expired';
+        }
+
         return $this->expires_at->diffForHumans();
     }
 }

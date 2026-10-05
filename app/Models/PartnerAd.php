@@ -27,11 +27,15 @@ class PartnerAd extends Model
     use HasFactory;
 
     public const TYPE_POPUP = 'popup';
+
     public const TYPE_BANNER = 'banner';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_APPROVED = 'approved';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_PAID = 'paid';
 
     protected function casts(): array
@@ -61,6 +65,6 @@ class PartnerAd extends Model
             return null;
         }
 
-        return '/storage/' . $this->image_path;
+        return '/storage/'.$this->image_path;
     }
 }

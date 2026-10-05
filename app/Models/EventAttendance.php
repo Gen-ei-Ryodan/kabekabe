@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Appends(['scanned_at_human'])]
 class EventAttendance extends Model
 {
-
     protected function casts(): array
     {
         return [

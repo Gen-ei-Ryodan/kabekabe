@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
-use App\Models\CommunityInfo;
 use App\Models\EventAttendance;
 use App\Models\Payment;
 use App\Models\Transaction;

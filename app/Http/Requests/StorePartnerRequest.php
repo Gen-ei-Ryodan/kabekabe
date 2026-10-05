@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -23,7 +24,7 @@ class StorePartnerRequest extends FormRequest
             'employee_count' => ['nullable', 'integer', 'min:0'],
             'established_since' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('partners', 'email')],
             'address' => ['nullable', 'string', 'max:1000'],
             'district' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
@@ -59,7 +60,13 @@ class StorePartnerRequest extends FormRequest
             'hobbies.*' => ['string', 'max:255'],
             // Vendor Login credentials
             'vendor_name' => ['required', 'string', 'max:255'],
-            'vendor_email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'vendor_email' => [
+                'required',
+                'email',
+                'max:255',
+                // Email boleh sama dengan email Member (uniqueness users hanya per role).
+                Rule::unique('users', 'email')->where('role', User::ROLE_VENDOR),
+            ],
             'vendor_password' => ['required', 'string', Password::defaults(), 'confirmed'],
         ];
     }

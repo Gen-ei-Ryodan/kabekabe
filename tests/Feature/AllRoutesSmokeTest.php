@@ -63,13 +63,15 @@ class AllRoutesSmokeTest extends TestCase
             route('member.partners.show', Partner::first()),
             route('member.history.index'),
             route('member.notifications.index'),
-            route('member.billing.index'),
             route('member.account.edit'),
         ];
 
         foreach ($routes as $url) {
             $this->actingAs($member)->get($url)->assertOk();
         }
+
+        // Billing/payment sisi member dinonaktifkan total.
+        $this->actingAs($member)->get('/member/billing')->assertNotFound();
     }
 
     public function test_all_vendor_routes_respond_ok(): void

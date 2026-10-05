@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\Log;
 class WaBlastService
 {
     public const STATUS_QUEUED = 'queued';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_FAILED = 'failed';
 
     public function __construct(
@@ -67,5 +69,5 @@ class WaBlastService
 
 function StrPreview(string $s, int $len = 60): string
 {
-    return strlen($s) > $len ? substr($s, 0, $len) . '...' : $s;
+    return strlen($s) > $len ? substr($s, 0, $len).'...' : $s;
 }

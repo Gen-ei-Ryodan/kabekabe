@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Partner;
+use App\Models\PartnerAd;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -52,9 +55,9 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
             'pending_approvals' => ($user && $user->isAdmin()) ? [
-                'members' => \App\Models\User::query()->where('role', \App\Models\User::ROLE_MEMBER)->where('approval_status', \App\Models\User::APPROVAL_PENDING)->count(),
-                'partners' => \App\Models\Partner::query()->whereHas('user', fn ($u) => $u->where('approval_status', \App\Models\User::APPROVAL_PENDING))->count(),
-                'paid_ads' => \App\Models\PartnerAd::query()->where('status', 'paid')->count(),
+                'members' => User::query()->where('role', User::ROLE_MEMBER)->where('approval_status', User::APPROVAL_PENDING)->count(),
+                'partners' => Partner::query()->whereHas('user', fn ($u) => $u->where('approval_status', User::APPROVAL_PENDING))->count(),
+                'paid_ads' => PartnerAd::query()->where('status', 'paid')->count(),
             ] : null,
         ];
     }

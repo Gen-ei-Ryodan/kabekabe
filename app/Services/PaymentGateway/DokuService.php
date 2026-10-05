@@ -11,8 +11,11 @@ use Illuminate\Support\Str;
 class DokuService
 {
     private string $clientId;
+
     private string $secretKey;
+
     private string $apiKey;
+
     private string $baseUrl;
 
     public function __construct()
@@ -44,8 +47,8 @@ class DokuService
 
         $lineItems = [
             [
-                'id' => 'PLAN-' . ($payment->plan_id ?? 'SUB'),
-                'name' => 'Langganan Membership KBKB - ' . $planName,
+                'id' => 'PLAN-'.($payment->plan_id ?? 'SUB'),
+                'name' => 'Langganan Membership KBKB - '.$planName,
                 'quantity' => 1,
                 'price' => $planPrice,
             ],
@@ -99,7 +102,7 @@ class DokuService
             $response = Http::withHeaders($headers)
                 ->withBody($jsonBody, 'application/json')
                 ->timeout(15)
-                ->post($this->baseUrl . $targetPath);
+                ->post($this->baseUrl.$targetPath);
 
             $result = $response->json();
 
@@ -126,7 +129,7 @@ class DokuService
                 'details' => $result,
             ];
         } catch (\Throwable $e) {
-            Log::error('DOKU Checkout Exception: ' . $e->getMessage(), [
+            Log::error('DOKU Checkout Exception: '.$e->getMessage(), [
                 'payment_id' => $payment->id,
             ]);
 
@@ -172,7 +175,7 @@ class DokuService
             'virtual_account_info' => [
                 'expired_time' => 60,
                 'reusable_status' => false,
-                'info1' => 'KBKB ' . strtoupper($bank),
+                'info1' => 'KBKB '.strtoupper($bank),
             ],
             'customer' => [
                 'name' => $payment->member?->name ?? 'Member KBKB',
@@ -199,7 +202,7 @@ class DokuService
             $response = Http::withHeaders($headers)
                 ->withBody($jsonBody, 'application/json')
                 ->timeout(15)
-                ->post($this->baseUrl . $targetPath);
+                ->post($this->baseUrl.$targetPath);
 
             $result = $response->json();
 
@@ -244,13 +247,13 @@ class DokuService
     {
         $digest = base64_encode(hash('sha256', $rawJsonBody, true));
 
-        $component = "Client-Id:{$this->clientId}\n" .
-                     "Request-Id:{$requestId}\n" .
-                     "Request-Timestamp:{$timestamp}\n" .
-                     "Request-Target:{$targetPath}\n" .
+        $component = "Client-Id:{$this->clientId}\n".
+                     "Request-Id:{$requestId}\n".
+                     "Request-Timestamp:{$timestamp}\n".
+                     "Request-Target:{$targetPath}\n".
                      "Digest:{$digest}";
 
-        return 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $component, $this->secretKey, true));
+        return 'HMACSHA256='.base64_encode(hash_hmac('sha256', $component, $this->secretKey, true));
     }
 
     /**
@@ -267,6 +270,7 @@ class DokuService
             Log::warning('DOKU notification missing required signature headers', [
                 'headers' => $request->headers->all(),
             ]);
+
             return false;
         }
 
@@ -276,20 +280,21 @@ class DokuService
                 'expected' => $this->clientId,
                 'received' => $clientId,
             ]);
+
             return false;
         }
 
         $rawBody = $request->getContent();
         $digest = base64_encode(hash('sha256', $rawBody, true));
-        $targetPath = '/' . ltrim($request->path(), '/');
+        $targetPath = '/'.ltrim($request->path(), '/');
 
-        $component = "Client-Id:{$this->clientId}\n" .
-                     "Request-Id:{$requestId}\n" .
-                     "Request-Timestamp:{$timestamp}\n" .
-                     "Request-Target:{$targetPath}\n" .
+        $component = "Client-Id:{$this->clientId}\n".
+                     "Request-Id:{$requestId}\n".
+                     "Request-Timestamp:{$timestamp}\n".
+                     "Request-Target:{$targetPath}\n".
                      "Digest:{$digest}";
 
-        $expectedSignature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $component, $this->secretKey, true));
+        $expectedSignature = 'HMACSHA256='.base64_encode(hash_hmac('sha256', $component, $this->secretKey, true));
 
         $isValid = hash_equals($expectedSignature, $receivedSignature);
 
@@ -316,9 +321,9 @@ class DokuService
         $digits = preg_replace('/\D/', '', $phone);
 
         if (str_starts_with($digits, '0')) {
-            $digits = '62' . substr($digits, 1);
+            $digits = '62'.substr($digits, 1);
         } elseif (str_starts_with($digits, '8')) {
-            $digits = '62' . $digits;
+            $digits = '62'.$digits;
         }
 
         if (! str_starts_with($digits, '62') || strlen($digits) < 9 || strlen($digits) > 16) {

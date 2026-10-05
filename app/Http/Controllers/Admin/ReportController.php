@@ -97,7 +97,7 @@ class ReportController extends Controller
     {
         $carbon = Carbon::createFromFormat('Y-m', $month);
 
-        return self::INDONESIAN_MONTHS[(int) $carbon->format('n')] . ' ' . $carbon->format('Y');
+        return self::INDONESIAN_MONTHS[(int) $carbon->format('n')].' '.$carbon->format('Y');
     }
 
     private function transactionsByVendor(string $from, string $to): array
@@ -106,7 +106,7 @@ class ReportController extends Controller
             ->join('partners', 'transactions.partner_id', '=', 'partners.id')
             ->whereDate('transactions.transacted_at', '>=', $from)
             ->whereDate('transactions.transacted_at', '<=', $to)
-            ->selectRaw($this->monthExpr('transactions.transacted_at') . " as month")
+            ->selectRaw($this->monthExpr('transactions.transacted_at').' as month')
             ->selectRaw('partners.name as partner')
             ->selectRaw('COUNT(*) as total_transactions')
             ->selectRaw('COALESCE(SUM(transactions.discount_amount),0) as net_discount')
@@ -131,7 +131,7 @@ class ReportController extends Controller
             ->join('users', 'transactions.member_id', '=', 'users.id')
             ->whereDate('transactions.transacted_at', '>=', $from)
             ->whereDate('transactions.transacted_at', '<=', $to)
-            ->selectRaw($this->monthExpr('transactions.transacted_at') . " as month")
+            ->selectRaw($this->monthExpr('transactions.transacted_at').' as month')
             ->selectRaw('users.name as member')
             ->selectRaw('users.member_code as member_code')
             ->selectRaw('COUNT(*) as total_transactions')
@@ -222,7 +222,7 @@ class ReportController extends Controller
     private function countsPerMonth($query, string $dateColumn, array $months): array
     {
         $counts = $query
-            ->selectRaw($this->monthExpr($dateColumn) . " as month, COUNT(*) as total")
+            ->selectRaw($this->monthExpr($dateColumn).' as month, COUNT(*) as total')
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
@@ -241,7 +241,7 @@ class ReportController extends Controller
             ->join('users', 'memberships.member_id', '=', 'users.id')
             ->where('users.role', User::ROLE_MEMBER)
             ->where('memberships.status', $targetStatus)
-            ->selectRaw($this->monthExpr('memberships.updated_at') . " as month, COUNT(*) as total")
+            ->selectRaw($this->monthExpr('memberships.updated_at').' as month, COUNT(*) as total')
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
@@ -257,7 +257,7 @@ class ReportController extends Controller
             $counts = User::query()
                 ->where('role', User::ROLE_MEMBER)
                 ->where($column, $key)
-                ->selectRaw($this->monthExpr('created_at') . " as month, COUNT(*) as total")
+                ->selectRaw($this->monthExpr('created_at').' as month, COUNT(*) as total')
                 ->groupBy('month')
                 ->pluck('total', 'month')
                 ->toArray();
@@ -315,7 +315,7 @@ class ReportController extends Controller
         $counts = DB::table('event_attendances')
             ->join('users', 'event_attendances.member_id', '=', 'users.id')
             ->where('users.role', User::ROLE_MEMBER)
-            ->selectRaw($this->monthExpr('event_attendances.scanned_at') . " as month, COUNT(*) as total")
+            ->selectRaw($this->monthExpr('event_attendances.scanned_at').' as month, COUNT(*) as total')
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
@@ -360,7 +360,7 @@ class ReportController extends Controller
 
         return $grouped->map(fn ($group, $month) => [
             'month' => (int) $month,
-            'month_label' => self::INDONESIAN_MONTHS[(int) $month] ?? 'Bulan ' . $month,
+            'month_label' => self::INDONESIAN_MONTHS[(int) $month] ?? 'Bulan '.$month,
             'members' => $group->sortBy('day')->values(),
         ])->values()->toArray();
     }
@@ -394,7 +394,7 @@ class ReportController extends Controller
         $filename = "laporan-transaksi-{$from}-sd-{$to}.xlsx";
 
         return response()->streamDownload(function () use ($transactions): void {
-            $writer = new XlsxWriter();
+            $writer = new XlsxWriter;
             $writer->openToFile('php://output');
             $writer->getCurrentSheet()->setName('Transaksi');
 
@@ -439,7 +439,7 @@ class ReportController extends Controller
                 '',
                 '',
                 '',
-                count($transactions) . ' Transaksi',
+                count($transactions).' Transaksi',
                 $totalAmount,
                 $totalDiscount,
                 $totalNet,
@@ -458,7 +458,7 @@ class ReportController extends Controller
         $filename = "laporan-statistik-member-{$from}-sd-{$to}.xlsx";
 
         return response()->streamDownload(function () use ($stats): void {
-            $writer = new XlsxWriter();
+            $writer = new XlsxWriter;
             $writer->openToFile('php://output');
             $writer->getCurrentSheet()->setName('Statistik Member');
 
@@ -520,7 +520,7 @@ class ReportController extends Controller
         $filename = 'laporan-ulang-tahun-member.xlsx';
 
         return response()->streamDownload(function () use ($members): void {
-            $writer = new XlsxWriter();
+            $writer = new XlsxWriter;
             $writer->openToFile('php://output');
             $writer->getCurrentSheet()->setName('Ulang Tahun Member');
 
@@ -563,9 +563,9 @@ class ReportController extends Controller
     private function datePartExpr(string $column, string $part): string
     {
         if (DB::connection()->getDriverName() === 'sqlite') {
-            return "strftime('%" . ($part === 'month' ? 'm' : 'd') . "', {$column})";
+            return "strftime('%".($part === 'month' ? 'm' : 'd')."', {$column})";
         }
 
-        return ($part === 'month' ? 'MONTH' : 'DAY') . "({$column})";
+        return ($part === 'month' ? 'MONTH' : 'DAY')."({$column})";
     }
 }

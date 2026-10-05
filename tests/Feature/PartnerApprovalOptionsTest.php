@@ -106,4 +106,39 @@ class PartnerApprovalOptionsTest extends TestCase
         $this->assertNull($partner->member_user_id);
         $this->assertSame(User::APPROVAL_APPROVED, $partner->user->fresh()->approval_status);
     }
+
+    public function test_partner_already_linked_cannot_be_relinked_to_another_member(): void
+    {
+        $admin = $this->admin();
+        $memberA = User::factory()->member()->create();
+        $memberB = User::factory()->member()->create();
+        $partner = $this->pendingPartner([
+            'member_user_id' => $memberA->id,
+            'is_member' => true,
+            'member_id_number' => $memberA->member_code,
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.partners.approve', $partner->id), [
+                'member_option' => 'member',
+                'member_user_id' => $memberB->id,
+            ])
+            ->assertSessionHasErrors('member_user_id');
+
+        $this->assertSame('Partner sudah terhubung dengan Member lain.', session('errors')->first('member_user_id'));
+
+        $partner->refresh();
+        $this->assertSame($memberA->id, $partner->member_user_id);
+        $this->assertSame(User::APPROVAL_PENDING, $partner->user->fresh()->approval_status);
+
+        // Re-approve ke member yang sama tetap boleh.
+        $this->actingAs($admin)
+            ->put(route('admin.partners.approve', $partner->id), [
+                'member_option' => 'member',
+                'member_user_id' => $memberA->id,
+            ])
+            ->assertSessionHas('success');
+
+        $this->assertSame($memberA->id, $partner->fresh()->member_user_id);
+    }
 }

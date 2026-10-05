@@ -74,8 +74,8 @@ class TransactionService
             $member,
             'Benefit Used',
             "Transaction {$transaction->transaction_number} at {$partner->name} was recorded with a discount of "
-                . ($discountAmount > 0 ? 'Rp' . number_format($discountAmount, 0, ',', '.') : 'Rp0')
-                . '.',
+                .($discountAmount > 0 ? 'Rp'.number_format($discountAmount, 0, ',', '.') : 'Rp0')
+                .'.',
             'transaction',
             '/member/history',
         );
@@ -85,6 +85,6 @@ class TransactionService
 
     private function nextTransactionNumber(): string
     {
-        return 'TRX-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(4));
+        return 'TRX-'.now()->format('YmdHis').'-'.strtoupper(Str::random(4));
     }
 }

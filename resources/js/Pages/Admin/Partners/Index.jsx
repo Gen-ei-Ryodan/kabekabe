@@ -330,6 +330,13 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
 
                         <div className="mt-5">
                             <span className="label">Kaitkan ke member</span>
+                            {approveTarget.member_user_id && (
+                                <p className="mt-1 rounded-lg bg-gold/10 px-3 py-2 text-xs font-medium text-ink">
+                                    Partner ini sudah terhubung ke Member{' '}
+                                    {approveTarget.member_name || `#${approveTarget.member_user_id}`}. Pengaitan ke
+                                    member lain akan ditolak sistem.
+                                </p>
+                            )}
                             <div className="mt-1 grid gap-2 sm:grid-cols-2">
                                 <label
                                     className={`flex cursor-pointer items-start gap-2 rounded-xl border px-3 py-2.5 text-sm transition-colors ${
@@ -351,7 +358,7 @@ export default function PartnerIndex({ partners, filters, categories = [], drawe
                                         }}
                                     />
                                     <span>
-                                        <span className="block font-semibold text-ink">Non Member</span>
+                                        <span className="block font-semibold text-ink">Bukan Member / Non Member</span>
                                         <span className="block text-xs text-slate">Partner aktif tanpa akun member.</span>
                                     </span>
                                 </label>

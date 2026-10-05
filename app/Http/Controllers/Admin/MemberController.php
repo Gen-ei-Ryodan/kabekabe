@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ImportRowsRequest;
 use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\UpdateMemberRequest;
+use App\Models\MembershipPlan;
 use App\Models\User;
 use App\Services\ApprovalNotifier;
 use App\Services\Import\ImportTemplateDownloader;
@@ -236,6 +237,7 @@ class MemberController extends Controller
             'membership' => $member->membership,
             'payments' => $member->payments()->with('plan:id,name,duration_months')->latest()->limit(10)->get(),
             'transactions' => $member->memberTransactions()->with('partner:id,name,total_belanja,diskon1,diskon2,diskon3')->latest('transacted_at')->limit(10)->get(),
+            'plans' => MembershipPlan::query()->where('is_active', true)->get(['id', 'name', 'duration_months', 'price']),
         ]);
     }
 
@@ -322,6 +324,31 @@ class MemberController extends Controller
         return redirect()
             ->route('admin.members.index')
             ->with('success', 'Member updated successfully.');
+    }
+
+    /**
+     * Aktivasi/status membership diatur manual oleh admin
+     * (status aktif/tidak aktif + tanggal aktif + aktif sampai).
+     */
+    public function updateMembership(Request $request, User $member): RedirectResponse
+    {
+        abort_unless($member->isMember(), 404);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:active,inactive'],
+            'started_at' => ['nullable', 'date'],
+            'expires_at' => ['nullable', 'date', 'after_or_equal:started_at'],
+        ]);
+
+        $membership = $this->memberships->ensureMembership($member);
+
+        $membership->forceFill([
+            'status' => $validated['status'],
+            'started_at' => $validated['started_at'] ?? $membership->started_at,
+            'expires_at' => $validated['expires_at'] ?? $membership->expires_at,
+        ])->save();
+
+        return back()->with('success', "Membership {$member->name} diperbarui ({$validated['status']}).");
     }
 
     public function toggleStatus(Request $request, User $member): RedirectResponse

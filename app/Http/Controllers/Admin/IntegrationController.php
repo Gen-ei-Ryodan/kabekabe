@@ -7,7 +7,6 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\PaymentGateway\FaspayService;
 use App\Services\Whatsapp\WaBlastService;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,7 +46,7 @@ class IntegrationController extends Controller
         ]);
 
         $payment = new Payment([
-            'invoice_number' => 'TEST-' . now()->format('YmdHis'),
+            'invoice_number' => 'TEST-'.now()->format('YmdHis'),
             'amount' => $request->integer('amount'),
         ]);
 

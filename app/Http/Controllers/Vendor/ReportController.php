@@ -42,7 +42,7 @@ class ReportController extends Controller
             ->where('partner_id', $partner->id)
             ->whereDate('transacted_at', '>=', $from)
             ->whereDate('transacted_at', '<=', $to)
-            ->selectRaw(ReportingService::dayExpr() . " as day, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net")
+            ->selectRaw(ReportingService::dayExpr().' as day, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net')
             ->groupBy('day')
             ->orderBy('day')
             ->get();

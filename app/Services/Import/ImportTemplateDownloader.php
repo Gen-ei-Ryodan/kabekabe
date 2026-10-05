@@ -11,7 +11,7 @@ class ImportTemplateDownloader
     public function download(string $filename, array $headers, array $exampleRow): StreamedResponse
     {
         return response()->streamDownload(function () use ($headers, $exampleRow): void {
-            $writer = new XlsxWriter();
+            $writer = new XlsxWriter;
             $writer->openToFile('php://output');
             $writer->getCurrentSheet()->setName('Template');
             $writer->addRow(Row::fromValues($headers));

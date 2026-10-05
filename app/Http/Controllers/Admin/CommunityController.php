@@ -317,7 +317,7 @@ class CommunityController extends Controller
 
         DB::transaction(function () use ($info, $member, $fee, $request) {
             $plan = $member->payments()->latest()->first()?->plan;
-            $invoiceNumber = 'INV-' . now()->format('YmdHis') . '-' . strtoupper(substr(uniqid(), -4));
+            $invoiceNumber = 'INV-'.now()->format('YmdHis').'-'.strtoupper(substr(uniqid(), -4));
 
             Payment::create([
                 'invoice_number' => $invoiceNumber,

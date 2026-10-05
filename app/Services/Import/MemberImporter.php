@@ -4,6 +4,7 @@ namespace App\Services\Import;
 
 use App\Models\User;
 use App\Services\MembershipService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -71,7 +72,7 @@ class MemberImporter
             $validUntil = trim((string) ($row['valid_until'] ?? ''));
 
             if ($validUntil !== '') {
-                $expiresAt = \Illuminate\Support\Carbon::parse($validUntil);
+                $expiresAt = Carbon::parse($validUntil);
 
                 if ($expiresAt->isPast()) {
                     throw new \InvalidArgumentException("Valid until date ({$validUntil}) is in the past.");

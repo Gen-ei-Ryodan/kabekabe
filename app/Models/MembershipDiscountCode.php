@@ -21,6 +21,7 @@ class MembershipDiscountCode extends Model
     use HasFactory;
 
     public const TYPE_PERCENT = 'percent';
+
     public const TYPE_NOMINAL = 'nominal';
 
     protected function casts(): array
@@ -59,6 +60,7 @@ class MembershipDiscountCode extends Model
 
         if ($this->discount_type === self::TYPE_PERCENT) {
             $discount = (int) round(($originalPrice * $this->discount_value) / 100);
+
             return min($discount, $originalPrice);
         }
 

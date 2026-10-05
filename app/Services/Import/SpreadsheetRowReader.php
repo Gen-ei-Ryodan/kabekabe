@@ -62,14 +62,14 @@ class SpreadsheetRowReader
     private function createReader(string $path): ReaderInterface
     {
         if (str_ends_with(strtolower($path), '.csv')) {
-            $csv = new CsvReader();
+            $csv = new CsvReader;
             $csv->setDelimiter(',');
             $csv->open($path);
 
             return $csv;
         }
 
-        $xlsx = new XlsxReader(new XlsxOptions());
+        $xlsx = new XlsxReader(new XlsxOptions);
         $xlsx->open($path);
 
         return $xlsx;

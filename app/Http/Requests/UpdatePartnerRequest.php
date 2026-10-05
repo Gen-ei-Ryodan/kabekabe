@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Partner;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePartnerRequest extends FormRequest
 {
@@ -32,7 +32,7 @@ class UpdatePartnerRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'address' => ['nullable', 'string', 'max:1000'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('partners', 'email')->ignore($this->route('partner'))],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
             'sort_number' => ['nullable', 'integer', 'min:1'],
             'total_belanja' => ['nullable', 'string', 'max:255'],

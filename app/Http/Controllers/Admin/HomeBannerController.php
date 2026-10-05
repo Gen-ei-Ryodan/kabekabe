@@ -9,6 +9,7 @@ use App\Models\PartnerAd;
 use App\Models\Promo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -195,15 +196,15 @@ class HomeBannerController extends Controller
 
         if ($request->hasFile('image')) {
             if ($popup?->image_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($popup->image_path);
+                Storage::disk('public')->delete($popup->image_path);
             }
             $data['image_path'] = $request->file('image')->store('home-popups', 'public');
         } elseif ($request->boolean('remove_image') && $popup?->image_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($popup->image_path);
+            Storage::disk('public')->delete($popup->image_path);
             $data['image_path'] = null;
         }
 
-        $popup ??= new HomePopup();
+        $popup ??= new HomePopup;
         $popup->fill($data);
         $popup->save();
 
@@ -246,12 +247,12 @@ class HomeBannerController extends Controller
 
         if ($request->hasFile('image')) {
             if ($banner?->image_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image_path);
+                Storage::disk('public')->delete($banner->image_path);
             }
 
             $validated['image_path'] = $request->file('image')->store('banners', 'public');
         } elseif ($request->boolean('remove_image') && $banner?->image_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image_path);
+            Storage::disk('public')->delete($banner->image_path);
             $validated['image_path'] = null;
         }
 
@@ -307,7 +308,7 @@ class HomeBannerController extends Controller
     public function publishAd(PartnerAd $ad): RedirectResponse
     {
         if ($ad->type === PartnerAd::TYPE_POPUP) {
-            $popup = HomePopup::first() ?? new HomePopup();
+            $popup = HomePopup::first() ?? new HomePopup;
             $popup->fill([
                 'promo_id' => $ad->promo_id,
                 'promo_title' => $ad->promo_title,
@@ -349,5 +350,4 @@ class HomeBannerController extends Controller
             ])
             ->all();
     }
-
 }

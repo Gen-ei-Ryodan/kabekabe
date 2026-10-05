@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Models\Partner;
+use App\Models\PartnerAd;
 use App\Models\Payment;
 use App\Models\Promo;
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ReportingService
@@ -47,7 +47,7 @@ class ReportingService
         $pendingPartnerApprovals = Partner::query()
             ->whereHas('user', fn ($u) => $u->where('approval_status', User::APPROVAL_PENDING))
             ->count();
-        $paidAds = \App\Models\PartnerAd::query()->where('status', 'paid')->count();
+        $paidAds = PartnerAd::query()->where('status', 'paid')->count();
 
         $expiredNextMonth = User::query()
             ->where('role', User::ROLE_MEMBER)
@@ -155,7 +155,7 @@ class ReportingService
             ->count();
 
         $transactionsByMonth = $partner->transactions()
-            ->selectRaw(self::monthExpr() . " as month, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net")
+            ->selectRaw(self::monthExpr().' as month, COUNT(*) as total, COALESCE(SUM(net_amount),0) as net')
             ->groupBy('month')
             ->orderBy('month', 'desc')
             ->limit(6)

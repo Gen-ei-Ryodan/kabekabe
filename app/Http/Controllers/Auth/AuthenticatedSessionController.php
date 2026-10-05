@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureSingleDeviceLogin;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use App\Services\LoginLogger;
+use App\Services\PasswordOtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,7 +85,7 @@ class AuthenticatedSessionController extends Controller
 
     private function attemptLogin(LoginRequest $request, string $guard, string $portal): RedirectResponse
     {
-        $request->authenticate($guard);
+        $request->authenticate($guard, $this->expectedRole($portal));
 
         $user = Auth::guard($guard)->user();
 
@@ -93,6 +94,17 @@ class AuthenticatedSessionController extends Controller
 
             throw ValidationException::withMessages([
                 'email' => 'Akun ini tidak sesuai dengan halaman login tersebut. Silakan gunakan halaman login yang benar.',
+            ]);
+        }
+
+        // Partner wajib sudah verifikasi OTP email sebelum bisa login.
+        if ($user->role === User::ROLE_VENDOR && $user->otp_purpose === PasswordOtpService::PURPOSE_PARTNER_REGISTER && $user->otp_code) {
+            Auth::guard($guard)->logout();
+            $request->session()->regenerate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Email partner belum diverifikasi. Silakan masukkan kode OTP yang dikirim ke email Anda.',
             ]);
         }
 

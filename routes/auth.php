@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\InitialPasswordController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PartnerLinkOtpController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordOtpController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -43,6 +44,15 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store'])
         ->middleware('throttle:5,1');
+
+    // Linking partner di form registrasi member ("Are you a Partner?").
+    Route::post('register/partner-link/request', [PartnerLinkOtpController::class, 'request'])
+        ->middleware('throttle:5,1')
+        ->name('register.partner-link.request');
+
+    Route::post('register/partner-link/verify', [PartnerLinkOtpController::class, 'verify'])
+        ->middleware('throttle:10,1')
+        ->name('register.partner-link.verify');
 
     // Lupa password: minta kode OTP ke email.
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])

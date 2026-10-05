@@ -29,6 +29,7 @@ class ImportMasterDataCommand extends Command
 
         if (! file_exists($filePath)) {
             $this->error("File tidak ditemukan di: {$filePath}");
+
             return Command::FAILURE;
         }
 
@@ -37,6 +38,7 @@ class ImportMasterDataCommand extends Command
         $handle = fopen($filePath, 'r');
         if (! $handle) {
             $this->error("Gagal membuka file: {$filePath}");
+
             return Command::FAILURE;
         }
 
@@ -105,7 +107,7 @@ class ImportMasterDataCommand extends Command
                 }
 
                 $defaultYear = $birthDate ? Carbon::parse($birthDate)->format('Y') : '2026';
-                $defaultPassword = 'KBKB' . $defaultYear;
+                $defaultPassword = 'KBKB'.$defaultYear;
 
                 if ($existingUser) {
                     $existingUser->update([
@@ -171,7 +173,7 @@ class ImportMasterDataCommand extends Command
             DB::commit();
             fclose($handle);
 
-            $this->info("Import selesai dengan sukses!");
+            $this->info('Import selesai dengan sukses!');
             $this->table(
                 ['Metric', 'Total'],
                 [
@@ -186,8 +188,9 @@ class ImportMasterDataCommand extends Command
         } catch (\Throwable $e) {
             DB::rollBack();
             fclose($handle);
-            $this->error("Terjadi error saat import: " . $e->getMessage());
+            $this->error('Terjadi error saat import: '.$e->getMessage());
             $this->error($e->getTraceAsString());
+
             return Command::FAILURE;
         }
     }
@@ -208,6 +211,7 @@ class ImportMasterDataCommand extends Command
                 if ($year < 100) {
                     $year += ($year > 30) ? 1900 : 2000;
                 }
+
                 return sprintf('%04d-%s-%s', $year, $month, $day);
             }
         }

@@ -9,6 +9,7 @@ use App\Models\Promo;
 use App\Services\PromoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -101,7 +102,7 @@ class PromoController extends Controller
             'items.*.sort_number' => ['required', 'integer', 'min:1'],
         ]);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($validated) {
             foreach ($validated['items'] as $item) {
                 Promo::where('id', $item['id'])->update(['sort_number' => $item['sort_number']]);
             }

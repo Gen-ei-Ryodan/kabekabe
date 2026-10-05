@@ -109,22 +109,13 @@ class RoleAccessTest extends TestCase
         $this->assertNotNull($member->fresh()->card_token);
     }
 
-    public function test_member_billing_shows_active_package(): void
+    public function test_member_billing_is_removed_entirely(): void
     {
         $member = User::factory()->member()->create();
-        $member->membership()->create([
-            'status' => 'active',
-            'started_at' => now()->subMonth(),
-            'expires_at' => now()->addMonths(11),
-        ]);
 
-        $this->actingAs($member)->get(route('member.billing.index'))
-            ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Member/Account/Billing')
-                ->has('active_package.expires_at')
-                ->where('active_package.days_remaining', fn ($value) => $value > 0)
-            );
+        $this->actingAs($member)->get('/member/billing')->assertNotFound();
+        $this->actingAs($member)->post('/member/billing/doku/checkout')->assertNotFound();
+        $this->actingAs($member)->post('/member/billing/manual/checkout')->assertNotFound();
     }
 
     public function test_member_home_has_no_active_package_prop(): void

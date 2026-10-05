@@ -3,19 +3,24 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\MasterIdentity;
 use App\Models\Partner;
 use App\Models\User;
+use App\Services\PasswordOtpService;
 use App\Support\PartnerCategory;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
+    public function __construct(private readonly PasswordOtpService $otp) {}
+
     /**
      * Display the registration view.
      */
@@ -40,7 +45,15 @@ class RegisteredUserController extends Controller
                 'trade_name' => 'required|string|max:255', // Nama Merk Dagang
                 'address' => 'required|string|max:500', // Alamat Usaha
                 'phone' => 'required|string|max:30', // Nomor Telfon
-                'email' => 'required|string|lowercase|email|max:255|unique:'.User::class.',email',
+                'email' => [
+                    'required',
+                    'string',
+                    'lowercase',
+                    'email',
+                    'max:255',
+                    Rule::unique('users', 'email')->where('role', User::ROLE_VENDOR),
+                    Rule::unique('partners', 'email'),
+                ],
                 'employee_count' => 'nullable|integer|min:0',
                 'established_since' => 'nullable|string|max:50',
                 'is_member' => 'required|boolean',
@@ -84,6 +97,14 @@ class RegisteredUserController extends Controller
                 ? $request->member_name
                 : ($request->pic_name ?: $request->trade_name ?: $request->name);
 
+            $identity = MasterIdentity::forEmail($request->email, [
+                'name' => $userName,
+                'phone' => $request->phone,
+                'birth_date' => $isMember ? $request->member_birth_date : $request->birth_date,
+                'birth_place' => $isMember ? null : $request->birth_place,
+                'gender' => $isMember ? null : $request->gender,
+            ]);
+
             $user = User::create([
                 'name' => $userName,
                 'nickname' => $isMember ? null : $request->nickname,
@@ -109,6 +130,7 @@ class RegisteredUserController extends Controller
                 'role' => User::ROLE_VENDOR,
                 'approval_status' => User::APPROVAL_PENDING,
                 'must_change_password' => true,
+                'master_identity_id' => $identity?->id,
             ]);
 
             $user->partner()->create([
@@ -135,6 +157,7 @@ class RegisteredUserController extends Controller
                 'joined_at' => now(),
                 'is_active' => false,
                 'status' => Partner::STATUS_INACTIVE,
+                'master_identity_id' => $identity?->id,
             ]);
         } else {
             $isHousehold = $request->boolean('is_household');
@@ -185,7 +208,14 @@ class RegisteredUserController extends Controller
 
             $request->validate([
                 'role' => 'required|in:member,partner',
-                'email' => 'required|string|lowercase|email|max:255|unique:'.User::class.',email',
+                'email' => [
+                    'required',
+                    'string',
+                    'lowercase',
+                    'email',
+                    'max:255',
+                    Rule::unique('users', 'email')->where('role', User::ROLE_MEMBER),
+                ],
                 'name' => 'required|string|max:255',
                 'nickname' => 'nullable|string|max:100',
                 'gender' => 'nullable|string|max:50',
@@ -212,6 +242,9 @@ class RegisteredUserController extends Controller
                 'business_district' => 'nullable|string|max:100',
                 'business_city' => 'nullable|string|max:100',
                 'industry' => $isHousehold ? 'nullable|string|max:255' : 'required|string|max:255',
+                // "Are you a Partner?" → link partner wajib lewat OTP dulu.
+                'is_partner' => 'nullable|in:yes,no',
+                'partner_email' => 'nullable|required_if:is_partner,yes|email|max:255',
             ], [
                 'companies.required' => 'Silakan isi minimal 1 info usaha atau centang "Bapak/Ibu Rumah Tangga".',
                 'companies.min' => 'Silakan isi minimal 1 info usaha atau centang "Bapak/Ibu Rumah Tangga".',
@@ -227,6 +260,32 @@ class RegisteredUserController extends Controller
             if (! $isHousehold && empty(trim((string) $industryString))) {
                 return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
             }
+
+            // Linking partner: OTP sudah diverifikasi sebelum submit registrasi member.
+            $linkPartner = null;
+            if ($request->input('is_partner') === 'yes') {
+                $linkPartner = $this->verifiedLinkPartner($request);
+
+                if (! $linkPartner) {
+                    return back()->withErrors([
+                        'partner_email' => 'Verifikasi OTP ke email partner terlebih dahulu sebelum mengirim formulir.',
+                    ])->withInput();
+                }
+            }
+
+            $identity = MasterIdentity::forEmail($request->email, [
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'birth_date' => $request->birth_date,
+                'birth_place' => $request->birth_place,
+                'gender' => $request->gender,
+                'religion' => $request->religion,
+                'marital_status' => $request->marital_status,
+                'address' => $request->address,
+                'city' => $request->city,
+                'district' => $request->district,
+                'hobbies' => $request->hobbies,
+            ]);
 
             $user = User::create([
                 'name' => $request->name,
@@ -256,15 +315,74 @@ class RegisteredUserController extends Controller
                 'role' => User::ROLE_MEMBER,
                 'approval_status' => User::APPROVAL_PENDING,
                 'must_change_password' => true,
+                'master_identity_id' => $identity?->id,
             ]);
+
+            // Otomatis link partner yang sudah lolos OTP ke member baru ini.
+            if ($linkPartner) {
+                $linkPartner->forceFill([
+                    'member_user_id' => $user->id,
+                    'is_member' => true,
+                    'member_id_number' => $user->member_code,
+                    'member_name' => $user->name,
+                ])->save();
+            }
         }
 
+        $request->session()->forget(['partner_link_email', 'partner_link_partner_id', 'partner_link_verified_partner_id']);
+
         event(new Registered($user));
+
+        if ($roleInput === 'partner') {
+            // OTP verifikasi email PIC partner sebelum menunggu approval admin.
+            $this->otp->issue(
+                $user,
+                PasswordOtpService::PURPOSE_PARTNER_REGISTER,
+                'Verifikasi Email Partner KBKB',
+                'Masukkan kode OTP 6 digit untuk menyelesaikan pendaftaran partner Anda.'
+            );
+
+            $request->session()->put('partner_otp_user_id', $user->id);
+
+            return redirect()->route('partner.otp.show');
+        }
 
         return Inertia::render('Auth/RegisterSuccess', [
             'name' => $user->name,
             'email' => $user->email,
             'role' => $roleInput,
         ]);
+    }
+
+    /**
+     * Partner yang sudah diverifikasi OTP-nya untuk registrasi member ini.
+     */
+    private function verifiedLinkPartner(Request $request): ?Partner
+    {
+        $partnerId = $request->session()->get('partner_link_verified_partner_id');
+
+        if (! $partnerId) {
+            return null;
+        }
+
+        $partner = Partner::query()->find($partnerId);
+
+        if (! $partner) {
+            return null;
+        }
+
+        $requestedEmail = (string) $request->input('partner_email');
+        $partnerEmail = (string) ($partner->email ?? $partner->user?->email);
+
+        if ($requestedEmail === '' || strcasecmp($requestedEmail, $partnerEmail) !== 0) {
+            return null;
+        }
+
+        // Tolak keras jika partner sudah terhubung ke member lain.
+        if ($partner->member_user_id !== null) {
+            return null;
+        }
+
+        return $partner;
     }
 }

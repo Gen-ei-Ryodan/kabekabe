@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePartnerRequest;
 use App\Http\Requests\UpdatePartnerRequest;
+use App\Models\MasterIdentity;
 use App\Models\Partner;
 use App\Models\User;
 use App\Services\ApprovalNotifier;
@@ -12,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -111,12 +113,17 @@ class PartnerController extends Controller
         $validated = $request->validated();
         $isMember = (bool) ($validated['is_member'] ?? false);
 
+        // Satu identity personal dipakai untuk user vendor & partner-nya
+        // (dan otomatis sama bila emailnya sudah dipakai Member).
+        $identity = MasterIdentity::forEmail($validated['vendor_email'], ['name' => $validated['vendor_name']]);
+
         $vendorUser = User::create([
             'name' => $validated['vendor_name'],
             'nickname' => $validated['nickname'] ?? null,
             'email' => $validated['vendor_email'],
             'password' => $validated['vendor_password'],
             'role' => User::ROLE_VENDOR,
+            'master_identity_id' => $identity?->id,
             'phone' => $validated['phone'] ?? $validated['member_phone'] ?? null,
             'whatsapp' => $validated['phone'] ?? $validated['member_phone'] ?? null,
             'gender' => $isMember ? null : ($validated['gender'] ?? null),
@@ -162,6 +169,7 @@ class PartnerController extends Controller
             'diskon2' => $validated['diskon2'] ?? null,
             'diskon3' => $validated['diskon3'] ?? null,
             'sort_number' => $validated['sort_number'] ?? null,
+            'master_identity_id' => $identity?->id,
         ]);
 
         return redirect()
@@ -285,6 +293,14 @@ class PartnerController extends Controller
         $linked = false;
 
         if ($option === 'member' && ! empty($validated['member_user_id'])) {
+            // Tolak keras: 1 partner hanya boleh terhubung ke 1 member.
+            if ($partner->member_user_id !== null
+                && (int) $partner->member_user_id !== (int) $validated['member_user_id']) {
+                throw ValidationException::withMessages([
+                    'member_user_id' => 'Partner sudah terhubung dengan Member lain.',
+                ]);
+            }
+
             $member = User::query()->findOrFail($validated['member_user_id']);
 
             $data['member_user_id'] = $member->id;
