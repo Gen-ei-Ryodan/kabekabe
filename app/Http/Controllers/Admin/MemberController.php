@@ -212,10 +212,10 @@ class MemberController extends Controller
             'approval_status' => User::APPROVAL_APPROVED,
         ]);
 
-        if (! empty($validated['valid_until'])) {
+        if ($this->hasMembershipRange($validated)) {
+            $this->applyMembershipRange($member, $validated);
+        } elseif (! empty($validated['valid_until'])) {
             $this->memberships->activateUntil($member, $validated['valid_until']);
-        } elseif (! empty($validated['membership_period'])) {
-            $this->memberships->activate($member, (int) $validated['membership_period']);
         } else {
             $this->memberships->activate($member, 12);
         }
@@ -223,6 +223,38 @@ class MemberController extends Controller
         return redirect()
             ->route('admin.members.index')
             ->with('success', "Member {$member->name} created successfully.");
+    }
+
+    private function hasMembershipRange(array $input): bool
+    {
+        return ! empty($input['membership_status'])
+            || ! empty($input['membership_started_at'])
+            || ! empty($input['membership_expires_at']);
+    }
+
+    /**
+     * Simpan status keanggotaan + rentang tanggal masa aktif dari form admin
+     * (create/edit member maupun form membership di halaman detail).
+     */
+    private function applyMembershipRange(User $member, array $input): void
+    {
+        $status = $input['membership_status'] ?? null;
+        $started = $input['membership_started_at'] ?? null;
+        $expires = $input['membership_expires_at'] ?? null;
+
+        if (empty($status) && empty($started) && empty($expires)) {
+            return;
+        }
+
+        $membership = $this->memberships->ensureMembership($member);
+
+        $membership->forceFill([
+            'status' => $status ?: $membership->status,
+            'started_at' => $started ?: $membership->started_at,
+            'expires_at' => $expires ?: $membership->expires_at,
+        ])->save();
+
+        $member->setRelation('membership', $membership->fresh());
     }
 
     public function show(User $member): Response
@@ -243,9 +275,15 @@ class MemberController extends Controller
     {
         abort_unless($member->isMember(), 404);
 
+        $membership = $member->membership;
+
         return Inertia::render('Admin/Members/Edit', [
             'member' => $this->memberPayload($member),
-            'membership' => $member->membership()->with('plan')->first(),
+            'membership' => $membership ? [
+                'status' => $membership->status,
+                'started_at' => $membership->started_at?->toDateString(),
+                'expires_at' => $membership->expires_at?->toDateString(),
+            ] : null,
         ]);
     }
 
@@ -320,6 +358,8 @@ class MemberController extends Controller
             $member->update(['avatar' => $path]);
         }
 
+        $this->applyMembershipRange($member, $validated);
+
         return redirect()
             ->route('admin.members.index')
             ->with('success', 'Member updated successfully.');
@@ -339,13 +379,11 @@ class MemberController extends Controller
             'expires_at' => ['nullable', 'date', 'after_or_equal:started_at'],
         ]);
 
-        $membership = $this->memberships->ensureMembership($member);
-
-        $membership->forceFill([
-            'status' => $validated['status'],
-            'started_at' => $validated['started_at'] ?? $membership->started_at,
-            'expires_at' => $validated['expires_at'] ?? $membership->expires_at,
-        ])->save();
+        $this->applyMembershipRange($member, [
+            'membership_status' => $validated['status'],
+            'membership_started_at' => $validated['started_at'],
+            'membership_expires_at' => $validated['expires_at'],
+        ]);
 
         return back()->with('success', "Membership {$member->name} diperbarui ({$validated['status']}).");
     }
@@ -438,6 +476,8 @@ class MemberController extends Controller
             'business_district' => $m->business_district,
             'business_city' => $m->business_city,
             'avatar_url' => $m->avatarUrl(),
+            'membership_started_at' => $m->membership?->started_at?->toDateString(),
+            'membership_expires_at' => $m->membership?->expires_at?->toDateString(),
             'created_at' => $m->created_at?->translatedFormat('d M Y'),
             'approval_status' => $m->approval_status ?? 'approved',
             'membership_status' => $m->hasActiveMembership() ? 'active' : 'inactive',

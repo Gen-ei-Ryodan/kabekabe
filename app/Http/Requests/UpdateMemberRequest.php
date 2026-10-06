@@ -42,6 +42,9 @@ class UpdateMemberRequest extends FormRequest
             'hobbies' => ['nullable', 'array'],
             'hobbies.*' => ['string', 'max:255'],
             'password' => ['nullable', 'string', Password::defaults(), 'confirmed'],
+            'membership_status' => ['nullable', 'string', Rule::in(['active', 'inactive'])],
+            'membership_started_at' => ['nullable', 'date'],
+            'membership_expires_at' => ['nullable', 'date', 'after_or_equal:membership_started_at'],
             'avatar' => ['nullable', 'file', 'image', 'max:2048'],
             'remove_avatar' => ['nullable', 'boolean'],
         ];

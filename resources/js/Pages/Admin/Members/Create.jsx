@@ -1,6 +1,14 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import MemberForm from '@/Components/Admin/MemberForm';
+import { toDateInputValue } from '@/Utils/format';
+
+const today = toDateInputValue(new Date());
+const defaultExpires = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    return toDateInputValue(d);
+})();
 
 export default function MemberCreate() {
     const form = useForm({
@@ -27,7 +35,9 @@ export default function MemberCreate() {
         business_district: '',
         business_city: '',
         hobbies: [],
-        membership_period: '12',
+        membership_status: 'active',
+        membership_started_at: today,
+        membership_expires_at: defaultExpires,
     });
 
     const submit = (e) => {

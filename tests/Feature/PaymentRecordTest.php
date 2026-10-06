@@ -101,6 +101,38 @@ class PaymentRecordTest extends TestCase
             ->assertSessionHasErrors(['paid_at', 'amount']);
     }
 
+    public function test_admin_payment_store_requires_amount_and_date_range(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.payments.store'), ['member_id' => $this->member->id])
+            ->assertSessionHasErrors(['amount', 'started_at', 'expires_at']);
+    }
+
+    public function test_admin_payment_store_accepts_optional_plan_id_and_sets_membership_dates(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.payments.store'), [
+            'member_id' => $this->member->id,
+            'plan_id' => $this->plan->id,
+            'amount' => 100000,
+            'started_at' => '2026-10-06',
+            'expires_at' => '2026-11-05',
+            'method' => 'Transfer Bank',
+        ])->assertRedirect(route('admin.payments.index'));
+
+        $payment = Payment::query()->where('member_id', $this->member->id)->first();
+
+        $this->assertNotNull($payment);
+        $this->assertSame($this->plan->id, $payment->plan_id);
+        $this->assertSame(100000, (int) $payment->amount);
+
+        $this->member->load('membership');
+
+        $this->assertSame('active', $this->member->membership->status);
+        $this->assertSame('2026-10-06', $this->member->membership->started_at->toDateString());
+        $this->assertSame('2026-11-05', $this->member->membership->expires_at->toDateString());
+        $this->assertTrue($this->member->hasActiveMembership());
+    }
+
     public function test_admin_can_activate_member_manually_with_status_and_dates(): void
     {
         $this->actingAs($this->admin)

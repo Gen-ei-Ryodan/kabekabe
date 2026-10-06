@@ -28,6 +28,40 @@ export function formatDate(value, withDay = false) {
     }).format(date);
 }
 
+/**
+ * Format tanggal panjang: 6 Oktober 2027 (tanpa hari).
+ * Input date-only 'YYYY-MM-DD' diparse sebagai waktu lokal.
+ */
+export function formatDateLong(value) {
+    if (!value) return '-';
+
+    const raw = String(value);
+    const date = /^\d{4}-\d{2}-\d{2}/.test(raw)
+        ? new Date(`${raw.slice(0, 10)}T00:00:00`)
+        : new Date(raw);
+
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
+
+/**
+ * Konversi Date -> value input type="date" (YYYY-MM-DD) pakai waktu lokal.
+ */
+export function toDateInputValue(value) {
+    const d = value instanceof Date ? value : new Date(value);
+
+    if (Number.isNaN(d.getTime())) return '';
+
+    const pad = (n) => String(n).padStart(2, '0');
+
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 export function formatDayDate(value) {
     if (!value) return '-';
 

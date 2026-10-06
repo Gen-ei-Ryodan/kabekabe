@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import TextInput from '@/Components/TextInput';
+import { formatDateLong } from '@/Utils/format';
 import { INDUSTRY_CATEGORIES, HOBBY_LIST } from '@/constants/membership';
 
 export default function MemberForm({
@@ -543,26 +544,54 @@ export default function MemberForm({
                 <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
                     5. Keanggotaan & Keamanan Akun
                 </h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                    {isCreate && (
-                        <div>
-                            <label className="label" htmlFor="membership_period">Masa Berlaku Keanggotaan</label>
-                            <select
-                                id="membership_period"
-                                className="input"
-                                value={data.membership_period || '12'}
-                                onChange={(e) => setData('membership_period', e.target.value)}
-                            >
-                                {[1, 3, 6, 12, 24, 36].map((m) => (
-                                    <option key={m} value={String(m)}>
-                                        {m} Bulan {m === 12 ? '(1 Tahun - Standar)' : ''}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.membership_period && <p className="mt-1 text-xs text-ember">{errors.membership_period}</p>}
-                        </div>
-                    )}
 
+                <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                        <label className="label" htmlFor="membership_status">Status Member</label>
+                        <select
+                            id="membership_status"
+                            className="input"
+                            value={data.membership_status || 'active'}
+                            onChange={(e) => setData('membership_status', e.target.value)}
+                        >
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Tidak Aktif</option>
+                        </select>
+                        {errors.membership_status && <p className="mt-1 text-xs text-ember">{errors.membership_status}</p>}
+                    </div>
+
+                    <div>
+                        <label className="label" htmlFor="membership_started_at">Tanggal Mulai Aktif</label>
+                        <input
+                            id="membership_started_at"
+                            type="date"
+                            className="input"
+                            value={data.membership_started_at || ''}
+                            onChange={(e) => setData('membership_started_at', e.target.value)}
+                            required={isCreate}
+                        />
+                        {errors.membership_started_at && <p className="mt-1 text-xs text-ember">{errors.membership_started_at}</p>}
+                    </div>
+
+                    <div>
+                        <label className="label" htmlFor="membership_expires_at">Aktif Sampai</label>
+                        <input
+                            id="membership_expires_at"
+                            type="date"
+                            className="input"
+                            value={data.membership_expires_at || ''}
+                            onChange={(e) => setData('membership_expires_at', e.target.value)}
+                            required={isCreate}
+                        />
+                        {errors.membership_expires_at && <p className="mt-1 text-xs text-ember">{errors.membership_expires_at}</p>}
+                    </div>
+                </div>
+
+                <p className="rounded-xl bg-gold/10 px-3 py-2 text-sm font-semibold text-gold-deep">
+                    Masa aktif sampai: {data.membership_expires_at ? formatDateLong(data.membership_expires_at) : 'belum diatur'}
+                </p>
+
+                <div className="grid gap-4 sm:grid-cols-2">
                     <div className={isCreate ? '' : 'sm:col-span-2'}>
                         <label className="label" htmlFor="password">
                             {isCreate ? 'Kata Sandi *' : 'Kata Sandi Baru (kosongkan bila tidak diubah)'}

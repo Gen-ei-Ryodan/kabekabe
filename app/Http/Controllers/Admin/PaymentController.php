@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ImportRowsRequest;
 use App\Http\Requests\ReviewPaymentRequest;
-use App\Models\MembershipPlan;
+use App\Models\Membership;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\Import\ImportTemplateDownloader;
 use App\Services\Import\PaymentImporter;
 use App\Services\MembershipService;
+use App\Services\NotificationService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class PaymentController extends Controller
     public function __construct(
         private readonly PaymentService $payments,
         private readonly MembershipService $memberships,
+        private readonly NotificationService $notifications,
     ) {}
 
     public function index(Request $request): Response
@@ -106,29 +108,38 @@ class PaymentController extends Controller
 
         return Inertia::render('Admin/Payments/Create', [
             'members' => $members,
-            'plans' => MembershipPlan::query()
-                ->where('is_active', true)
-                ->orderBy('duration_months')
-                ->get(['id', 'name', 'duration_months', 'price']),
         ]);
     }
 
+    /**
+     * Catat pembayaran (menu Catat Pembayaran).
+     * Tanggal masa aktif diisi admin, membership langsung aktif/di-set sesuai input.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'member_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', User::ROLE_MEMBER)],
-            'plan_id' => ['required', 'integer', 'exists:membership_plans,id'],
+            'plan_id' => ['nullable', 'integer', 'exists:membership_plans,id'],
+            'amount' => ['required', 'integer', 'min:0'],
+            'started_at' => ['required', 'date'],
+            'expires_at' => ['required', 'date', 'after_or_equal:started_at'],
+            'method' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $member = User::findOrFail($validated['member_id']);
-        $plan = MembershipPlan::findOrFail($validated['plan_id']);
 
-        DB::transaction(function () use ($member, $plan, $request, $validated) {
-            $payment = $this->payments->createPending($member, $plan);
-
-            $this->payments->approve($payment, $request->user(), $validated['notes'] ?? null);
+        DB::transaction(function () use ($member, $request, $validated) {
+            $this->recordApprovedPayment($member, $validated, $request->user(), now());
         });
+
+        $this->notifications->send(
+            $member,
+            'Pembayaran Disetujui',
+            'Membership Anda aktif hingga '.Carbon::parse($validated['expires_at'])->endOfDay()->translatedFormat('d F Y').'.',
+            'membership',
+            '/member/history',
+        );
 
         return redirect()
             ->route('admin.payments.index')
@@ -137,7 +148,7 @@ class PaymentController extends Controller
 
     /**
      * Riwayat pembayaran manual oleh admin dari halaman detail member.
-     * Dengan paket  -> perpanjang membership; tanpa paket -> catatan riwayat saja.
+     * Dengan tanggal masa aktif -> perpanjang membership; tanpa tanggal -> catatan riwayat saja.
      */
     public function storeManual(Request $request, User $member): RedirectResponse
     {
@@ -154,40 +165,8 @@ class PaymentController extends Controller
 
         $hasPeriod = ! empty($validated['started_at']) || ! empty($validated['expires_at']);
 
-        DB::transaction(function () use ($member, $validated, $request, $hasPeriod) {
-            $periodMonths = 0;
-
-            if (! empty($validated['started_at']) && ! empty($validated['expires_at'])) {
-                $periodMonths = (int) Carbon::parse($validated['started_at'])
-                    ->diffInDays(Carbon::parse($validated['expires_at']));
-            }
-
-            $member->payments()->create([
-                'invoice_number' => $this->payments->nextInvoiceNumber(),
-                'plan_id' => null,
-                'period_months' => $periodMonths,
-                'amount' => $validated['amount'],
-                'status' => Payment::STATUS_APPROVED,
-                'paid_at' => $validated['paid_at'],
-                'method' => $validated['method'] ?? null,
-                'notes' => $validated['notes'] ?? null,
-                'approved_by' => $request->user()->id,
-                'approved_at' => now(),
-            ]);
-
-            if ($hasPeriod) {
-                $membership = $this->memberships->ensureMembership($member);
-
-                $membership->forceFill([
-                    'status' => $membership->expires_at && $membership->expires_at->isPast() && empty($validated['expires_at'])
-                        ? 'inactive'
-                        : 'active',
-                    'started_at' => $validated['started_at'] ?? $membership->started_at,
-                    'expires_at' => $validated['expires_at'] ?? $membership->expires_at,
-                ])->save();
-
-                $member->setRelation('membership', $membership->fresh());
-            }
+        DB::transaction(function () use ($member, $validated, $request) {
+            $this->recordApprovedPayment($member, $validated, $request->user(), $validated['paid_at']);
         });
 
         $message = "Pembayaran manual untuk {$member->name} tercatat.";
@@ -197,6 +176,48 @@ class PaymentController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * Simpan pembayaran berstatus approved + (opsional) set membership aktif
+     * sesuai rentang tanggal yang diisi admin.
+     */
+    private function recordApprovedPayment(User $member, array $validated, User $admin, string|Carbon $paidAt): void
+    {
+        $started = $validated['started_at'] ?? null;
+        $expires = $validated['expires_at'] ?? null;
+        $hasPeriod = ! empty($started) || ! empty($expires);
+
+        $member->payments()->create([
+            'invoice_number' => $this->payments->nextInvoiceNumber(),
+            'plan_id' => $validated['plan_id'] ?? null,
+            'period_months' => $started && $expires
+                ? (int) Carbon::parse($started)->diffInDays(Carbon::parse($expires))
+                : 0,
+            'amount' => $validated['amount'],
+            'status' => Payment::STATUS_APPROVED,
+            'paid_at' => $paidAt,
+            'method' => $validated['method'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'approved_by' => $admin->id,
+            'approved_at' => now(),
+        ]);
+
+        if (! $hasPeriod) {
+            return;
+        }
+
+        $membership = $this->memberships->ensureMembership($member);
+
+        $membership->forceFill([
+            'status' => $membership->expires_at && $membership->expires_at->isPast() && empty($expires)
+                ? Membership::STATUS_INACTIVE
+                : Membership::STATUS_ACTIVE,
+            'started_at' => $started ?? $membership->started_at,
+            'expires_at' => $expires ?? $membership->expires_at,
+        ])->save();
+
+        $member->setRelation('membership', $membership->fresh());
     }
 
     public function importTemplate(ImportTemplateDownloader $templates): StreamedResponse

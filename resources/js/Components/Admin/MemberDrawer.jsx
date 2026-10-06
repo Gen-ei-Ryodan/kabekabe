@@ -2,9 +2,16 @@ import { router, useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
 import StatusChip from '@/Components/StatusChip';
 import Avatar from '@/Components/Avatar';
-import { formatDate, formatRupiah } from '@/Utils/format';
+import { formatDate, formatRupiah, toDateInputValue } from '@/Utils/format';
 
 import MemberForm from '@/Components/Admin/MemberForm';
+
+const today = toDateInputValue(new Date());
+const defaultExpires = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    return toDateInputValue(d);
+})();
 
 function CreateMemberDrawer({ onClose }) {
     const form = useForm({
@@ -31,7 +38,9 @@ function CreateMemberDrawer({ onClose }) {
         business_district: '',
         business_city: '',
         hobbies: [],
-        membership_period: '12',
+        membership_status: 'active',
+        membership_started_at: today,
+        membership_expires_at: defaultExpires,
     });
 
     const submit = (e) => {
@@ -78,6 +87,9 @@ function EditMemberDrawer({ member, onClose }) {
         hobbies: Array.isArray(member.hobbies) ? member.hobbies : [],
         password: '',
         password_confirmation: '',
+        membership_status: member.membership_status === 'inactive' ? 'inactive' : 'active',
+        membership_started_at: member.membership_started_at || '',
+        membership_expires_at: member.membership_expires_at || '',
     });
 
     const submit = (e) => {

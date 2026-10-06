@@ -59,6 +59,67 @@ class AdminFlowTest extends TestCase
         $this->assertTrue($member->hasActiveMembership());
     }
 
+    public function test_admin_can_create_member_with_status_and_date_range(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post(route('admin.members.store'), [
+            'name' => 'Member Rentang',
+            'email' => 'rentang@example.com',
+            'password' => 'SecretPass1',
+            'password_confirmation' => 'SecretPass1',
+            'membership_status' => 'inactive',
+            'membership_started_at' => '2026-11-01',
+            'membership_expires_at' => '2027-10-31',
+        ])->assertRedirect();
+
+        $member = User::where('email', 'rentang@example.com')->firstOrFail();
+
+        $this->assertNotNull($member->membership);
+        $this->assertSame('inactive', $member->membership->status);
+        $this->assertSame('2026-11-01', $member->membership->started_at->toDateString());
+        $this->assertSame('2027-10-31', $member->membership->expires_at->toDateString());
+        $this->assertFalse($member->hasActiveMembership());
+    }
+
+    public function test_admin_create_member_validates_membership_date_range(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post(route('admin.members.store'), [
+            'name' => 'Member Salah Tanggal',
+            'email' => 'salah-tanggal@example.com',
+            'password' => 'SecretPass1',
+            'password_confirmation' => 'SecretPass1',
+            'membership_status' => 'active',
+            'membership_started_at' => '2027-01-01',
+            'membership_expires_at' => '2026-01-01',
+        ])->assertSessionHasErrors('membership_expires_at');
+
+        $this->assertNull(User::where('email', 'salah-tanggal@example.com')->first());
+    }
+
+    public function test_admin_edit_form_saves_membership_status_and_date_range(): void
+    {
+        $admin = $this->admin();
+        $member = User::factory()->member()->create();
+
+        $this->actingAs($admin)->put(route('admin.members.update', $member), [
+            'name' => $member->name,
+            'email' => $member->email,
+            'membership_status' => 'active',
+            'membership_started_at' => '2026-10-01',
+            'membership_expires_at' => '2027-09-30',
+        ])->assertRedirect();
+
+        $member->load('membership');
+
+        $this->assertSame('active', $member->membership->status);
+        $this->assertSame('2026-10-01', $member->membership->started_at->toDateString());
+        $this->assertSame('2027-09-30', $member->membership->expires_at->toDateString());
+        $this->assertTrue($member->hasActiveMembership());
+    }
+
     public function test_admin_can_create_member_with_demographics(): void
     {
         $admin = $this->admin();

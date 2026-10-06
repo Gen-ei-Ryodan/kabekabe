@@ -285,11 +285,13 @@ class MemberFlowTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $member = User::factory()->member()->create();
-        $plan = MembershipPlan::factory()->create(['duration_months' => 3, 'is_active' => true]);
 
         $this->actingAs($admin)->post(route('admin.payments.store'), [
             'member_id' => $member->id,
-            'plan_id' => $plan->id,
+            'amount' => 300000,
+            'started_at' => now()->toDateString(),
+            'expires_at' => now()->addDays(90)->toDateString(),
+            'method' => 'Cash',
             'notes' => 'Paid offline in cash.',
         ])->assertRedirect(route('admin.payments.index'));
 
@@ -297,12 +299,16 @@ class MemberFlowTest extends TestCase
 
         $this->assertNotNull($payment);
         $this->assertSame(Payment::STATUS_APPROVED, $payment->status);
-        $this->assertSame($plan->id, $payment->plan_id);
+        $this->assertSame(300000, (int) $payment->amount);
+        $this->assertSame('Cash', $payment->method);
+        $this->assertNull($payment->plan_id);
+        $this->assertSame(90, (int) $payment->period_months);
 
         $member->load('membership');
 
         $this->assertTrue($member->hasActiveMembership());
-        $this->assertGreaterThanOrEqual(now()->addDays(90)->subMinute(), $member->membership->expires_at);
+        $this->assertSame(now()->toDateString(), $member->membership->started_at->toDateString());
+        $this->assertSame(now()->addDays(90)->toDateString(), $member->membership->expires_at->toDateString());
     }
 
     public function test_admin_approval_extends_membership(): void
