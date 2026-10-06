@@ -25,6 +25,9 @@ class PasswordOtpService
     /** Tujuan OTP: partner menyetujui linking ke calon member saat registrasi member. */
     public const PURPOSE_PARTNER_LINK = 'partner_link';
 
+    /** Tujuan OTP: member menyetujui linking ke calon partner saat registrasi partner. */
+    public const PURPOSE_MEMBER_LINK = 'member_link';
+
     /** Masa berlaku kode OTP dalam menit. */
     public const TTL_MINUTES = 10;
 

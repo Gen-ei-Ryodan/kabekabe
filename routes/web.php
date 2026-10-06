@@ -19,6 +19,7 @@ use App\Http\Controllers\Member\HomeController;
 use App\Http\Controllers\Member\NotificationController as MemberNotificationController;
 use App\Http\Controllers\Member\PartnerController as MemberPartnerController;
 use App\Http\Controllers\Member\PromoController as MemberPromoController;
+use App\Http\Controllers\Partner\MemberLinkOtpController;
 use App\Http\Controllers\Partner\RegisterController as PartnerRegisterController;
 use App\Http\Controllers\Partner\VerifyOtpController as PartnerVerifyOtpController;
 use App\Http\Controllers\Vendor\BillingController;
@@ -71,7 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
         Route::put('/account', [AccountController::class, 'update'])->name('account.update');
         Route::post('/account/password/send-otp', [AccountController::class, 'sendPasswordOtp'])
-            ->middleware('throttle:5,1')
+            ->middleware('throttle:5,1,account-password-otp')
             ->name('account.password.send-otp');
 
         // Billing & pembayaran online sisi member dinonaktifkan total;
@@ -200,12 +201,21 @@ Route::post('/api/doku/notifications', [DokuPaymentController::class, 'notificat
 
 // ---------- PARTNER REGISTRATION (Public) ----------
 Route::get('/partner/register', [PartnerRegisterController::class, 'show'])->name('partner.register.show');
-Route::post('/partner/register', [PartnerRegisterController::class, 'store'])->middleware('throttle:5,1')->name('partner.register.store');
+Route::post('/partner/register', [PartnerRegisterController::class, 'store'])->middleware('throttle:5,1,partner-register')->name('partner.register.store');
 Route::get('/partner/thank-you', [PartnerRegisterController::class, 'thankyou'])->name('partner.register.thankyou');
+
+// Linking member di form registrasi partner ("Sudah punya akun Member?").
+Route::post('/partner/member-link/request', [MemberLinkOtpController::class, 'request'])
+    ->middleware('throttle:5,1,member-link-request')
+    ->name('partner.member-link.request');
+
+Route::post('/partner/member-link/verify', [MemberLinkOtpController::class, 'verify'])
+    ->middleware('throttle:10,1,member-link-verify')
+    ->name('partner.member-link.verify');
 
 // Verifikasi OTP email PIC partner sebelum menunggu approval admin.
 Route::get('/partner/verify-otp', [PartnerVerifyOtpController::class, 'show'])->name('partner.otp.show');
-Route::post('/partner/verify-otp', [PartnerVerifyOtpController::class, 'store'])->middleware('throttle:10,1')->name('partner.otp.verify');
-Route::post('/partner/resend-otp', [PartnerVerifyOtpController::class, 'resend'])->middleware('throttle:3,1')->name('partner.otp.resend');
+Route::post('/partner/verify-otp', [PartnerVerifyOtpController::class, 'store'])->middleware('throttle:10,1,partner-otp-verify')->name('partner.otp.verify');
+Route::post('/partner/resend-otp', [PartnerVerifyOtpController::class, 'resend'])->middleware('throttle:3,1,partner-otp-resend')->name('partner.otp.resend');
 
 require __DIR__.'/auth.php';

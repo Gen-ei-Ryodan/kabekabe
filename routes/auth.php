@@ -22,20 +22,20 @@ Route::get('login', [AuthenticatedSessionController::class, 'create'])
     ->name('login');
 
 Route::post('login', [AuthenticatedSessionController::class, 'store'])
-    ->middleware('throttle:6,1');
+    ->middleware('throttle:6,1,login');
 
 Route::get('partner', [AuthenticatedSessionController::class, 'createPartner'])
     ->name('partner.login');
 
 Route::post('partner', [AuthenticatedSessionController::class, 'storePartner'])
-    ->middleware('throttle:6,1')
+    ->middleware('throttle:6,1,partner-login')
     ->name('partner.login.store');
 
 Route::get('admin', [AuthenticatedSessionController::class, 'createAdmin'])
     ->name('admin.login');
 
 Route::post('admin', [AuthenticatedSessionController::class, 'storeAdmin'])
-    ->middleware('throttle:6,1')
+    ->middleware('throttle:6,1,admin-login')
     ->name('admin.login.store');
 
 Route::middleware('guest')->group(function () {
@@ -43,15 +43,15 @@ Route::middleware('guest')->group(function () {
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store'])
-        ->middleware('throttle:5,1');
+        ->middleware('throttle:5,1,member-register');
 
     // Linking partner di form registrasi member ("Are you a Partner?").
     Route::post('register/partner-link/request', [PartnerLinkOtpController::class, 'request'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:5,1,partner-link-request')
         ->name('register.partner-link.request');
 
     Route::post('register/partner-link/verify', [PartnerLinkOtpController::class, 'verify'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:10,1,partner-link-verify')
         ->name('register.partner-link.verify');
 
     // Lupa password: minta kode OTP ke email.
@@ -59,7 +59,7 @@ Route::middleware('guest')->group(function () {
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:5,1,password-email')
         ->name('password.email');
 
     // Verifikasi kode OTP.
@@ -67,11 +67,11 @@ Route::middleware('guest')->group(function () {
         ->name('password.otp');
 
     Route::post('forgot-password/verify-otp', [PasswordOtpController::class, 'store'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:10,1,password-otp-verify')
         ->name('password.otp.verify');
 
     Route::post('forgot-password/resend-otp', [PasswordOtpController::class, 'resend'])
-        ->middleware('throttle:3,1')
+        ->middleware('throttle:3,1,password-otp-resend')
         ->name('password.otp.resend');
 
     // Reset password baru setelah OTP terverifikasi.
@@ -79,7 +79,7 @@ Route::middleware('guest')->group(function () {
         ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:5,1,password-reset')
         ->name('password.store');
 });
 
@@ -88,11 +88,11 @@ Route::middleware('auth')->group(function () {
         ->name('verification.notice');
 
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
+        ->middleware(['signed', 'throttle:6,1,verification-verify'])
         ->name('verification.verify');
 
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-        ->middleware('throttle:6,1')
+        ->middleware('throttle:6,1,verification-send')
         ->name('verification.send');
 
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])

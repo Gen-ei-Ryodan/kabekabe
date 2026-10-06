@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import MasterIdentityBiodata from '@/Components/MasterIdentityBiodata';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { HOBBY_LIST, INDUSTRY_CATEGORIES, derivePartnerCategory } from '@/constants/membership';
+import { INDUSTRY_CATEGORIES, derivePartnerCategory } from '@/constants/membership';
 import { useTranslation } from '@/i18n';
 
 const INDUSTRI_OPTIONS = INDUSTRY_CATEGORIES;
-const HOBBY_OPTIONS = HOBBY_LIST;
 
 export default function Register() {
     const { t } = useTranslation();
@@ -19,33 +19,46 @@ export default function Register() {
         company_phone: '',
         employee_count: '',
         established_since: '',
-        pic_name: '',
-        pic_email: '',
-        pic_whatsapp: '',
-        pic_phone: '',
+        industry: [],
         is_member: false,
         member_email: '',
+        // 4 section Master Identity (identik dengan registrasi member).
         name: '',
+        nickname: '',
+        gender: '',
+        birth_date: '',
+        birth_place: '',
+        marital_status: '',
+        religion: '',
+        place_of_worship_address: '',
+        address: '',
+        district: '',
+        city: '',
+        phone: '',
+        hobbies: [],
+        is_household: false,
+        companies: [{ company: '', industry: '', position: '', address: '' }],
+        business_district: '',
+        business_city: '',
+        // Akun login partner.
         email: '',
         password: '',
         password_confirmation: '',
-        phone: '',
-        date_of_birth: '',
-        industry: [],
-        hobbies: [],
-        custom_hobby: '',
     });
 
     const [industrySearch, setIndustrySearch] = useState('');
-    const [hobbySearch, setHobbySearch] = useState('');
-    const [customHobbyInput, setCustomHobbyInput] = useState('');
+    // Linking member: 'idle' | 'sending' | 'sent' | 'verifying' | 'verified'
+    const [linkState, setLinkState] = useState('idle');
+    const [linkInfo, setLinkInfo] = useState('');
+    const [linkError, setLinkError] = useState('');
+    const [memberOtp, setMemberOtp] = useState('');
+    const [linkBiodata, setLinkBiodata] = useState(null);
+
+    // Sudah terverifikasi OTP member? → biodata dipinjam dari Master Identity, form disingkirkan.
+    const skipBiodata = data.is_member && linkState === 'verified';
 
     const filteredIndustries = INDUSTRI_OPTIONS.filter((i) =>
         i.toLowerCase().includes(industrySearch.toLowerCase())
-    );
-
-    const filteredHobbies = HOBBY_OPTIONS.filter((h) =>
-        h.toLowerCase().includes(hobbySearch.toLowerCase())
     );
 
     const handleIndustryChange = (industry) => {
@@ -57,22 +70,96 @@ export default function Register() {
         }
     };
 
-    const handleHobbyChange = (hobby) => {
-        const current = data.hobbies;
-        if (current.includes(hobby)) {
-            setData('hobbies', current.filter((h) => h !== hobby));
-        } else {
-            setData('hobbies', [...current, hobby]);
+    const resetLink = () => {
+        setLinkState('idle');
+        setLinkInfo('');
+        setLinkError('');
+        setMemberOtp('');
+        setLinkBiodata(null);
+    };
+
+    const readCsrfToken = () => {
+        const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : '';
+    };
+
+    const postJson = async (url, body) => {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-XSRF-TOKEN': readCsrfToken(),
+            },
+            body: JSON.stringify(body),
+        });
+        const payload = await res.json().catch(() => ({}));
+        return { ok: res.ok, payload };
+    };
+
+    const requestMemberOtp = async () => {
+        const email = (data.member_email || '').trim();
+        if (!email) {
+            setLinkError(t('partner.memberOtpEmailEmpty'));
+            return;
+        }
+
+        setLinkError('');
+        setLinkInfo('');
+        setLinkState('sending');
+
+        try {
+            const { ok, payload } = await postJson(route('partner.member-link.request'), {
+                member_email: email,
+            });
+
+            if (!ok) {
+                setLinkError(
+                    payload?.errors?.member_email?.[0] ||
+                        payload?.message ||
+                        t('partner.memberOtpSendFailed')
+                );
+                setLinkState('idle');
+                return;
+            }
+
+            setLinkState('sent');
+            setLinkInfo(t('partner.memberOtpSent', { email: payload.email || email }));
+        } catch {
+            setLinkError(t('partner.linkServerError'));
+            setLinkState('idle');
         }
     };
 
-    const handleCustomHobby = (value) => {
-        setCustomHobbyInput(value);
-        const filtered = data.hobbies.filter((h) => h !== data.custom_hobby);
-        if (value) {
-            setData('hobbies', [...filtered, value]);
-        } else {
-            setData('hobbies', filtered);
+    const verifyMemberOtp = async () => {
+        if (!memberOtp || memberOtp.length !== 6) {
+            setLinkError(t('partner.memberOtpInvalidLength'));
+            return;
+        }
+
+        setLinkError('');
+        setLinkState('verifying');
+
+        try {
+            const { ok, payload } = await postJson(route('partner.member-link.verify'), {
+                otp: memberOtp,
+            });
+
+            if (!ok) {
+                setLinkError(
+                    payload?.errors?.otp?.[0] || payload?.message || t('partner.memberOtpWrong')
+                );
+                setLinkState('sent');
+                return;
+            }
+
+            setLinkState('verified');
+            setLinkBiodata(payload.biodata || null);
+            setLinkInfo(t('partner.memberOtpVerified', { name: payload.member || data.member_email }));
+        } catch {
+            setLinkError(t('partner.linkServerError'));
+            setLinkState('sent');
         }
     };
 
@@ -80,6 +167,10 @@ export default function Register() {
         e.preventDefault();
         if (Array.isArray(data.industry) && data.industry.length === 0) {
             alert(t('partner.alertIndustry'));
+            return;
+        }
+        if (data.is_member && linkState !== 'verified') {
+            alert(t('partner.memberOtpRequired'));
             return;
         }
         post(route('partner.register.store'), {
@@ -104,11 +195,11 @@ export default function Register() {
             </header>
 
             <form onSubmit={submit} className="space-y-8">
-                {/* 1. DATA PERUSAHAAN */}
+                {/* A. DATA PERUSAHAAN */}
                 <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">1</span>
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">A</span>
                             {t('partner.s1Title')}
                         </h2>
                         <p className="text-xs text-slate mt-0.5">{t('partner.s1Desc')}</p>
@@ -267,85 +358,11 @@ export default function Register() {
                     </div>
                 </section>
 
-                {/* 2. PIC (PERSON IN CHARGE) */}
+                {/* B. SUDAH PUNYA AKUN MEMBER? */}
                 <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">2</span>
-                            {t('partner.s2Title')}
-                        </h2>
-                        <p className="text-xs text-slate mt-0.5">{t('partner.s2Desc')}</p>
-                    </div>
-
-                    {!data.is_member && (
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <InputLabel htmlFor="pic_name" value={t('partner.picName')} />
-                                <TextInput
-                                    id="pic_name"
-                                    value={data.pic_name}
-                                    onChange={(e) => setData('pic_name', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    placeholder={t('partner.picNamePh')}
-                                    required
-                                />
-                                <InputError message={errors.pic_name} className="mt-1" />
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="pic_email" value={t('partner.picEmail')} />
-                                <TextInput
-                                    id="pic_email"
-                                    type="email"
-                                    value={data.pic_email}
-                                    onChange={(e) => setData('pic_email', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    placeholder="pic@email.com"
-                                    required
-                                />
-                                <InputError message={errors.pic_email} className="mt-1" />
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="pic_whatsapp" value={t('partner.picWhatsapp')} />
-                                <TextInput
-                                    id="pic_whatsapp"
-                                    type="tel"
-                                    value={data.pic_whatsapp}
-                                    onChange={(e) => setData('pic_whatsapp', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    placeholder="081234567890"
-                                    required
-                                />
-                                <InputError message={errors.pic_whatsapp} className="mt-1" />
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="pic_phone" value={t('partner.picPhone')} />
-                                <TextInput
-                                    id="pic_phone"
-                                    type="tel"
-                                    value={data.pic_phone}
-                                    onChange={(e) => setData('pic_phone', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    placeholder="021-1234567"
-                                    required
-                                />
-                                <InputError message={errors.pic_phone} className="mt-1" />
-                            </div>
-                        </div>
-                    )}
-
-                    {data.is_member && (
-                        <p className="text-xs text-slate">{t('partner.picFromMember')}</p>
-                    )}
-                </section>
-
-                {/* 3. STATUS KEANGGOTAAN */}
-                <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
-                    <div className="border-b border-ink/10 pb-3">
-                        <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">3</span>
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">B</span>
                             {t('partner.s3Title')}
                         </h2>
                         <p className="text-xs text-slate mt-0.5">{t('partner.s3Desc')}</p>
@@ -354,7 +371,11 @@ export default function Register() {
                     <div className="grid gap-3 sm:grid-cols-2">
                         <button
                             type="button"
-                            onClick={() => setData('is_member', true)}
+                            onClick={() => {
+                                if (!data.is_member) {
+                                    setData('is_member', true);
+                                }
+                            }}
                             className={`rounded-xl border p-3 text-sm font-semibold transition-all ${
                                 data.is_member
                                     ? 'border-gold bg-gold text-ink shadow-sm'
@@ -366,8 +387,11 @@ export default function Register() {
                         <button
                             type="button"
                             onClick={() => {
-                                setData('is_member', false);
+                                if (data.is_member) {
+                                    setData('is_member', false);
+                                }
                                 setData('member_email', '');
+                                resetLink();
                             }}
                             className={`rounded-xl border p-3 text-sm font-semibold transition-all ${
                                 !data.is_member
@@ -380,52 +404,157 @@ export default function Register() {
                     </div>
 
                     {data.is_member && (
-                        <div className="border-t border-ink/10 pt-3">
-                            <InputLabel htmlFor="member_email" value={t('partner.memberEmail')} />
-                            <TextInput
-                                id="member_email"
-                                type="email"
-                                value={data.member_email}
-                                onChange={(e) => setData('member_email', e.target.value)}
-                                className="mt-1 block w-full"
-                                placeholder={t('partner.memberEmailPh')}
-                                required
-                            />
-                            <InputError message={errors.member_email} className="mt-1" />
-                            <p className="mt-1 text-[11px] text-slate-soft">{t('partner.memberEmailHint')}</p>
+                        <div className="space-y-3 border-t border-ink/10 pt-3">
+                            <div>
+                                <InputLabel htmlFor="member_email" value={t('partner.memberEmail')} />
+                                <TextInput
+                                    id="member_email"
+                                    type="email"
+                                    value={data.member_email}
+                                    disabled={linkState === 'verified'}
+                                    onChange={(e) => {
+                                        setData('member_email', e.target.value);
+                                        if (linkState !== 'idle') {
+                                            resetLink();
+                                        }
+                                    }}
+                                    className="mt-1 block w-full"
+                                    placeholder={t('partner.memberEmailPh')}
+                                    required
+                                />
+                                <p className="mt-1 text-[11px] text-slate-soft">{t('partner.memberEmailHint')}</p>
+                            </div>
+
+                            {linkState !== 'verified' && linkState !== 'sent' && (
+                                <button
+                                    type="button"
+                                    onClick={requestMemberOtp}
+                                    disabled={linkState === 'sending'}
+                                    className="rounded-xl border border-gold/50 bg-gold/15 px-4 py-2 text-sm font-semibold text-gold-deep hover:bg-gold/25 disabled:opacity-50"
+                                >
+                                    {linkState === 'sending' ? t('partner.memberOtpSending') : t('partner.memberOtpBtn')}
+                                </button>
+                            )}
+
+                            {linkState === 'sent' && (
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <TextInput
+                                        inputMode="numeric"
+                                        autoComplete="one-time-code"
+                                        maxLength={6}
+                                        value={memberOtp}
+                                        onChange={(e) =>
+                                            setMemberOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+                                        }
+                                        className="block w-40 text-center font-mono tracking-[0.35em]"
+                                        placeholder="000000"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={verifyMemberOtp}
+                                        disabled={linkState === 'verifying'}
+                                        className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-ink/90 disabled:opacity-50"
+                                    >
+                                        {t('partner.memberOtpVerify')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={requestMemberOtp}
+                                        disabled={linkState === 'sending'}
+                                        className="text-sm font-semibold text-gold-deep hover:underline disabled:opacity-50"
+                                    >
+                                        {t('partner.memberOtpResend')}
+                                    </button>
+                                </div>
+                            )}
+
+                            {linkState === 'verified' && (
+                                <div className="rounded-xl border border-sage/40 bg-sage/15 px-4 py-3 text-sm font-medium text-ink">
+                                    {linkInfo || t('partner.memberOtpOk')}
+                                </div>
+                            )}
+
+                            {linkInfo && linkState !== 'verified' && (
+                                <p className="text-xs text-slate">{linkInfo}</p>
+                            )}
+                            <InputError message={linkError || errors.member_email} className="mt-1" />
                         </div>
                     )}
                 </section>
 
-                {/* 4. AKUN LOGIN & DATA DIRI */}
+                {/* 1-4. MASTER IDENTITY (identik dengan registrasi member) */}
+                {skipBiodata ? (
+                    <section className="rounded-2xl border border-gold/30 bg-gold/5 p-5 sm:p-6 space-y-4">
+                        <div className="border-b border-gold/20 pb-3">
+                            <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">✓</span>
+                                {t('partner.biodataFromMemberTitle')}
+                            </h2>
+                            <p className="text-xs text-slate mt-0.5">{t('partner.biodataFromMemberDesc')}</p>
+                        </div>
+
+                        {linkBiodata && (
+                            <div className="rounded-xl border border-ink/10 bg-white/70 p-4">
+                                <p className="text-xs font-semibold text-gold-deep uppercase tracking-wider mb-2">
+                                    {t('partner.biodataFromMemberLabel')}
+                                </p>
+                                <dl className="grid gap-2 sm:grid-cols-2">
+                                    {[
+                                        [t('partner.bioName'), linkBiodata.name],
+                                        [t('partner.bioPhone'), linkBiodata.phone],
+                                        [t('partner.bioGender'), linkBiodata.gender],
+                                        [t('partner.bioBirthDate'), linkBiodata.birth_date],
+                                        [t('partner.bioBirthPlace'), linkBiodata.birth_place],
+                                        [t('partner.bioMarital'), linkBiodata.marital_status],
+                                        [t('partner.bioReligion'), linkBiodata.religion],
+                                        [t('partner.bioCity'), linkBiodata.city],
+                                        [t('partner.bioDistrict'), linkBiodata.district],
+                                        [t('partner.bioAddress'), linkBiodata.address],
+                                        [t('partner.bioMemberCode'), linkBiodata.member_code],
+                                    ]
+                                        .filter(([, v]) => v)
+                                        .map(([label, value]) => (
+                                            <div key={label} className="rounded-lg bg-paper p-2.5">
+                                                <dt className="eyebrow">{label}</dt>
+                                                <dd className="mt-0.5 text-sm font-medium text-ink">{value}</dd>
+                                            </div>
+                                        ))}
+                                </dl>
+                                {Array.isArray(linkBiodata.hobbies) && linkBiodata.hobbies.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-1.5">
+                                        {linkBiodata.hobbies.map((h) => (
+                                            <span
+                                                key={h}
+                                                className="rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-semibold text-gold-deep"
+                                            >
+                                                {h}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </section>
+                ) : (
+                    <MasterIdentityBiodata
+                        data={data}
+                        setData={setData}
+                        errors={errors}
+                        showEmail={false}
+                    />
+                )}
+
+                {/* C. AKUN LOGIN */}
                 <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
                     <div className="border-b border-ink/10 pb-3">
                         <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">4</span>
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">C</span>
                             {t('partner.s4Title')}
                         </h2>
                         <p className="text-xs text-slate mt-0.5">{t('partner.s4Desc')}</p>
                     </div>
 
                     <div className="space-y-4">
-                        {!data.is_member ? (
-                            <div>
-                                <InputLabel htmlFor="name" value={t('partner.fullName')} />
-                                <TextInput
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    autoComplete="name"
-                                    placeholder={t('partner.fullNamePh')}
-                                    required
-                                />
-                                <InputError message={errors.name} className="mt-1" />
-                            </div>
-                        ) : (
-                            <p className="text-xs text-slate">{t('partner.nameFromMember')}</p>
-                        )}
-
                         <div>
                             <InputLabel htmlFor="email" value={t('partner.emailLabel')} />
                             <TextInput
@@ -439,6 +568,9 @@ export default function Register() {
                                 required
                             />
                             <InputError message={errors.email} className="mt-1" />
+                            {skipBiodata && (
+                                <p className="mt-1 text-xs text-slate">{t('partner.loginEmailHint')}</p>
+                            )}
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -470,149 +602,6 @@ export default function Register() {
                                 />
                                 <InputError message={errors.password_confirmation} className="mt-1" />
                             </div>
-                        </div>
-
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <InputLabel htmlFor="phone" value={t('partner.phoneLabel')} />
-                                <TextInput
-                                    id="phone"
-                                    type="tel"
-                                    value={data.phone}
-                                    onChange={(e) => setData('phone', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    placeholder="081234567890"
-                                />
-                                <InputError message={errors.phone} className="mt-1" />
-                            </div>
-
-                            {!data.is_member && (
-                                <div>
-                                    <InputLabel htmlFor="date_of_birth" value={t('partner.birthDate')} />
-                                    <TextInput
-                                        id="date_of_birth"
-                                        type="date"
-                                        value={data.date_of_birth}
-                                        onChange={(e) => setData('date_of_birth', e.target.value)}
-                                        className="mt-1 block w-full"
-                                    />
-                                    <InputError message={errors.date_of_birth} className="mt-1" />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </section>
-
-                {/* 5. HOBI */}
-                <section className="rounded-2xl border border-ink/10 bg-white/50 p-5 sm:p-6 space-y-4">
-                    <div className="border-b border-ink/10 pb-3">
-                        <h2 className="font-display text-base font-bold text-ink flex items-center gap-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold-deep">5</span>
-                            {t('partner.s5Title')}
-                        </h2>
-                        <p className="text-xs text-slate mt-0.5">{t('partner.s5Desc')}</p>
-                    </div>
-
-                    {/* Hobi Terpilih */}
-                    <div>
-                        <InputLabel value={t('partner.hobbiesSelected', { count: data.hobbies.length })} className="mb-1.5" />
-                        {data.hobbies.length === 0 ? (
-                            <p className="text-xs italic text-slate">{t('partner.hobbiesEmpty')}</p>
-                        ) : (
-                            <div className="flex flex-wrap gap-1.5">
-                                {data.hobbies.map((h) => (
-                                    <span
-                                        key={h}
-                                        className="inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep"
-                                    >
-                                        {h}
-                                        <button
-                                            type="button"
-                                            onClick={() => handleHobbyChange(h)}
-                                            className="hover:text-ember ml-1"
-                                        >
-                                            ✕
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Search & List */}
-                    <div className="space-y-2">
-                        <div className="flex gap-2">
-                            <TextInput
-                                type="text"
-                                value={hobbySearch}
-                                onChange={(e) => setHobbySearch(e.target.value)}
-                                placeholder={t('partner.hobbySearchPh')}
-                                className="flex-1 text-xs"
-                            />
-                            {hobbySearch && (
-                                <button
-                                    type="button"
-                                    onClick={() => setHobbySearch('')}
-                                    className="btn-ghost text-xs px-3"
-                                >
-                                    {t('partner.reset')}
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="max-h-48 overflow-y-auto rounded-xl border border-ink/10 bg-white/80 p-3">
-                            <div className="flex flex-wrap gap-1.5">
-                                {filteredHobbies.map((hobby) => {
-                                    const isSelected = data.hobbies.includes(hobby);
-                                    return (
-                                        <button
-                                            key={hobby}
-                                            type="button"
-                                            onClick={() => handleHobbyChange(hobby)}
-                                            className={`rounded-lg border px-2.5 py-1 text-xs transition-all ${
-                                                isSelected
-                                                    ? 'border-gold bg-gold/20 text-gold-deep font-semibold shadow-xs'
-                                                    : 'border-ink/10 bg-white text-slate hover:border-gold/50 hover:text-ink'
-                                            }`}
-                                        >
-                                            {isSelected ? '✓ ' : '+ '}{hobby}
-                                        </button>
-                                    );
-                                })}
-                                {filteredHobbies.length === 0 && (
-                                    <p className="text-xs text-slate py-1">{t('partner.hobbyEmpty')}</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Custom Hobby */}
-                    <div className="border-t border-ink/10 pt-3">
-                        <InputLabel value={t('partner.customHobbyLabel')} />
-                        <div className="mt-1.5 flex gap-2">
-                            <TextInput
-                                value={customHobbyInput}
-                                onChange={(e) => setCustomHobbyInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleCustomHobby(e.target.value);
-                                        setCustomHobbyInput('');
-                                    }
-                                }}
-                                placeholder={t('partner.customHobbyPh')}
-                                className="flex-1"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    handleCustomHobby(customHobbyInput);
-                                    setCustomHobbyInput('');
-                                }}
-                                className="btn-ink text-xs px-4 py-2"
-                            >
-                                {t('partner.add')}
-                            </button>
                         </div>
                     </div>
                 </section>

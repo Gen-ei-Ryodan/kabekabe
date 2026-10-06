@@ -23,12 +23,20 @@ class PartnerRegistrationOtpTest extends TestCase
             'pic_whatsapp' => '084444444444',
             'pic_phone' => '082222222222',
             'is_member' => false,
-            'name' => 'Partner Satu',
             'email' => 'pic-kopi@example.com',
             'password' => 'Rahasia123!',
             'password_confirmation' => 'Rahasia123!',
             'phone' => '083333333333',
             'industry' => ['F&B - Coffee Shop'],
+            // 4 form Master Identity (registrasi partner tanpa akun member).
+            'name' => 'Partner Satu',
+            'address' => 'Jl. PIC No. 7',
+            'district' => 'Kuta',
+            'city' => 'Badung',
+            'birth_date' => '1991-02-03',
+            'companies' => [
+                ['company' => 'PT Kopi Baru', 'industry' => 'F&B', 'position' => 'Direktur', 'address' => 'Jl. Kopi No. 1'],
+            ],
         ], $overrides);
     }
 
@@ -127,14 +135,14 @@ class PartnerRegistrationOtpTest extends TestCase
             'phone' => '081111111111',
         ]);
 
+        $this->verifyMemberLink('member-satu@example.com');
+
         $this->post('/partner/register', $this->pathAPayload([
             'is_member' => true,
             'member_email' => 'member-satu@example.com',
             'name' => '',
-            'pic_name' => '',
-            'pic_email' => '',
-            'pic_whatsapp' => '',
-            'pic_phone' => '',
+            'address' => '',
+            'companies' => [],
         ]))->assertRedirect(route('partner.otp.show'));
 
         $partner = Partner::query()->where('email', 'pic-kopi@example.com')->firstOrFail();
@@ -154,23 +162,81 @@ class PartnerRegistrationOtpTest extends TestCase
         $this->post('/partner/register', $this->pathAPayload([
             'is_member' => true,
             'member_email' => 'tidak-ada@example.com',
-            'name' => '',
         ]))->assertSessionHasErrors('member_email');
 
         $this->assertNull(User::query()->where('email', 'pic-kopi@example.com')->first());
     }
 
-    public function test_non_member_registration_requires_complete_pic_biodata(): void
+    public function test_member_registration_requires_member_otp_before_submit(): void
     {
-        $this->post('/partner/register', $this->pathAPayload([
-            'pic_email' => '',
-            'pic_whatsapp' => '',
-        ]))->assertSessionHasErrors(['pic_email', 'pic_whatsapp']);
+        User::factory()->member()->create(['email' => 'wajib-otp@example.com']);
 
         $this->post('/partner/register', $this->pathAPayload([
-            'pic_name' => '',
-            'pic_phone' => '',
-        ]))->assertSessionHasErrors(['pic_name', 'pic_phone']);
+            'is_member' => true,
+            'member_email' => 'wajib-otp@example.com',
+        ]))->assertSessionHasErrors('member_email');
+
+        $this->assertNull(User::query()->where('email', 'pic-kopi@example.com')->first());
+        $this->assertNull(Partner::query()->where('email', 'pic-kopi@example.com')->first());
+    }
+
+    public function test_non_member_registration_requires_master_identity_biodata(): void
+    {
+        // Tanpa akun member, 4 form Master Identity wajib diisi (nama + info usaha).
+        $this->post('/partner/register', $this->pathAPayload([
+            'name' => '',
+        ]))->assertSessionHasErrors('name');
+
+        $this->post('/partner/register', $this->pathAPayload([
+            'companies' => [],
+        ]))->assertSessionHasErrors('companies');
+
+        $this->post('/partner/register', $this->pathAPayload([
+            'phone' => '',
+        ]))->assertSessionHasErrors('phone');
+
+        $this->assertNull(User::query()->where('email', 'pic-kopi@example.com')->first());
+    }
+
+    public function test_non_member_master_identity_is_saved_to_master_identities(): void
+    {
+        $this->post('/partner/register', $this->pathAPayload())
+            ->assertRedirect(route('partner.otp.show'));
+
+        $user = User::query()->where('email', 'pic-kopi@example.com')->firstOrFail();
+        $partner = Partner::query()->where('email', 'pic-kopi@example.com')->firstOrFail();
+
+        $this->assertNotNull($user->master_identity_id);
+        $this->assertSame($user->master_identity_id, $partner->master_identity_id);
+
+        $identity = $user->masterIdentity;
+
+        $this->assertSame('pic-kopi@example.com', $identity->email);
+        $this->assertSame('Partner Satu', $identity->name);
+        $this->assertSame('Jl. PIC No. 7', $identity->address);
+        $this->assertSame('Kuta', $identity->district);
+        $this->assertSame('Badung', $identity->city);
+        $this->assertSame('1991-02-03', $identity->birth_date?->toDateString());
+        $this->assertSame('Partner Satu', $user->name);
+        $this->assertSame('Direktur', $user->businesses[0]['position']);
+        $this->assertSame(['PT Kopi Baru'], $user->business_fields);
+    }
+
+    /**
+     * Selesaikan alur OTP linking member (request + verify) untuk partner register.
+     */
+    private function verifyMemberLink(string $memberEmail): void
+    {
+        $this->postJson(route('partner.member-link.request'), ['member_email' => $memberEmail])
+            ->assertOk()
+            ->assertJsonPath('ok', true);
+
+        $code = User::query()->where('email', $memberEmail)->firstOrFail()->fresh()->otp_code;
+        $this->assertNotNull($code);
+
+        $this->postJson(route('partner.member-link.verify'), ['otp' => $code])
+            ->assertOk()
+            ->assertJsonPath('ok', true);
     }
 
     private function errorMessage(string $key): string

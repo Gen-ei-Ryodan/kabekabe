@@ -287,7 +287,14 @@ class RegisteredUserController extends Controller
                 return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
             }
 
-            $identity = MasterIdentity::forEmail($request->email, [
+            // Member baru yang terhubung ke partner memakai Master Identity partner
+            // (1 identity menaungi partner & member-nya), bukan membuat identity baru.
+            $linkedIdentity = $linkPartner?->masterIdentity ?? $linkPartner?->user?->masterIdentity;
+            $identityEmail = $linkPartner
+                ? ($linkPartner->email ?? $linkPartner->user?->email)
+                : $request->email;
+
+            $identity = $linkedIdentity ?: MasterIdentity::forEmail($identityEmail, [
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'birth_date' => $request->birth_date,
@@ -334,6 +341,16 @@ class RegisteredUserController extends Controller
 
             // Otomatis link partner yang sudah lolos OTP ke member baru ini.
             if ($linkPartner) {
+                // Samakan Master Identity partner ↔ member bila partner belum punya identity.
+                if ($identity && ! $linkPartner->master_identity_id) {
+                    $linkPartner->forceFill(['master_identity_id' => $identity->id])->save();
+                }
+                $linkedVendor = $linkPartner->user;
+
+                if ($identity && $linkedVendor && ! $linkedVendor->master_identity_id) {
+                    $linkedVendor->forceFill(['master_identity_id' => $identity->id])->save();
+                }
+
                 $linkPartner->forceFill([
                     'member_user_id' => $user->id,
                     'is_member' => true,

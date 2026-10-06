@@ -102,6 +102,27 @@ class MemberPartnerLinkTest extends TestCase
         $this->assertSame($member->member_code, $partner->member_id_number);
     }
 
+    public function test_member_shares_master_identity_with_linked_partner(): void
+    {
+        $partner = $this->linkedPartner();
+
+        $this->postJson(route('register.partner-link.request'), ['partner_email' => $partner->email])->assertOk();
+        $code = $partner->user->fresh()->otp_code;
+        $this->postJson(route('register.partner-link.verify'), ['otp' => $code])->assertOk();
+
+        $this->post('/register', $this->memberPayload())->assertOk();
+
+        $member = User::query()->where('email', 'calon-member@example.com')->firstOrFail();
+        $partner->refresh();
+
+        $this->assertNotNull($member->master_identity_id);
+        // Member baru memakai Master Identity partner (bukan membuat identity kedua).
+        $this->assertSame($partner->master_identity_id, $member->master_identity_id);
+        $this->assertSame($partner->email, $member->masterIdentity?->email);
+        $this->assertSame($partner->id, $partner->user->fresh()->partner->id);
+        $this->assertSame($member->master_identity_id, $partner->user->fresh()->master_identity_id);
+    }
+
     public function test_wrong_otp_does_not_link_partner(): void
     {
         $partner = $this->linkedPartner();
