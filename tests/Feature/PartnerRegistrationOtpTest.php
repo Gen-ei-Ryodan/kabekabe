@@ -24,8 +24,6 @@ class PartnerRegistrationOtpTest extends TestCase
             'pic_phone' => '082222222222',
             'is_member' => false,
             'email' => 'pic-kopi@example.com',
-            'password' => 'Rahasia123!',
-            'password_confirmation' => 'Rahasia123!',
             'phone' => '083333333333',
             'industry' => ['F&B - Coffee Shop'],
             // 4 form Master Identity (registrasi partner tanpa akun member).
@@ -64,9 +62,13 @@ class PartnerRegistrationOtpTest extends TestCase
         $this->post('/partner/register', $this->pathAPayload())
             ->assertRedirect(route('partner.otp.show'));
 
+        // Password di-generate random, jadi set manual untuk test login.
+        $user = User::query()->where('email', 'pic-kopi@example.com')->firstOrFail();
+        $user->forceFill(['password' => Hash::make('TestPass123!')])->save();
+
         $this->from('/partner')->post('/partner', [
             'email' => 'pic-kopi@example.com',
-            'password' => 'Rahasia123!',
+            'password' => 'TestPass123!',
         ])->assertRedirect('/partner');
 
         $this->assertStringContainsString('belum diverifikasi', $this->errorMessage('email'));
@@ -79,7 +81,10 @@ class PartnerRegistrationOtpTest extends TestCase
 
         $user = User::query()->where('email', 'pic-kopi@example.com')->firstOrFail();
 
-        $this->post(route('partner.otp.verify'), ['otp' => $user->otp_code])
+        // Set known password karena register sekarang generate random.
+        $user->forceFill(['password' => Hash::make('TestPass123!')])->save();
+
+        $this->post(route('partner.otp.verify'), ['otp' => $user->fresh()->otp_code])
             ->assertRedirect(route('partner.register.thankyou'));
 
         $user->refresh();
@@ -90,7 +95,7 @@ class PartnerRegistrationOtpTest extends TestCase
         // OTP sukses tapi approval admin belum ada → tetap tidak bisa login.
         $this->from('/partner')->post('/partner', [
             'email' => 'pic-kopi@example.com',
-            'password' => 'Rahasia123!',
+            'password' => 'TestPass123!',
         ])->assertRedirect('/partner');
 
         $this->assertStringContainsString('menunggu persetujuan', $this->errorMessage('email'));

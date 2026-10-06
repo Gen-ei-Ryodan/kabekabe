@@ -13,7 +13,7 @@ const INDUSTRI_OPTIONS = INDUSTRY_CATEGORIES;
 
 export default function Register() {
     const { t } = useTranslation();
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         company_name: '',
         company_address: '',
         company_phone: '',
@@ -42,8 +42,6 @@ export default function Register() {
         business_city: '',
         // Akun login partner.
         email: '',
-        password: '',
-        password_confirmation: '',
     });
 
     const [industrySearch, setIndustrySearch] = useState('');
@@ -173,14 +171,47 @@ export default function Register() {
             alert(t('partner.memberOtpRequired'));
             return;
         }
-        post(route('partner.register.store'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+        post(route('partner.register.store'));
     };
 
     return (
         <GuestLayout maxWidth="max-w-3xl">
             <Head title={t('partner.title')} />
+
+            {/* Tab Switcher Member / Partner */}
+            <div className="mb-6">
+                <InputLabel
+                    value="Tipe Pendaftaran"
+                    className="mb-2 text-sm font-semibold"
+                />
+                <div className="grid grid-cols-2 gap-4">
+                    <Link
+                        href={route('register')}
+                        className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-white/70 p-4 text-center text-slate transition-all hover:bg-gold/10 hover:border-gold hover:text-gold-deep"
+                    >
+                        <span className="text-2xl mb-1.5">🪪</span>
+                        <span className="text-sm font-semibold">
+                            Anggota (Member)
+                        </span>
+                        <span className="text-xs text-slate mt-0.5">
+                            Kartu digital, promo &amp; jejaring
+                        </span>
+                    </Link>
+
+                    <button
+                        type="button"
+                        className="flex flex-col items-center justify-center rounded-2xl border border-gold bg-gold/10 p-4 text-center text-gold-deep font-bold shadow-sm ring-2 ring-gold/40 cursor-default"
+                    >
+                        <span className="text-2xl mb-1.5">🏪</span>
+                        <span className="text-sm font-semibold">
+                            Mitra Usaha (Partner)
+                        </span>
+                        <span className="text-xs mt-0.5">
+                            Promosi brand &amp; merchant KBKB
+                        </span>
+                    </button>
+                </div>
+            </div>
 
             <header className="mb-6 text-center sm:text-left">
                 <span className="inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep mb-2">
@@ -568,40 +599,9 @@ export default function Register() {
                                 required
                             />
                             <InputError message={errors.email} className="mt-1" />
-                            {skipBiodata && (
-                                <p className="mt-1 text-xs text-slate">{t('partner.loginEmailHint')}</p>
-                            )}
-                        </div>
-
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <InputLabel htmlFor="password" value={t('partner.passwordLabel')} />
-                                <TextInput
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    required
-                                />
-                                <InputError message={errors.password} className="mt-1" />
-                                <p className="mt-1 text-[11px] text-slate-soft">{t('partner.passwordHint')}</p>
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="password_confirmation" value={t('partner.passwordConfirm')} />
-                                <TextInput
-                                    id="password_confirmation"
-                                    type="password"
-                                    value={data.password_confirmation}
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    required
-                                />
-                                <InputError message={errors.password_confirmation} className="mt-1" />
-                            </div>
+                            <p className="mt-1 text-xs text-slate">
+                                Email ini akan digunakan untuk login. Password akan dikirim ke email Anda setelah disetujui Admin.
+                            </p>
                         </div>
                     </div>
                 </section>

@@ -13,7 +13,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,7 +50,8 @@ class RegisterController extends Controller
                 Rule::unique('users', 'email')->where('role', User::ROLE_VENDOR),
                 Rule::unique('partners', 'email'),
             ],
-            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
+            // Password tidak diisi user; di-generate otomatis → dikirim email setelah admin approve.
+            // 'password' => removed
             'phone' => $isMember ? ['nullable', 'string', 'max:30'] : ['required', 'string', 'max:30'],
             'industry' => ['required'],
             // Data diri (4 section Master Identity).
@@ -236,7 +236,7 @@ class RegisterController extends Controller
                 'businesses' => ! empty($businesses) ? $businesses : null,
                 'is_household' => $isHousehold,
                 'industry' => ! empty($extractedIndustries) ? implode(', ', $extractedIndustries) : null,
-                'password' => $validated['password'],
+                'password' => \Illuminate\Support\Str::random(16),
                 'role' => User::ROLE_VENDOR,
                 'email_verified_at' => null,
                 'approval_status' => User::APPROVAL_PENDING,
