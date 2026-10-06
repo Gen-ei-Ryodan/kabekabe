@@ -15,7 +15,10 @@ export default function Register() {
     const { t } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         company_name: '',
+        trade_name: '',
         company_address: '',
+        company_district: '',
+        company_city: '',
         company_phone: '',
         employee_count: '',
         established_since: '',
@@ -237,17 +240,32 @@ export default function Register() {
                     </div>
 
                     <div className="space-y-4">
-                        <div>
-                            <InputLabel htmlFor="company_name" value={t('partner.companyName')} />
-                            <TextInput
-                                id="company_name"
-                                value={data.company_name}
-                                onChange={(e) => setData('company_name', e.target.value)}
-                                className="mt-1 block w-full"
-                                placeholder={t('partner.companyNamePh')}
-                                required
-                            />
-                            <InputError message={errors.company_name} className="mt-1" />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel htmlFor="company_name" value={t('partner.companyName')} />
+                                <TextInput
+                                    id="company_name"
+                                    value={data.company_name}
+                                    onChange={(e) => setData('company_name', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder={t('partner.companyNamePh')}
+                                    required
+                                />
+                                <InputError message={errors.company_name} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="trade_name" value={t('partner.tradeName')} />
+                                <TextInput
+                                    id="trade_name"
+                                    value={data.trade_name}
+                                    onChange={(e) => setData('trade_name', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder={t('partner.tradeNamePh')}
+                                    required
+                                />
+                                <InputError message={errors.trade_name} className="mt-1" />
+                            </div>
                         </div>
 
                         <div>
@@ -372,18 +390,44 @@ export default function Register() {
                                 />
                                 <InputError message={errors.established_since} className="mt-1" />
                             </div>
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="company_address" value={t('partner.companyAddress')} />
+                            <textarea
+                                id="company_address"
+                                rows={2}
+                                value={data.company_address}
+                                onChange={(e) => setData('company_address', e.target.value)}
+                                className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+                                placeholder={t('partner.companyAddressPh')}
+                            />
+                            <InputError message={errors.company_address} className="mt-1" />
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel htmlFor="company_district" value={t('partner.companyDistrict')} />
+                                <TextInput
+                                    id="company_district"
+                                    value={data.company_district}
+                                    onChange={(e) => setData('company_district', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder={t('partner.companyDistrictPh')}
+                                />
+                                <InputError message={errors.company_district || errors.district} className="mt-1" />
+                            </div>
 
                             <div>
-                                <InputLabel htmlFor="company_address" value={t('partner.companyAddress')} />
-                                <textarea
-                                    id="company_address"
-                                    rows={2}
-                                    value={data.company_address}
-                                    onChange={(e) => setData('company_address', e.target.value)}
-                                    className="mt-1 block w-full rounded-xl border-ink/20 bg-white/90 p-3 text-sm text-ink shadow-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-                                    placeholder={t('partner.companyAddressPh')}
+                                <InputLabel htmlFor="company_city" value={t('partner.companyCity')} />
+                                <TextInput
+                                    id="company_city"
+                                    value={data.company_city}
+                                    onChange={(e) => setData('company_city', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder={t('partner.companyCityPh')}
                                 />
-                                <InputError message={errors.company_address} className="mt-1" />
+                                <InputError message={errors.company_city || errors.city} className="mt-1" />
                             </div>
                         </div>
                     </div>

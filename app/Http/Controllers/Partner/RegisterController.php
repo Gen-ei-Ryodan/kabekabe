@@ -35,10 +35,13 @@ class RegisterController extends Controller
 
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
+            'trade_name' => ['nullable', 'string', 'max:255'],
             'company_address' => ['nullable', 'string', 'max:1000'],
+            'company_district' => ['nullable', 'string', 'max:100'],
+            'company_city' => ['nullable', 'string', 'max:100'],
             'company_phone' => ['nullable', 'string', 'max:30'],
             'employee_count' => ['nullable', 'integer', 'min:1'],
-            'established_since' => ['nullable', 'string', 'max:4'],
+            'established_since' => ['nullable', 'string', 'max:50'],
             'is_member' => ['required', 'boolean'],
             'member_email' => $isMember
                 ? ['required', 'email', 'max:255', Rule::exists('users', 'email')->where('role', User::ROLE_MEMBER)]
@@ -246,11 +249,14 @@ class RegisterController extends Controller
 
             $partner = $user->partner()->create([
                 'name' => $validated['company_name'],
+                'trade_name' => $validated['trade_name'] ?? null,
                 'slug' => Partner::slugFor($validated['company_name']),
                 'category' => PartnerCategory::fromIndustries(
                     is_array($industryInput) ? array_filter($industryInput) : [$industryString]
                 ),
                 'address' => $validated['company_address'] ?? null,
+                'district' => $validated['company_district'] ?? $validated['district'] ?? null,
+                'city' => $validated['company_city'] ?? $validated['city'] ?? null,
                 'phone' => $validated['company_phone'] ?? null,
                 'email' => $validated['email'],
                 'employee_count' => $validated['employee_count'] ?? null,
