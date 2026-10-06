@@ -155,6 +155,33 @@ class User extends Authenticatable
         return $this->role === self::ROLE_MEMBER;
     }
 
+    public static function roleForPortal(?string $portal): string
+    {
+        return match ($portal) {
+            'partner' => self::ROLE_VENDOR,
+            'admin' => self::ROLE_ADMIN,
+            default => self::ROLE_MEMBER,
+        };
+    }
+
+    public static function portalForRole(?string $role): string
+    {
+        return match ($role) {
+            self::ROLE_VENDOR => 'partner',
+            self::ROLE_ADMIN => 'admin',
+            default => 'member',
+        };
+    }
+
+    public static function loginRouteForPortal(?string $portal): string
+    {
+        return match ($portal) {
+            'partner' => 'partner.login',
+            'admin' => 'admin.login',
+            default => 'login',
+        };
+    }
+
     public function isApproved(): bool
     {
         return $this->approval_status === self::APPROVAL_APPROVED;

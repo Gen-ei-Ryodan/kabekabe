@@ -4,15 +4,17 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { useTranslation } from '@/i18n';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function ResetPassword({ email }) {
+export default function ResetPassword({ email, portal = 'member' }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: email || '',
         password: '',
         password_confirmation: '',
     });
     const { t } = useTranslation();
+    const loginRoute =
+        portal === 'partner' ? 'partner.login' : portal === 'admin' ? 'admin.login' : 'login';
 
     const submit = (e) => {
         e.preventDefault();
@@ -83,6 +85,15 @@ export default function ResetPassword({ email }) {
                     </PrimaryButton>
                 </div>
             </form>
+
+            <p className="mt-4 text-center text-sm text-slate">
+                <Link
+                    href={route(loginRoute)}
+                    className="font-semibold text-ink hover:underline"
+                >
+                    {t('flow.forgotPassword.backToLogin')}
+                </Link>
+            </p>
         </GuestLayout>
     );
 }

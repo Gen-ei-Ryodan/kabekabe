@@ -7,18 +7,22 @@ use App\Models\User;
 use App\Services\PasswordOtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PasswordResetLinkController extends Controller
 {
+    public const PORTALS = ['member', 'partner', 'admin'];
+
     /**
      * Display the password reset link request view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Auth/ForgotPassword', [
             'status' => session('status'),
+            'portal' => static::portal($request->query('portal')),
         ]);
     }
 
@@ -29,14 +33,21 @@ class PasswordResetLinkController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
+            'portal' => ['nullable', Rule::in(self::PORTALS)],
         ], [
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format alamat email tidak valid.',
+            'portal.in' => 'Portal tidak valid.',
         ]);
 
         $email = $request->string('email')->toString();
+        $portal = static::portal($request->input('portal'));
+        $role = User::roleForPortal($portal);
 
-        $user = User::query()->where('email', $email)->first();
+        $user = User::query()
+            ->where('email', $email)
+            ->where('role', $role)
+            ->first();
 
         if ($user) {
             app(PasswordOtpService::class)->issue(
@@ -49,10 +60,16 @@ class PasswordResetLinkController extends Controller
 
         // Selalu arahkan ke halaman verifikasi OTP tanpa mengungkap apakah email terdaftar.
         $request->session()->put('password_reset_email', $email);
+        $request->session()->put('password_reset_role', $role);
         $request->session()->forget('password_reset_verified');
 
         return redirect()
             ->route('password.otp')
             ->with('status', 'Jika email terdaftar, kode OTP sudah dikirim ke email Anda.');
+    }
+
+    private static function portal(mixed $value): string
+    {
+        return in_array($value, self::PORTALS, true) ? (string) $value : 'member';
     }
 }

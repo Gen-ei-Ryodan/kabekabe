@@ -5,11 +5,13 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { useTranslation } from '@/i18n';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function ForgotPasswordOtp({ email, status }) {
+export default function ForgotPasswordOtp({ email, status, portal = 'member' }) {
     const { data, setData, post, processing, errors } = useForm({
         otp: '',
     });
     const { t } = useTranslation();
+    const loginRoute =
+        portal === 'partner' ? 'partner.login' : portal === 'admin' ? 'admin.login' : 'login';
 
     const submit = (e) => {
         e.preventDefault();
@@ -75,7 +77,7 @@ export default function ForgotPasswordOtp({ email, status }) {
 
                     <div className="flex items-center gap-3">
                         <Link
-                            href={route('password.request')}
+                            href={route('password.request', { portal })}
                             className="text-sm font-medium text-slate hover:text-ink hover:underline"
                         >
                             {t('flow.otp.changeEmail')}
@@ -86,6 +88,15 @@ export default function ForgotPasswordOtp({ email, status }) {
                     </div>
                 </div>
             </form>
+
+            <p className="mt-4 text-center text-sm text-slate">
+                <Link
+                    href={route(loginRoute)}
+                    className="font-semibold text-ink hover:underline"
+                >
+                    {t('flow.forgotPassword.backToLogin')}
+                </Link>
+            </p>
         </GuestLayout>
     );
 }

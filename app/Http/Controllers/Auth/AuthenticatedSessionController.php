@@ -147,11 +147,7 @@ class AuthenticatedSessionController extends Controller
 
     private function expectedRole(string $portal): string
     {
-        return match ($portal) {
-            'admin' => User::ROLE_ADMIN,
-            'partner' => User::ROLE_VENDOR,
-            default => User::ROLE_MEMBER,
-        };
+        return User::roleForPortal($portal);
     }
 
     /**

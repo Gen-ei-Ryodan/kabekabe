@@ -4,11 +4,14 @@ import TextInput from '@/Components/TextInput';
 import { useTranslation } from '@/i18n';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function ForgotPassword({ status }) {
+export default function ForgotPassword({ status, portal = 'member' }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
+        portal,
     });
     const { t } = useTranslation();
+    const loginRoute =
+        portal === 'partner' ? 'partner.login' : portal === 'admin' ? 'admin.login' : 'login';
 
     const submit = (e) => {
         e.preventDefault();
@@ -62,6 +65,7 @@ export default function ForgotPassword({ status }) {
                                         onChange={(e) => setData('email', e.target.value)}
                                     />
                                     <InputError message={errors.email} className="mt-1 text-xs text-ember" />
+                                    <InputError message={errors.portal} className="mt-1 text-xs text-ember" />
                                 </div>
 
                                 <PrimaryButton className="w-full justify-center" disabled={processing}>
@@ -71,7 +75,7 @@ export default function ForgotPassword({ status }) {
                                 <p className="text-center text-sm text-white/90">
                                     {t('flow.forgotPassword.remember')}{' '}
                                     <Link
-                                        href={route('login')}
+                                        href={route(loginRoute)}
                                         className="font-semibold text-white hover:underline"
                                     >
                                         {t('flow.forgotPassword.backToLogin')}

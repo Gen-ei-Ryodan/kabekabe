@@ -32,6 +32,7 @@ class NewPasswordController extends Controller
 
         return Inertia::render('Auth/ResetPassword', [
             'email' => $email,
+            'portal' => User::portalForRole($this->role($request)),
         ]);
     }
 
@@ -56,7 +57,12 @@ class NewPasswordController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        $user = User::query()->where('email', $email)->first();
+        $role = $this->role($request);
+
+        $user = User::query()
+            ->where('email', $email)
+            ->where('role', $role)
+            ->first();
 
         if ($user) {
             $user->forceFill([
@@ -69,12 +75,19 @@ class NewPasswordController extends Controller
             event(new PasswordReset($user));
         }
 
-        $request->session()->forget(['password_reset_email', 'password_reset_verified']);
+        $request->session()->forget(['password_reset_email', 'password_reset_role', 'password_reset_verified']);
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()
-            ->route('login')
+            ->route(User::loginRouteForPortal(User::portalForRole($role)))
             ->with('status', 'Password berhasil direset. Silakan masuk dengan password baru Anda.');
+    }
+
+    private function role(Request $request): string
+    {
+        $role = $request->session()->get('password_reset_role');
+
+        return in_array($role, User::ROLES, true) ? $role : User::ROLE_MEMBER;
     }
 }

@@ -26,6 +26,7 @@ class PasswordOtpController extends Controller
 
         return Inertia::render('Auth/ForgotPasswordOtp', [
             'email' => $email,
+            'portal' => User::portalForRole($this->role($request)),
             'status' => session('status'),
         ]);
     }
@@ -52,7 +53,7 @@ class PasswordOtpController extends Controller
             'otp' => 'kode OTP',
         ]);
 
-        $user = User::query()->where('email', $email)->first();
+        $user = $this->user($request, $email);
 
         if (! app(PasswordOtpService::class)->verify($user, $request->string('otp')->toString(), PasswordOtpService::PURPOSE_RESET)) {
             throw ValidationException::withMessages([
@@ -76,7 +77,7 @@ class PasswordOtpController extends Controller
             return redirect()->route('password.request');
         }
 
-        $user = User::query()->where('email', $email)->first();
+        $user = $this->user($request, $email);
 
         if ($user) {
             app(PasswordOtpService::class)->issue(
@@ -90,5 +91,20 @@ class PasswordOtpController extends Controller
         $request->session()->forget('password_reset_verified');
 
         return back()->with('status', 'Kode OTP baru sudah dikirim (jika email terdaftar).');
+    }
+
+    private function role(Request $request): string
+    {
+        $role = $request->session()->get('password_reset_role');
+
+        return in_array($role, User::ROLES, true) ? $role : User::ROLE_MEMBER;
+    }
+
+    private function user(Request $request, string $email): ?User
+    {
+        return User::query()
+            ->where('email', $email)
+            ->where('role', $this->role($request))
+            ->first();
     }
 }

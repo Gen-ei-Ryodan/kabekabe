@@ -92,7 +92,7 @@ export default function Login({ status, portal = 'member' }) {
 
             <div className="text-center">
                 <Link
-                    href={route('password.request')}
+                    href={route('password.request', { portal: isPartner ? 'partner' : isAdmin ? 'admin' : 'member' })}
                     className="text-sm font-bold text-white hover:text-white/80 hover:underline"
                 >
                     {t('auth.login.forgot')}
