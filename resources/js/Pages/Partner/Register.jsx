@@ -54,8 +54,8 @@ export default function Register() {
     const [memberOtp, setMemberOtp] = useState('');
     const [linkBiodata, setLinkBiodata] = useState(null);
 
-    // Sudah terverifikasi OTP member? → biodata dipinjam dari Master Identity, form disingkirkan.
-    const skipBiodata = data.is_member && linkState === 'verified';
+    // Jika memilih Ya (Sudah Member), form 4 biodata langsung disingkirkan.
+    const skipBiodata = Boolean(data.is_member);
 
     const filteredIndustries = INDUSTRI_OPTIONS.filter((i) =>
         i.toLowerCase().includes(industrySearch.toLowerCase())

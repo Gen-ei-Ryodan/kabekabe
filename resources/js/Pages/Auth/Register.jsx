@@ -67,11 +67,10 @@ export default function Register() {
     const [partnerOtp, setPartnerOtp] = useState("");
     const [linkBiodata, setLinkBiodata] = useState(null);
 
-    // Sudah terverifikasi OTP partner? → biodata dipinjam dari Master Identity, form disingkirkan.
+    // Jika memilih Ya (Sudah Punya Partner), form 4 biodata langsung disingkirkan.
     const skipBiodata =
         data.role === "member" &&
-        data.is_partner === "yes" &&
-        linkState === "verified";
+        data.is_partner === "yes";
 
     const toggleHobby = (hobby) => {
         if (data.hobbies.includes(hobby)) {
@@ -220,7 +219,7 @@ export default function Register() {
 
     const submit = (e) => {
         e.preventDefault();
-        if (data.role === "member" && !data.is_household) {
+        if (data.role === "member" && data.is_partner !== "yes" && !data.is_household) {
             const validCompanies = (data.companies || []).filter(
                 (c) =>
                     c.company?.trim() &&
@@ -296,14 +295,9 @@ export default function Register() {
                             </span>
                         </button>
 
-                        <button
-                            type="button"
-                            onClick={() => setData("role", "partner")}
-                            className={`flex flex-col items-center justify-center rounded-2xl border p-4 text-center transition-all ${
-                                data.role === "partner"
-                                    ? "border-gold bg-gold/10 text-gold-deep font-bold shadow-sm ring-2 ring-gold/40"
-                                    : "border-ink/15 bg-white/70 text-slate hover:bg-ink/5"
-                            }`}
+                        <Link
+                            href={route("partner.register.show")}
+                            className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-white/70 p-4 text-center text-slate transition-all hover:bg-gold/10 hover:border-gold hover:text-gold-deep"
                         >
                             <span className="text-2xl mb-1.5">🏪</span>
                             <span className="text-sm font-semibold">
@@ -312,7 +306,7 @@ export default function Register() {
                             <span className="text-xs text-slate mt-0.5">
                                 Promosi brand & merchant KBKB
                             </span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
