@@ -11,6 +11,7 @@ use App\Support\PartnerCategory;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -162,6 +163,28 @@ class RegisteredUserController extends Controller
         } else {
             $isHousehold = $request->boolean('is_household');
 
+            // Link partner diverifikasi lebih dulu: kalau sudah lolos OTP, biodata diambil
+            // dari Master Identity partner sehingga form isian tidak perlu diisi ulang.
+            $linkPartner = null;
+
+            if ($request->input('is_partner') === 'yes') {
+                $linkPartner = $this->verifiedLinkPartner($request);
+
+                if (! $linkPartner) {
+                    return back()->withErrors([
+                        'partner_email' => 'Verifikasi OTP ke email partner terlebih dahulu sebelum mengirim formulir.',
+                    ])->withInput();
+                }
+
+                $request->merge($this->biodataFromPartner($linkPartner));
+
+                if (blank($request->input('email'))) {
+                    $request->merge(['email' => $linkPartner->email ?? $linkPartner->user?->email]);
+                }
+            }
+
+            $relaxBiodata = $linkPartner !== null;
+
             // Normalisasi daftar usaha: buang baris yang sepenuhnya kosong.
             $businesses = [];
             foreach ((array) $request->input('companies', []) as $c) {
@@ -206,6 +229,9 @@ class RegisteredUserController extends Controller
                 'business_address' => $businesses[0]['address'] ?? null,
             ]);
 
+            // Rumah tangga ATAU biodata dipinjam dari Master Identity → isian usaha tidak wajib.
+            $relax = $isHousehold || $relaxBiodata;
+
             $request->validate([
                 'role' => 'required|in:member,partner',
                 'email' => [
@@ -230,18 +256,18 @@ class RegisteredUserController extends Controller
                 'district' => 'nullable|string|max:100',
                 'city' => 'nullable|string|max:100',
                 'is_household' => 'boolean',
-                'companies' => ($isHousehold ? 'nullable' : 'required').'|array'.($isHousehold ? '' : '|min:1'),
-                'companies.*.company' => ($isHousehold ? 'nullable' : 'required').'|string|max:255',
-                'companies.*.industry' => ($isHousehold ? 'nullable' : 'required').'|string|max:100',
-                'companies.*.position' => ($isHousehold ? 'nullable' : 'required').'|string|max:100',
+                'companies' => ($relax ? 'nullable' : 'required').'|array'.($relax ? '' : '|min:1'),
+                'companies.*.company' => ($relax ? 'nullable' : 'required').'|string|max:255',
+                'companies.*.industry' => ($relax ? 'nullable' : 'required').'|string|max:100',
+                'companies.*.position' => ($relax ? 'nullable' : 'required').'|string|max:100',
                 'companies.*.address' => 'nullable|string|max:500',
-                'business_fields' => ($isHousehold ? 'nullable' : 'required').'|array'.($isHousehold ? '' : '|min:1'),
+                'business_fields' => ($relax ? 'nullable' : 'required').'|array'.($relax ? '' : '|min:1'),
                 'business_fields.*' => 'required|string|max:100',
                 'company' => 'nullable|string|max:255',
                 'business_address' => 'nullable|string|max:500',
                 'business_district' => 'nullable|string|max:100',
                 'business_city' => 'nullable|string|max:100',
-                'industry' => $isHousehold ? 'nullable|string|max:255' : 'required|string|max:255',
+                'industry' => $relax ? 'nullable|string|max:255' : 'required|string|max:255',
                 // "Are you a Partner?" → link partner wajib lewat OTP dulu.
                 'is_partner' => 'nullable|in:yes,no',
                 'partner_email' => 'nullable|required_if:is_partner,yes|email|max:255',
@@ -257,20 +283,8 @@ class RegisteredUserController extends Controller
             ]);
 
             $industryString = $request->input('industry');
-            if (! $isHousehold && empty(trim((string) $industryString))) {
+            if (! $relax && empty(trim((string) $industryString))) {
                 return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
-            }
-
-            // Linking partner: OTP sudah diverifikasi sebelum submit registrasi member.
-            $linkPartner = null;
-            if ($request->input('is_partner') === 'yes') {
-                $linkPartner = $this->verifiedLinkPartner($request);
-
-                if (! $linkPartner) {
-                    return back()->withErrors([
-                        'partner_email' => 'Verifikasi OTP ke email partner terlebih dahulu sebelum mengirim formulir.',
-                    ])->withInput();
-                }
             }
 
             $identity = MasterIdentity::forEmail($request->email, [
@@ -352,6 +366,46 @@ class RegisteredUserController extends Controller
             'email' => $user->email,
             'role' => $roleInput,
         ]);
+    }
+
+    /**
+     * Biodata partner (Master Identity → fallback profile partner/user) untuk
+     * mengisi pendaftaran member tanpa mengetik ulang data identitas.
+     */
+    private function biodataFromPartner(Partner $partner): array
+    {
+        $identity = $partner->masterIdentity ?? $partner->user?->masterIdentity;
+        $user = $partner->user;
+        $pick = fn (string $key) => $identity?->{$key} ?? $user?->{$key};
+
+        $biodata = [
+            'name' => $identity?->name ?? $partner->pic_name ?? $user?->name ?? $partner->name,
+            'nickname' => $user?->nickname,
+            'phone' => $identity?->phone ?? $user?->phone ?? $partner->pic_phone ?? $partner->phone,
+            'address' => $identity?->address ?? $user?->address,
+            'district' => $identity?->district ?? $user?->district,
+            'city' => $identity?->city ?? $user?->city,
+            'gender' => $pick('gender'),
+            'birth_date' => $pick('birth_date'),
+            'birth_place' => $pick('birth_place'),
+            'marital_status' => $pick('marital_status'),
+            'religion' => $pick('religion'),
+            'place_of_worship_address' => $pick('place_of_worship_address'),
+            'hobbies' => $identity?->hobbies ?? $user?->hobbies,
+        ];
+
+        if (! empty($biodata['birth_date'])) {
+            $biodata['birth_date'] = Carbon::parse($biodata['birth_date'])->toDateString();
+        }
+
+        $biodata = array_filter($biodata, fn ($value) => $value !== null && $value !== '');
+
+        // Form biodata disingkirkan → isian usaha tidak ada.
+        $biodata['companies'] = [];
+        $biodata['business_fields'] = null;
+        $biodata['industry'] = null;
+
+        return $biodata;
     }
 
     /**

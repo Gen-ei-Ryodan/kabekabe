@@ -112,6 +112,13 @@ class PartnerController extends Controller
     {
         $validated = $request->validated();
         $isMember = (bool) ($validated['is_member'] ?? false);
+        $member = $isMember
+            ? User::query()->where('role', User::ROLE_MEMBER)->where('email', $validated['member_email'] ?? '')->first()
+            : null;
+
+        if ($isMember && ! $member) {
+            return back()->withErrors(['member_email' => 'Email member tidak ditemukan.'])->withInput();
+        }
 
         // Satu identity personal dipakai untuk user vendor & partner-nya
         // (dan otomatis sama bila emailnya sudah dipakai Member).
@@ -127,7 +134,7 @@ class PartnerController extends Controller
             'phone' => $validated['phone'] ?? $validated['member_phone'] ?? null,
             'whatsapp' => $validated['phone'] ?? $validated['member_phone'] ?? null,
             'gender' => $isMember ? null : ($validated['gender'] ?? null),
-            'birth_date' => $isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null),
+            'birth_date' => $member?->birth_date?->toDateString() ?? ($isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null)),
             'birth_place' => $isMember ? null : ($validated['birth_place'] ?? null),
             'hobbies' => $isMember ? null : ($validated['hobbies'] ?? null),
             'marital_status' => $isMember ? null : ($validated['marital_status'] ?? null),
@@ -147,7 +154,9 @@ class PartnerController extends Controller
             'industry' => $validated['industry'] ?? null,
             'employee_count' => $validated['employee_count'] ?? null,
             'established_since' => $validated['established_since'] ?? null,
-            'pic_name' => $validated['pic_name'] ?? $validated['vendor_name'],
+            'pic_name' => $validated['pic_name'] ?? ($member?->name ?: $validated['vendor_name']),
+            'pic_email' => $validated['pic_email'] ?? null,
+            'pic_whatsapp' => $validated['pic_whatsapp'] ?? null,
             'pic_phone' => $validated['pic_phone'] ?? null,
             'description' => $validated['description'] ?? null,
             'address' => $validated['address'] ?? null,
@@ -161,9 +170,12 @@ class PartnerController extends Controller
             'is_active' => true,
             'status' => Partner::STATUS_ACTIVE,
             'is_member' => $isMember,
-            'member_id_number' => $isMember ? ($validated['member_id_number'] ?? null) : null,
-            'member_name' => $isMember ? ($validated['member_name'] ?? null) : $validated['vendor_name'],
-            'member_birth_date' => $isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null),
+            'member_user_id' => $member?->id,
+            'member_email' => $member?->email,
+            'member_code' => $member?->member_code,
+            'member_id_number' => $member?->member_code ?? ($isMember ? ($validated['member_id_number'] ?? null) : null),
+            'member_name' => $member?->name ?? ($isMember ? ($validated['member_name'] ?? null) : $validated['vendor_name']),
+            'member_birth_date' => $member?->birth_date?->toDateString() ?? ($isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null)),
             'total_belanja' => $validated['total_belanja'] ?? null,
             'diskon1' => $validated['diskon1'] ?? null,
             'diskon2' => $validated['diskon2'] ?? null,
@@ -188,6 +200,21 @@ class PartnerController extends Controller
     {
         $validated = $request->validated();
 
+        if (($validated['is_member'] ?? false) && ! empty($validated['member_email'])) {
+            $member = User::query()->where('role', User::ROLE_MEMBER)->where('email', $validated['member_email'])->first();
+
+            if (! $member) {
+                return back()->withErrors(['member_email' => 'Email member tidak ditemukan.'])->withInput();
+            }
+
+            $validated['member_user_id'] = $member->id;
+            $validated['member_email'] = $member->email;
+            $validated['member_code'] = $member->member_code;
+            $validated['member_id_number'] = $member->member_code;
+            $validated['member_name'] = $member->name;
+            $validated['member_birth_date'] = $member->birth_date?->toDateString();
+        }
+
         if ($request->hasFile('logo')) {
             if ($partner->logo) {
                 Storage::disk('public')->delete($partner->logo);
@@ -198,10 +225,11 @@ class PartnerController extends Controller
 
         $partnerFields = [
             'name', 'trade_name', 'category', 'industry', 'employee_count', 'established_since',
-            'pic_name', 'pic_phone', 'district', 'city', 'joined_at', 'expires_at',
+            'pic_name', 'pic_email', 'pic_whatsapp', 'pic_phone', 'district', 'city', 'joined_at', 'expires_at',
             'description', 'address', 'phone', 'email', 'sort_number',
             'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'is_member',
-            'member_id_number', 'member_name', 'member_birth_date',
+            'member_id_number', 'member_name', 'member_birth_date', 'member_user_id',
+            'member_email', 'member_code',
         ];
         if (isset($validated['logo'])) {
             $partnerFields[] = 'logo';

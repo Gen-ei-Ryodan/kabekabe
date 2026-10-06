@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ImportRowsRequest;
 use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\UpdateMemberRequest;
-use App\Models\MembershipPlan;
 use App\Models\User;
 use App\Services\ApprovalNotifier;
 use App\Services\Import\ImportTemplateDownloader;
@@ -237,7 +236,6 @@ class MemberController extends Controller
             'membership' => $member->membership,
             'payments' => $member->payments()->with('plan:id,name,duration_months')->latest()->limit(10)->get(),
             'transactions' => $member->memberTransactions()->with('partner:id,name,total_belanja,diskon1,diskon2,diskon3')->latest('transacted_at')->limit(10)->get(),
-            'plans' => MembershipPlan::query()->where('is_active', true)->get(['id', 'name', 'duration_months', 'price']),
         ]);
     }
 
@@ -247,6 +245,7 @@ class MemberController extends Controller
 
         return Inertia::render('Admin/Members/Edit', [
             'member' => $this->memberPayload($member),
+            'membership' => $member->membership()->with('plan')->first(),
         ]);
     }
 

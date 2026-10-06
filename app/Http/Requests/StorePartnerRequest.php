@@ -39,12 +39,21 @@ class StorePartnerRequest extends FormRequest
             'diskon3' => ['nullable', 'string', 'max:255'],
             // Keanggotaan KBKB
             'is_member' => ['nullable', 'boolean'],
+            'member_email' => [
+                Rule::requiredIf(fn () => $this->boolean('is_member')),
+                'nullable',
+                'email',
+                'max:255',
+                Rule::exists('users', 'email')->where('role', User::ROLE_MEMBER),
+            ],
             'member_id_number' => ['nullable', 'string', 'max:100'],
             'member_name' => ['nullable', 'string', 'max:255'],
             'member_birth_date' => ['nullable', 'date'],
-            // Biodata PIC / Vendor
-            'pic_name' => ['nullable', 'string', 'max:255'],
-            'pic_phone' => ['nullable', 'string', 'max:30'],
+            // Biodata PIC / Vendor (wajib lengkap saat PIC bukan member)
+            'pic_name' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:255'],
+            'pic_email' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'email', 'max:255'],
+            'pic_whatsapp' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:30'],
+            'pic_phone' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:30'],
             'nickname' => ['nullable', 'string', 'max:100'],
             'gender' => ['nullable', 'string', 'max:50'],
             'birth_place' => ['nullable', 'string', 'max:100'],

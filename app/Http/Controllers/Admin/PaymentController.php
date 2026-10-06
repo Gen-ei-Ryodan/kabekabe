@@ -10,9 +10,11 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\Import\ImportTemplateDownloader;
 use App\Services\Import\PaymentImporter;
+use App\Services\MembershipService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -23,6 +25,7 @@ class PaymentController extends Controller
 {
     public function __construct(
         private readonly PaymentService $payments,
+        private readonly MembershipService $memberships,
     ) {}
 
     public function index(Request $request): Response
@@ -145,30 +148,24 @@ class PaymentController extends Controller
             'amount' => ['required', 'integer', 'min:0'],
             'method' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'plan_id' => ['nullable', 'integer', 'exists:membership_plans,id'],
+            'started_at' => ['nullable', 'date'],
+            'expires_at' => ['nullable', 'date', 'after_or_equal:started_at'],
         ]);
 
-        $plan = ! empty($validated['plan_id']) ? MembershipPlan::query()->find($validated['plan_id']) : null;
+        $hasPeriod = ! empty($validated['started_at']) || ! empty($validated['expires_at']);
 
-        DB::transaction(function () use ($member, $validated, $plan, $request) {
-            if ($plan) {
-                $payment = $this->payments->createPending($member, $plan);
+        DB::transaction(function () use ($member, $validated, $request, $hasPeriod) {
+            $periodMonths = 0;
 
-                $payment->forceFill([
-                    'amount' => $validated['amount'],
-                    'paid_at' => $validated['paid_at'],
-                    'method' => $validated['method'] ?? null,
-                ])->save();
-
-                $this->payments->approve($payment, $request->user(), $validated['notes'] ?? null);
-
-                return;
+            if (! empty($validated['started_at']) && ! empty($validated['expires_at'])) {
+                $periodMonths = (int) Carbon::parse($validated['started_at'])
+                    ->diffInDays(Carbon::parse($validated['expires_at']));
             }
 
             $member->payments()->create([
                 'invoice_number' => $this->payments->nextInvoiceNumber(),
                 'plan_id' => null,
-                'period_months' => 0,
+                'period_months' => $periodMonths,
                 'amount' => $validated['amount'],
                 'status' => Payment::STATUS_APPROVED,
                 'paid_at' => $validated['paid_at'],
@@ -177,9 +174,29 @@ class PaymentController extends Controller
                 'approved_by' => $request->user()->id,
                 'approved_at' => now(),
             ]);
+
+            if ($hasPeriod) {
+                $membership = $this->memberships->ensureMembership($member);
+
+                $membership->forceFill([
+                    'status' => $membership->expires_at && $membership->expires_at->isPast() && empty($validated['expires_at'])
+                        ? 'inactive'
+                        : 'active',
+                    'started_at' => $validated['started_at'] ?? $membership->started_at,
+                    'expires_at' => $validated['expires_at'] ?? $membership->expires_at,
+                ])->save();
+
+                $member->setRelation('membership', $membership->fresh());
+            }
         });
 
-        return back()->with('success', "Pembayaran manual untuk {$member->name} tercatat.");
+        $message = "Pembayaran manual untuk {$member->name} tercatat.";
+
+        if ($hasPeriod) {
+            $message .= ' Status & masa aktif membership ikut diperbarui.';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function importTemplate(ImportTemplateDownloader $templates): StreamedResponse

@@ -20,9 +20,11 @@ export default function Register() {
         employee_count: '',
         established_since: '',
         pic_name: '',
+        pic_email: '',
+        pic_whatsapp: '',
         pic_phone: '',
         is_member: false,
-        member_code: '',
+        member_email: '',
         name: '',
         email: '',
         password: '',
@@ -275,34 +277,68 @@ export default function Register() {
                         <p className="text-xs text-slate mt-0.5">{t('partner.s2Desc')}</p>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <InputLabel htmlFor="pic_name" value={t('partner.picName')} />
-                            <TextInput
-                                id="pic_name"
-                                value={data.pic_name}
-                                onChange={(e) => setData('pic_name', e.target.value)}
-                                className="mt-1 block w-full"
-                                placeholder={t('partner.picNamePh')}
-                                required
-                            />
-                            <InputError message={errors.pic_name} className="mt-1" />
-                        </div>
+                    {!data.is_member && (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel htmlFor="pic_name" value={t('partner.picName')} />
+                                <TextInput
+                                    id="pic_name"
+                                    value={data.pic_name}
+                                    onChange={(e) => setData('pic_name', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder={t('partner.picNamePh')}
+                                    required
+                                />
+                                <InputError message={errors.pic_name} className="mt-1" />
+                            </div>
 
-                        <div>
-                            <InputLabel htmlFor="pic_phone" value={t('partner.picPhone')} />
-                            <TextInput
-                                id="pic_phone"
-                                type="tel"
-                                value={data.pic_phone}
-                                onChange={(e) => setData('pic_phone', e.target.value)}
-                                className="mt-1 block w-full"
-                                placeholder="081234567890"
-                                required
-                            />
-                            <InputError message={errors.pic_phone} className="mt-1" />
+                            <div>
+                                <InputLabel htmlFor="pic_email" value={t('partner.picEmail')} />
+                                <TextInput
+                                    id="pic_email"
+                                    type="email"
+                                    value={data.pic_email}
+                                    onChange={(e) => setData('pic_email', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder="pic@email.com"
+                                    required
+                                />
+                                <InputError message={errors.pic_email} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="pic_whatsapp" value={t('partner.picWhatsapp')} />
+                                <TextInput
+                                    id="pic_whatsapp"
+                                    type="tel"
+                                    value={data.pic_whatsapp}
+                                    onChange={(e) => setData('pic_whatsapp', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder="081234567890"
+                                    required
+                                />
+                                <InputError message={errors.pic_whatsapp} className="mt-1" />
+                            </div>
+
+                            <div>
+                                <InputLabel htmlFor="pic_phone" value={t('partner.picPhone')} />
+                                <TextInput
+                                    id="pic_phone"
+                                    type="tel"
+                                    value={data.pic_phone}
+                                    onChange={(e) => setData('pic_phone', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    placeholder="021-1234567"
+                                    required
+                                />
+                                <InputError message={errors.pic_phone} className="mt-1" />
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {data.is_member && (
+                        <p className="text-xs text-slate">{t('partner.picFromMember')}</p>
+                    )}
                 </section>
 
                 {/* 3. STATUS KEANGGOTAAN */}
@@ -315,36 +351,48 @@ export default function Register() {
                         <p className="text-xs text-slate mt-0.5">{t('partner.s3Desc')}</p>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 rounded-xl border border-ink/10 bg-white/80">
-                        <input
-                            type="checkbox"
-                            id="is_member"
-                            className="h-5 w-5 rounded border-ink/20 accent-gold"
-                            checked={data.is_member}
-                            onChange={(e) => {
-                                setData('is_member', e.target.checked);
-                                if (!e.target.checked) {
-                                    setData('member_code', '');
-                                }
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <button
+                            type="button"
+                            onClick={() => setData('is_member', true)}
+                            className={`rounded-xl border p-3 text-sm font-semibold transition-all ${
+                                data.is_member
+                                    ? 'border-gold bg-gold text-ink shadow-sm'
+                                    : 'border-ink/15 bg-white text-slate hover:bg-ink/5'
+                            }`}
+                        >
+                            ✓ {t('partner.choiceYes')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setData('is_member', false);
+                                setData('member_email', '');
                             }}
-                        />
-                        <label htmlFor="is_member" className="cursor-pointer text-sm font-medium text-ink">
-                            {t('partner.isMember')}
-                        </label>
+                            className={`rounded-xl border p-3 text-sm font-semibold transition-all ${
+                                !data.is_member
+                                    ? 'border-gold bg-gold text-ink shadow-sm'
+                                    : 'border-ink/15 bg-white text-slate hover:bg-ink/5'
+                            }`}
+                        >
+                            ✗ {t('partner.choiceNo')}
+                        </button>
                     </div>
 
                     {data.is_member && (
                         <div className="border-t border-ink/10 pt-3">
-                            <InputLabel htmlFor="member_code" value={t('partner.memberId')} />
+                            <InputLabel htmlFor="member_email" value={t('partner.memberEmail')} />
                             <TextInput
-                                id="member_code"
-                                value={data.member_code}
-                                onChange={(e) => setData('member_code', e.target.value)}
+                                id="member_email"
+                                type="email"
+                                value={data.member_email}
+                                onChange={(e) => setData('member_email', e.target.value)}
                                 className="mt-1 block w-full"
-                                placeholder={t('partner.memberIdPh')}
+                                placeholder={t('partner.memberEmailPh')}
                                 required
                             />
-                            <InputError message={errors.member_code} className="mt-1" />
+                            <InputError message={errors.member_email} className="mt-1" />
+                            <p className="mt-1 text-[11px] text-slate-soft">{t('partner.memberEmailHint')}</p>
                         </div>
                     )}
                 </section>
@@ -360,19 +408,23 @@ export default function Register() {
                     </div>
 
                     <div className="space-y-4">
-                        <div>
-                            <InputLabel htmlFor="name" value={t('partner.fullName')} />
-                            <TextInput
-                                id="name"
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
-                                className="mt-1 block w-full"
-                                autoComplete="name"
-                                placeholder={t('partner.fullNamePh')}
-                                required
-                            />
-                            <InputError message={errors.name} className="mt-1" />
-                        </div>
+                        {!data.is_member ? (
+                            <div>
+                                <InputLabel htmlFor="name" value={t('partner.fullName')} />
+                                <TextInput
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    className="mt-1 block w-full"
+                                    autoComplete="name"
+                                    placeholder={t('partner.fullNamePh')}
+                                    required
+                                />
+                                <InputError message={errors.name} className="mt-1" />
+                            </div>
+                        ) : (
+                            <p className="text-xs text-slate">{t('partner.nameFromMember')}</p>
+                        )}
 
                         <div>
                             <InputLabel htmlFor="email" value={t('partner.emailLabel')} />
@@ -434,17 +486,19 @@ export default function Register() {
                                 <InputError message={errors.phone} className="mt-1" />
                             </div>
 
-                            <div>
-                                <InputLabel htmlFor="date_of_birth" value={t('partner.birthDate')} />
-                                <TextInput
-                                    id="date_of_birth"
-                                    type="date"
-                                    value={data.date_of_birth}
-                                    onChange={(e) => setData('date_of_birth', e.target.value)}
-                                    className="mt-1 block w-full"
-                                />
-                                <InputError message={errors.date_of_birth} className="mt-1" />
-                            </div>
+                            {!data.is_member && (
+                                <div>
+                                    <InputLabel htmlFor="date_of_birth" value={t('partner.birthDate')} />
+                                    <TextInput
+                                        id="date_of_birth"
+                                        type="date"
+                                        value={data.date_of_birth}
+                                        onChange={(e) => setData('date_of_birth', e.target.value)}
+                                        className="mt-1 block w-full"
+                                    />
+                                    <InputError message={errors.date_of_birth} className="mt-1" />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>

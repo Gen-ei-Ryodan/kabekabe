@@ -113,6 +113,10 @@ class AdminFlowTest extends TestCase
             'vendor_email' => 'vendor-maju@example.com',
             'vendor_password' => 'VendorPass1',
             'vendor_password_confirmation' => 'VendorPass1',
+            'pic_name' => 'Budi Santoso',
+            'pic_email' => 'pic-maju@example.com',
+            'pic_whatsapp' => '081111111111',
+            'pic_phone' => '021-1111111',
         ])->assertRedirect(route('admin.partners.index'));
 
         $vendor = User::where('email', 'vendor-maju@example.com')->first();

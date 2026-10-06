@@ -7,6 +7,7 @@ use App\Models\Partner;
 use App\Services\PasswordOtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -102,7 +103,41 @@ class PartnerLinkOtpController extends Controller
         return response()->json([
             'ok' => true,
             'partner' => $partner->name,
+            'email' => $partner->email ?? $partner->user?->email,
+            // Biodata sudah ada di Master Identity partner → form isian tidak diulang.
+            'biodata' => $this->biodata($partner),
         ]);
+    }
+
+    /**
+     * Biodata partner dari Master Identity (fallback: profile partner / user vendor).
+     */
+    private function biodata(Partner $partner): array
+    {
+        $identity = $partner->masterIdentity ?? $partner->user?->masterIdentity;
+        $user = $partner->user;
+        $pick = fn (string $key) => $identity?->{$key} ?? $user?->{$key};
+
+        $biodata = [
+            'name' => $identity?->name ?? $partner->pic_name ?? $user?->name ?? $partner->name,
+            'phone' => $identity?->phone ?? $user?->phone ?? $partner->pic_phone ?? $partner->phone,
+            'gender' => $pick('gender'),
+            'birth_date' => $pick('birth_date'),
+            'birth_place' => $pick('birth_place'),
+            'marital_status' => $pick('marital_status'),
+            'religion' => $pick('religion'),
+            'place_of_worship_address' => $pick('place_of_worship_address'),
+            'address' => $identity?->address ?? $user?->address,
+            'district' => $identity?->district ?? $user?->district,
+            'city' => $identity?->city ?? $user?->city,
+            'hobbies' => $identity?->hobbies ?? $user?->hobbies ?? [],
+        ];
+
+        if (! empty($biodata['birth_date'])) {
+            $biodata['birth_date'] = Carbon::parse($biodata['birth_date'])->toDateString();
+        }
+
+        return $biodata;
     }
 
     private function findPartner(string $email): ?Partner

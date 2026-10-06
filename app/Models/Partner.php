@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['user_id', 'member_user_id', 'master_identity_id', 'name', 'trade_name', 'slug', 'category', 'description', 'address', 'employee_count', 'established_since', 'is_member', 'member_id_number', 'member_name', 'member_birth_date', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'pic_name', 'pic_phone', 'district', 'city', 'industry', 'joined_at'])]
+#[Fillable(['user_id', 'member_user_id', 'master_identity_id', 'name', 'trade_name', 'slug', 'category', 'description', 'address', 'employee_count', 'established_since', 'is_member', 'member_id_number', 'member_name', 'member_email', 'member_birth_date', 'member_code', 'phone', 'email', 'logo', 'is_active', 'status', 'expires_at', 'sort_number', 'total_belanja', 'diskon1', 'diskon2', 'diskon3', 'pic_name', 'pic_email', 'pic_whatsapp', 'pic_phone', 'district', 'city', 'industry', 'joined_at', 'hobbies', 'date_of_birth'])]
 #[Appends('logo_url')]
 class Partner extends Model
 {

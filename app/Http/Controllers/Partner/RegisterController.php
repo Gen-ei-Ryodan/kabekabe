@@ -28,17 +28,23 @@ class RegisterController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $isMember = $request->boolean('is_member');
+
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
             'company_address' => ['nullable', 'string', 'max:1000'],
             'company_phone' => ['nullable', 'string', 'max:30'],
             'employee_count' => ['nullable', 'integer', 'min:1'],
             'established_since' => ['nullable', 'string', 'max:4'],
-            'pic_name' => ['required', 'string', 'max:255'],
-            'pic_phone' => ['required', 'string', 'max:30'],
+            'pic_name' => $isMember ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'],
+            'pic_email' => $isMember ? ['nullable', 'email', 'max:255'] : ['required', 'email', 'max:255'],
+            'pic_whatsapp' => $isMember ? ['nullable', 'string', 'max:30'] : ['required', 'string', 'max:30'],
+            'pic_phone' => $isMember ? ['nullable', 'string', 'max:30'] : ['required', 'string', 'max:30'],
             'is_member' => ['required', 'boolean'],
-            'member_code' => ['nullable', 'string', 'max:20'],
-            'name' => ['required', 'string', 'max:255'],
+            'member_email' => $isMember
+                ? ['required', 'email', 'max:255', Rule::exists('users', 'email')->where('role', User::ROLE_MEMBER)]
+                : ['nullable', 'email', 'max:255'],
+            'name' => $isMember ? ['nullable', 'string', 'max:255'] : ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'email',
@@ -62,27 +68,49 @@ class RegisterController extends Controller
             return back()->withErrors(['industry' => 'Bidang industri wajib dipilih minimal 1.'])->withInput();
         }
 
-        if ($validated['is_member'] && ! empty($validated['member_code'])) {
-            $memberExists = User::where('role', User::ROLE_MEMBER)
-                ->where('member_code', $validated['member_code'])
-                ->exists();
+        $memberUser = null;
 
-            if (! $memberExists) {
-                return back()->withErrors(['member_code' => 'Member code not found.'])->withInput();
+        if ($isMember) {
+            $memberUser = User::query()
+                ->where('role', User::ROLE_MEMBER)
+                ->where('email', $validated['member_email'])
+                ->first();
+
+            if (! $memberUser) {
+                return back()->withErrors(['member_email' => 'Email member tidak ditemukan.'])->withInput();
             }
+        }
+
+        // Data diri diambil dari master identity member bila "sudah bergabung".
+        $name = $validated['name'] ?? $memberUser?->name;
+        $dateOfBirth = $validated['date_of_birth'] ?? null;
+        $picName = $validated['pic_name'] ?? $name;
+        $picEmail = $validated['pic_email'] ?? $validated['email'];
+        $picWhatsapp = $validated['pic_whatsapp'] ?? null;
+        $picPhone = $validated['pic_phone'] ?? null;
+
+        if ($memberUser) {
+            $dateOfBirth = $memberUser->birth_date?->toDateString() ?? $dateOfBirth;
+            $picName = $validated['pic_name'] ?? $memberUser->name;
+            $picWhatsapp = $validated['pic_whatsapp'] ?? ($memberUser->whatsapp ?: $memberUser->phone);
+            $picPhone = $validated['pic_phone'] ?? ($memberUser->phone ?: $memberUser->whatsapp);
+        }
+
+        if (! $name) {
+            return back()->withErrors(['name' => 'Nama wajib diisi.'])->withInput();
         }
 
         DB::beginTransaction();
 
         try {
             $identity = MasterIdentity::forEmail($validated['email'], [
-                'name' => $validated['name'],
+                'name' => $name,
                 'phone' => $validated['phone'] ?? null,
-                'birth_date' => $validated['date_of_birth'] ?? null,
+                'birth_date' => $dateOfBirth,
             ]);
 
             $user = User::create([
-                'name' => $validated['name'],
+                'name' => $name,
                 'email' => $validated['email'],
                 'password' => $validated['password'],
                 'role' => User::ROLE_VENDOR,
@@ -105,13 +133,20 @@ class RegisterController extends Controller
                 'email' => $validated['email'],
                 'employee_count' => $validated['employee_count'] ?? null,
                 'established_since' => $validated['established_since'] ?? null,
-                'pic_name' => $validated['pic_name'],
-                'pic_phone' => $validated['pic_phone'],
-                'is_member' => $validated['is_member'],
-                'member_code' => $validated['is_member'] ? ($validated['member_code'] ?? null) : null,
+                'pic_name' => $picName,
+                'pic_email' => $picEmail,
+                'pic_whatsapp' => $picWhatsapp,
+                'pic_phone' => $picPhone,
+                'is_member' => $isMember,
+                'member_email' => $isMember ? $validated['member_email'] : null,
+                'member_user_id' => $memberUser?->id,
+                'member_code' => $isMember ? $memberUser->member_code : null,
+                'member_id_number' => $isMember ? $memberUser->member_code : null,
+                'member_name' => $isMember ? $memberUser->name : null,
+                'member_birth_date' => $dateOfBirth,
                 'industry' => $industryString,
                 'hobbies' => $validated['hobbies'] ?? null,
-                'date_of_birth' => $validated['date_of_birth'] ?? null,
+                'date_of_birth' => $dateOfBirth,
                 'is_active' => false,
                 'status' => Partner::STATUS_INACTIVE,
                 'master_identity_id' => $identity?->id,

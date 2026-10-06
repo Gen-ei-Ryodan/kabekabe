@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,8 +24,10 @@ class UpdatePartnerRequest extends FormRequest
             'industry' => ['nullable', 'string', 'max:150'],
             'employee_count' => ['nullable', 'integer', 'min:0'],
             'established_since' => ['nullable', 'string', 'max:50'],
-            'pic_name' => ['nullable', 'string', 'max:255'],
-            'pic_phone' => ['nullable', 'string', 'max:30'],
+            'pic_name' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:255'],
+            'pic_email' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'email', 'max:255'],
+            'pic_whatsapp' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:30'],
+            'pic_phone' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:30'],
             'district' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'joined_at' => ['nullable', 'date'],
@@ -41,6 +44,13 @@ class UpdatePartnerRequest extends FormRequest
             'diskon3' => ['nullable', 'string', 'max:255'],
             // Keanggotaan KBKB
             'is_member' => ['nullable', 'boolean'],
+            'member_email' => [
+                Rule::requiredIf(fn () => $this->boolean('is_member')),
+                'nullable',
+                'email',
+                'max:255',
+                Rule::exists('users', 'email')->where('role', User::ROLE_MEMBER),
+            ],
             'member_id_number' => ['nullable', 'string', 'max:100'],
             'member_name' => ['nullable', 'string', 'max:255'],
             'member_birth_date' => ['nullable', 'date'],

@@ -7,7 +7,7 @@ import { formatDate, formatRupiah, daysUntil } from '@/Utils/format';
 
 const toDateInput = (value) => (value ? String(value).slice(0, 10) : '');
 
-export default function MemberShow({ member, membership, payments, transactions, plans = [] }) {
+export default function MemberShow({ member, membership, payments, transactions }) {
     const daysLeft = membership?.expires_at ? daysUntil(membership.expires_at) : null;
     const isExpiringSoon = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
 
@@ -19,10 +19,11 @@ export default function MemberShow({ member, membership, payments, transactions,
 
     const paymentForm = useForm({
         paid_at: new Date().toISOString().slice(0, 10),
+        started_at: toDateInput(membership?.started_at),
+        expires_at: toDateInput(membership?.expires_at),
         amount: '',
         method: '',
         notes: '',
-        plan_id: '',
     });
 
     const saveMembership = (e) => {
@@ -36,7 +37,7 @@ export default function MemberShow({ member, membership, payments, transactions,
         e.preventDefault();
         paymentForm.post(route('admin.members.payments.store', member.id), {
             preserveScroll: true,
-            onSuccess: () => paymentForm.reset('amount', 'method', 'notes', 'plan_id'),
+            onSuccess: () => paymentForm.reset('amount', 'method', 'notes'),
         });
     };
 
@@ -207,8 +208,8 @@ export default function MemberShow({ member, membership, payments, transactions,
                         <div>
                             <h2 className="font-display text-lg font-bold">Riwayat Pembayaran Manual</h2>
                             <p className="mt-1 text-xs text-slate">
-                                Catat pembayaran yang diterima di luar sistem. Pilih paket hanya bila pembayaran ini
-                                sekaligus memperpanjang masa aktif member.
+                                Catat pembayaran yang diterima di luar sistem. Isi Tanggal Aktif &amp; Aktif Sampai
+                                bila pembayaran ini sekaligus mengatur masa aktif member.
                             </p>
                         </div>
 
@@ -250,21 +251,26 @@ export default function MemberShow({ member, membership, payments, transactions,
                                 <InputError message={paymentForm.errors.method} className="mt-1" />
                             </div>
                             <div>
-                                <label className="label" htmlFor="payment-plan">Paket (opsional)</label>
-                                <select
-                                    id="payment-plan"
+                                <label className="label" htmlFor="payment-started">Tanggal Aktif (Mulai)</label>
+                                <input
+                                    id="payment-started"
+                                    type="date"
                                     className="input"
-                                    value={paymentForm.data.plan_id}
-                                    onChange={(e) => paymentForm.setData('plan_id', e.target.value)}
-                                >
-                                    <option value="">— Tanpa paket (riwayat saja) —</option>
-                                    {plans.map((plan) => (
-                                        <option key={plan.id} value={plan.id}>
-                                            {plan.name} · {formatRupiah(plan.price)}
-                                        </option>
-                                    ))}
-                                </select>
-                                <InputError message={paymentForm.errors.plan_id} className="mt-1" />
+                                    value={paymentForm.data.started_at}
+                                    onChange={(e) => paymentForm.setData('started_at', e.target.value)}
+                                />
+                                <InputError message={paymentForm.errors.started_at} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="label" htmlFor="payment-expires">Aktif Sampai</label>
+                                <input
+                                    id="payment-expires"
+                                    type="date"
+                                    className="input"
+                                    value={paymentForm.data.expires_at}
+                                    onChange={(e) => paymentForm.setData('expires_at', e.target.value)}
+                                />
+                                <InputError message={paymentForm.errors.expires_at} className="mt-1" />
                             </div>
                         </div>
 

@@ -32,14 +32,15 @@ class PaymentRecordTest extends TestCase
         ]);
     }
 
-    public function test_admin_manual_payment_with_plan_extends_membership(): void
+    public function test_admin_manual_payment_with_dates_updates_membership(): void
     {
         $this->actingAs($this->admin)->post(route('admin.members.payments.store', $this->member), [
             'paid_at' => '2026-10-01',
+            'started_at' => '2026-10-01',
+            'expires_at' => '2026-10-31',
             'amount' => 75000,
             'method' => 'Transfer Bank',
             'notes' => 'Bayar tunai di kantor.',
-            'plan_id' => $this->plan->id,
         ])->assertRedirect();
 
         $payment = Payment::query()->where('member_id', $this->member->id)->first();
@@ -50,10 +51,24 @@ class PaymentRecordTest extends TestCase
         $this->assertSame('Transfer Bank', $payment->method);
         $this->assertSame('2026-10-01', $payment->paid_at->toDateString());
         $this->assertStringContainsString('Bayar tunai di kantor.', (string) $payment->notes);
-        $this->assertSame($this->plan->id, $payment->plan_id);
+        $this->assertNull($payment->plan_id);
+        $this->assertSame(30, (int) $payment->period_months);
 
         $this->member->load('membership');
+        $this->assertSame('active', $this->member->membership->status);
+        $this->assertSame('2026-10-01', $this->member->membership->started_at->toDateString());
+        $this->assertSame('2026-10-31', $this->member->membership->expires_at->toDateString());
         $this->assertTrue($this->member->hasActiveMembership());
+    }
+
+    public function test_admin_manual_payment_rejects_expiry_before_start(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.members.payments.store', $this->member), [
+            'paid_at' => '2026-10-01',
+            'started_at' => '2026-10-31',
+            'expires_at' => '2026-10-01',
+            'amount' => 75000,
+        ])->assertSessionHasErrors('expires_at');
     }
 
     public function test_admin_manual_payment_without_plan_is_history_only(): void
@@ -74,7 +89,7 @@ class PaymentRecordTest extends TestCase
         $this->assertSame('Cash', $payment->method);
         $this->assertSame('2026-09-20', $payment->paid_at->toDateString());
 
-        // Riwayat manual tanpa paket tidak mengubah masa aktif membership.
+        // Riwayat manual tanpa tanggal aktif tidak mengubah masa aktif membership.
         $this->member->load('membership');
         $this->assertFalse($this->member->hasActiveMembership());
     }

@@ -34,6 +34,10 @@ class AdminPartnerEmailTest extends TestCase
             'vendor_email' => 'budi@example.com',
             'vendor_password' => 'VendorPass1',
             'vendor_password_confirmation' => 'VendorPass1',
+            'pic_name' => 'Budi Santoso',
+            'pic_email' => 'pic@example.com',
+            'pic_whatsapp' => '081111111111',
+            'pic_phone' => '021-1111111',
         ], $overrides);
     }
 
@@ -51,6 +55,45 @@ class AdminPartnerEmailTest extends TestCase
         $this->assertSame('budi@example.com', $partner->user->email);
         $this->assertSame($identity->id, $partner->master_identity_id);
         $this->assertSame($member->fresh()->master_identity_id, $partner->master_identity_id);
+    }
+
+    public function test_admin_creates_member_partner_from_email_only(): void
+    {
+        $member = User::factory()->member()->create([
+            'email' => 'member-baru@example.com',
+            'name' => 'Siti Member',
+            'birth_date' => '1992-07-07',
+        ]);
+
+        $this->actingAs($this->admin())->post(route('admin.partners.store'), $this->payload([
+            'is_member' => true,
+            'member_email' => 'member-baru@example.com',
+            'vendor_email' => 'siti-partner@example.com',
+            'vendor_name' => 'Siti',
+            'pic_name' => '',
+            'pic_email' => '',
+            'pic_whatsapp' => '',
+            'pic_phone' => '',
+        ]))->assertRedirect(route('admin.partners.index'));
+
+        $partner = Partner::query()->where('name', 'Toko Maju')->firstOrFail();
+
+        $this->assertTrue((bool) $partner->is_member);
+        $this->assertSame($member->id, $partner->member_user_id);
+        $this->assertSame($member->member_code, $partner->member_id_number);
+        $this->assertSame('Siti Member', $partner->member_name);
+        $this->assertSame('1992-07-07', $partner->member_birth_date?->toDateString());
+        $this->assertSame('Siti Member', $partner->pic_name);
+    }
+
+    public function test_admin_member_email_must_point_to_a_member(): void
+    {
+        User::factory()->vendor()->create(['email' => 'bukan-member@example.com']);
+
+        $this->actingAs($this->admin())->post(route('admin.partners.store'), $this->payload([
+            'is_member' => true,
+            'member_email' => 'bukan-member@example.com',
+        ]))->assertSessionHasErrors('member_email');
     }
 
     public function test_admin_cannot_create_partner_with_duplicate_vendor_email(): void

@@ -19,6 +19,8 @@ class PartnerRegistrationOtpTest extends TestCase
             'company_address' => 'Jl. Kopi No. 1',
             'company_phone' => '081111111111',
             'pic_name' => 'PIC Kopi',
+            'pic_email' => 'pic@example.com',
+            'pic_whatsapp' => '084444444444',
             'pic_phone' => '082222222222',
             'is_member' => false,
             'name' => 'Partner Satu',
@@ -114,6 +116,61 @@ class PartnerRegistrationOtpTest extends TestCase
             'name' => 'Partner Dua',
             'company_name' => 'PT Kopi Dua',
         ]))->assertSessionHasErrors('email');
+    }
+
+    public function test_member_registration_only_needs_member_email_and_derives_biodata(): void
+    {
+        $member = User::factory()->member()->create([
+            'email' => 'member-satu@example.com',
+            'name' => 'Budi Member',
+            'birth_date' => '1990-05-04',
+            'phone' => '081111111111',
+        ]);
+
+        $this->post('/partner/register', $this->pathAPayload([
+            'is_member' => true,
+            'member_email' => 'member-satu@example.com',
+            'name' => '',
+            'pic_name' => '',
+            'pic_email' => '',
+            'pic_whatsapp' => '',
+            'pic_phone' => '',
+        ]))->assertRedirect(route('partner.otp.show'));
+
+        $partner = Partner::query()->where('email', 'pic-kopi@example.com')->firstOrFail();
+
+        $this->assertTrue((bool) $partner->is_member);
+        $this->assertSame($member->id, $partner->member_user_id);
+        $this->assertSame($member->member_code, $partner->member_code);
+        $this->assertSame('Budi Member', $partner->pic_name);
+        $this->assertSame('1990-05-04', $partner->member_birth_date?->toDateString());
+        $this->assertSame('member-satu@example.com', $partner->member_email);
+        $this->assertSame($member->phone, $partner->pic_phone);
+        $this->assertSame(User::query()->where('email', 'pic-kopi@example.com')->first()->name, 'Budi Member');
+    }
+
+    public function test_member_registration_rejects_unknown_member_email(): void
+    {
+        $this->post('/partner/register', $this->pathAPayload([
+            'is_member' => true,
+            'member_email' => 'tidak-ada@example.com',
+            'name' => '',
+        ]))->assertSessionHasErrors('member_email');
+
+        $this->assertNull(User::query()->where('email', 'pic-kopi@example.com')->first());
+    }
+
+    public function test_non_member_registration_requires_complete_pic_biodata(): void
+    {
+        $this->post('/partner/register', $this->pathAPayload([
+            'pic_email' => '',
+            'pic_whatsapp' => '',
+        ]))->assertSessionHasErrors(['pic_email', 'pic_whatsapp']);
+
+        $this->post('/partner/register', $this->pathAPayload([
+            'pic_name' => '',
+            'pic_phone' => '',
+        ]))->assertSessionHasErrors(['pic_name', 'pic_phone']);
     }
 
     private function errorMessage(string $key): string

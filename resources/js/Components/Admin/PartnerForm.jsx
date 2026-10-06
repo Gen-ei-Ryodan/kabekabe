@@ -274,45 +274,24 @@ export default function PartnerForm({
                         <p className="text-xs font-semibold text-gold-deep uppercase tracking-wider">
                             Data Verifikasi Member Terdaftar:
                         </p>
-                        <div className="grid gap-4 sm:grid-cols-3">
+                        <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="label" htmlFor="member_id_number">Nomor ID Member</label>
+                                <label className="label" htmlFor="member_email">Email Member *</label>
                                 <input
-                                    id="member_id_number"
-                                    type="text"
-                                    className="input font-mono"
-                                    value={data.member_id_number || ''}
-                                    onChange={(e) => setData('member_id_number', e.target.value)}
-                                    placeholder="KBKB-XXXXXX"
-                                />
-                                {errors.member_id_number && <p className="mt-1 text-xs text-ember">{errors.member_id_number}</p>}
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="member_name">Nama Lengkap Member</label>
-                                <input
-                                    id="member_name"
-                                    type="text"
+                                    id="member_email"
+                                    type="email"
                                     className="input"
-                                    value={data.member_name || ''}
-                                    onChange={(e) => setData('member_name', e.target.value)}
-                                    placeholder="Sesuai kartu member"
+                                    value={data.member_email || ''}
+                                    onChange={(e) => setData('member_email', e.target.value)}
+                                    placeholder="email terdaftar sebagai member KBKB"
+                                    required
                                 />
-                                {errors.member_name && <p className="mt-1 text-xs text-ember">{errors.member_name}</p>}
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="member_birth_date">Tanggal Lahir Member</label>
-                                <input
-                                    id="member_birth_date"
-                                    type="date"
-                                    className="input"
-                                    value={toDateInput(data.member_birth_date)}
-                                    onChange={(e) => setData('member_birth_date', e.target.value)}
-                                />
-                                {errors.member_birth_date && <p className="mt-1 text-xs text-ember">{errors.member_birth_date}</p>}
+                                {errors.member_email && <p className="mt-1 text-xs text-ember">{errors.member_email}</p>}
                             </div>
                         </div>
+                        <p className="text-xs text-slate">
+                            Nomor ID, nama, dan tanggal lahir member diambil otomatis dari akun member tersebut.
+                        </p>
                     </div>
                 ) : (
                     <div className="mt-3 rounded-xl border border-ink/10 bg-white/70 p-4 space-y-4">
@@ -435,18 +414,48 @@ export default function PartnerForm({
                             </div>
 
                             <div>
-                                <label className="label" htmlFor="pic_phone">No. Telp / WA PIC</label>
+                                <label className="label" htmlFor="pic_email">Alamat Email PIC *</label>
+                                <input
+                                    id="pic_email"
+                                    type="email"
+                                    className="input"
+                                    value={data.pic_email || ''}
+                                    onChange={(e) => setData('pic_email', e.target.value)}
+                                    placeholder="pic@email.com"
+                                    required
+                                />
+                                {errors.pic_email && <p className="mt-1 text-xs text-ember">{errors.pic_email}</p>}
+                            </div>
+
+                            <div>
+                                <label className="label" htmlFor="pic_whatsapp">No. WhatsApp PIC *</label>
+                                <input
+                                    id="pic_whatsapp"
+                                    type="tel"
+                                    className="input"
+                                    value={data.pic_whatsapp || data.member_phone || ''}
+                                    onChange={(e) => {
+                                        setData('pic_whatsapp', e.target.value);
+                                        setData('member_phone', e.target.value);
+                                    }}
+                                    placeholder="081234567890"
+                                    required
+                                />
+                                {errors.pic_whatsapp && <p className="mt-1 text-xs text-ember">{errors.pic_whatsapp}</p>}
+                            </div>
+
+                            <div>
+                                <label className="label" htmlFor="pic_phone">No. Telepon PIC *</label>
                                 <input
                                     id="pic_phone"
                                     type="tel"
                                     className="input"
-                                    value={data.pic_phone || data.member_phone || ''}
-                                    onChange={(e) => {
-                                        setData('pic_phone', e.target.value);
-                                        setData('member_phone', e.target.value);
-                                    }}
-                                    placeholder="081234567890"
+                                    value={data.pic_phone || ''}
+                                    onChange={(e) => setData('pic_phone', e.target.value)}
+                                    placeholder="021-1234567"
+                                    required
                                 />
+                                {errors.pic_phone && <p className="mt-1 text-xs text-ember">{errors.pic_phone}</p>}
                             </div>
 
                             <div className="sm:col-span-2">
