@@ -315,12 +315,10 @@ class PartnerController extends Controller
             'expires_at' => $partner->expires_at ?? now()->addYear(),
         ];
 
-        $option = $validated['member_option'] ?? (
-            (! empty($validated['member_user_id']) || $partner->member_user_id) ? 'member' : 'non_member'
-        );
+        $option = $validated['member_option'] ?? null;
         $linked = false;
 
-        if ($option === 'member' && ! empty($validated['member_user_id'])) {
+        if (($option === 'member' || ! empty($validated['member_user_id'])) && ! empty($validated['member_user_id'])) {
             // Tolak keras: 1 partner hanya boleh terhubung ke 1 member.
             if ($partner->member_user_id !== null
                 && (int) $partner->member_user_id !== (int) $validated['member_user_id']) {
@@ -337,10 +335,16 @@ class PartnerController extends Controller
             $data['member_name'] = $member->name;
             $linked = true;
         } elseif ($option === 'non_member') {
-            // Partner tetap bisa di-approve tanpa akun member.
+            // Admin eksplisit memilih non-member saat approval manual.
             $data['member_user_id'] = null;
             $data['is_member'] = false;
             $data['member_id_number'] = null;
+        } else {
+            // Default (direct approve tanpa popup): data pendaftaran sudah terverifikasi OTP saat registrasi.
+            // Pertahankan link member jika sudah ada, atau tetap non-member jika tidak ada.
+            if ($partner->member_user_id) {
+                $linked = true;
+            }
         }
 
         $partner->forceFill($data)->save();
