@@ -29,6 +29,7 @@ class Partner extends Model
             'expires_at' => 'datetime',
             'joined_at' => 'datetime',
             'member_birth_date' => 'date',
+            'hobbies' => 'array',
         ];
     }
 

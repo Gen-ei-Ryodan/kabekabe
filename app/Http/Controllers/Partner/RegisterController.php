@@ -284,6 +284,7 @@ class RegisterController extends Controller
             DB::commit();
         } catch (QueryException $e) {
             DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Partner registration QueryException: ' . $e->getMessage(), ['exception' => $e]);
 
             $message = str_contains($e->getMessage(), 'partners.email')
                 ? 'Email partner sudah terdaftar. Gunakan email lain.'
@@ -292,6 +293,7 @@ class RegisterController extends Controller
             return back()->withErrors(['email' => $message])->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Partner registration Exception: ' . $e->getMessage(), ['exception' => $e]);
 
             return back()->withErrors(['email' => 'Registration failed. Please try again.'])->withInput();
         }
