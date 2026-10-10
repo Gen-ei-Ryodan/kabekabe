@@ -38,6 +38,36 @@ Route::post('admin', [AuthenticatedSessionController::class, 'storeAdmin'])
     ->middleware('throttle:6,1,admin-login')
     ->name('admin.login.store');
 
+// Lupa password: minta kode OTP ke email.
+// Di luar middleware `guest` agar user yang sedang login di salah satu guard (misal member)
+// tetap bisa melakukan forgot password untuk akun portal lain (misal partner) tanpa di-redirect.
+Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+    ->name('password.request');
+
+Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+    ->middleware('throttle:5,1,password-email')
+    ->name('password.email');
+
+// Verifikasi kode OTP.
+Route::get('forgot-password/verify-otp', [PasswordOtpController::class, 'create'])
+    ->name('password.otp');
+
+Route::post('forgot-password/verify-otp', [PasswordOtpController::class, 'store'])
+    ->middleware('throttle:10,1,password-otp-verify')
+    ->name('password.otp.verify');
+
+Route::post('forgot-password/resend-otp', [PasswordOtpController::class, 'resend'])
+    ->middleware('throttle:3,1,password-otp-resend')
+    ->name('password.otp.resend');
+
+// Reset password baru setelah OTP terverifikasi.
+Route::get('reset-password', [NewPasswordController::class, 'create'])
+    ->name('password.reset');
+
+Route::post('reset-password', [NewPasswordController::class, 'store'])
+    ->middleware('throttle:5,1,password-reset')
+    ->name('password.store');
+
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
@@ -53,34 +83,6 @@ Route::middleware('guest')->group(function () {
     Route::post('register/partner-link/verify', [PartnerLinkOtpController::class, 'verify'])
         ->middleware('throttle:10,1,partner-link-verify')
         ->name('register.partner-link.verify');
-
-    // Lupa password: minta kode OTP ke email.
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-        ->name('password.request');
-
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->middleware('throttle:5,1,password-email')
-        ->name('password.email');
-
-    // Verifikasi kode OTP.
-    Route::get('forgot-password/verify-otp', [PasswordOtpController::class, 'create'])
-        ->name('password.otp');
-
-    Route::post('forgot-password/verify-otp', [PasswordOtpController::class, 'store'])
-        ->middleware('throttle:10,1,password-otp-verify')
-        ->name('password.otp.verify');
-
-    Route::post('forgot-password/resend-otp', [PasswordOtpController::class, 'resend'])
-        ->middleware('throttle:3,1,password-otp-resend')
-        ->name('password.otp.resend');
-
-    // Reset password baru setelah OTP terverifikasi.
-    Route::get('reset-password', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
-
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->middleware('throttle:5,1,password-reset')
-        ->name('password.store');
 });
 
 Route::middleware('auth')->group(function () {
