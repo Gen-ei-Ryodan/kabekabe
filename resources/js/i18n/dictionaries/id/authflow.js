@@ -1,6 +1,6 @@
 export default {
     'flow.forgotPassword.title': 'Lupa Password',
-    'flow.forgotPassword.instruction': 'Lupa kata sandi Anda? Tidak masalah. Cukup beri tahu kami alamat email Anda dan kami akan mengirimkan kode OTP untuk mengatur ulang kata sandi.',
+    'flow.forgotPassword.instruction': 'Masukkan alamat email akun yang ingin Anda reset kata sandinya',
     'flow.forgotPassword.send': 'Kirim Kode OTP',
     'flow.forgotPassword.sending': 'Mengirim…',
     'flow.forgotPassword.remember': 'Ingat kata sandi Anda?',

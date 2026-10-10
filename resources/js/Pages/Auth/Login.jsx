@@ -31,15 +31,7 @@ export default function Login({ status, portal = 'member' }) {
     const fieldClass =
         'block w-full rounded-xl border border-white/15 bg-white/10 px-3.5 py-2.5 text-base text-white placeholder:text-white/40 backdrop-blur-sm focus:border-gold-light focus:ring-2 focus:ring-gold-light/40 sm:text-sm';
 
-    const partnerBadge = (className) =>
-        !isPartner && (
-            <Link
-                href={route('partner.login')}
-                className={`btn-gold rounded-full px-3 py-1.5 text-xs font-semibold shadow-md ${className}`}
-            >
-                {t('auth.login.partnerLogin')}
-            </Link>
-        );
+    const partnerBadge = (className) => null;
 
     const fields = (prefix) => (
         <>
