@@ -16,6 +16,7 @@ class UpdateMemberRequest extends FormRequest
     public function rules(): array
     {
         $member = $this->route('member');
+        $memberId = $member instanceof \App\Models\User ? $member->id : $member;
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -26,7 +27,7 @@ class UpdateMemberRequest extends FormRequest
             'marital_status' => ['nullable', 'string', 'max:50'],
             'religion' => ['nullable', 'string', 'max:100'],
             'place_of_worship_address' => ['nullable', 'string', 'max:500'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($member->id)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($memberId)],
             'phone' => ['nullable', 'string', 'max:30'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:500'],
