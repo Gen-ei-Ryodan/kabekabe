@@ -343,6 +343,7 @@ class MemberController extends Controller
 
         if (! empty($validated['password'])) {
             $updateData['password'] = $validated['password'];
+            $updateData['must_change_password'] = false;
         }
 
         $member->update($updateData);
