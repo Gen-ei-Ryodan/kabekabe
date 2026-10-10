@@ -6,6 +6,7 @@ use App\Models\Partner;
 use App\Models\PartnerAd;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
