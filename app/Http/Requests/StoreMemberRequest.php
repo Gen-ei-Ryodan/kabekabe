@@ -24,7 +24,7 @@ class StoreMemberRequest extends FormRequest
             'marital_status' => ['nullable', 'string', 'max:50'],
             'religion' => ['nullable', 'string', 'max:100'],
             'place_of_worship_address' => ['nullable', 'string', 'max:500'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->where('role', \App\Models\User::ROLE_MEMBER)],
             'password' => ['required', 'string', Password::defaults(), 'confirmed'],
             'phone' => ['nullable', 'string', 'max:30'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
