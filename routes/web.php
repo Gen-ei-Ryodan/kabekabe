@@ -31,6 +31,7 @@ use App\Http\Controllers\Vendor\VerifyController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
     $user = auth()->user();
