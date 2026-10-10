@@ -100,13 +100,29 @@ function EditMemberDrawer({ member, onClose }) {
 
     const submit = (e) => {
         e.preventDefault();
-        form.put(route('admin.members.update', member.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                form.reset('password', 'password_confirmation');
-                onClose();
-            },
-        });
+        if (form.data.avatar instanceof File) {
+            form.transform((data) => ({
+                ...data,
+                _method: 'PUT',
+            }));
+            form.post(route('admin.members.update', member.id), {
+                preserveScroll: true,
+                forceFormData: true,
+                onSuccess: () => {
+                    form.reset('password', 'password_confirmation');
+                    onClose();
+                },
+            });
+        } else {
+            form.transform((data) => data);
+            form.put(route('admin.members.update', member.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    form.reset('password', 'password_confirmation');
+                    onClose();
+                },
+            });
+        }
     };
 
     return (
@@ -119,6 +135,7 @@ function EditMemberDrawer({ member, onClose }) {
             onCancel={onClose}
             onSubmit={submit}
             isCreate={false}
+            avatarUrl={member.avatar_url}
         />
     );
 }
