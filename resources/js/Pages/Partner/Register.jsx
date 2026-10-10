@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import MasterIdentityBiodata from '@/Components/MasterIdentityBiodata';
@@ -12,6 +12,7 @@ import { useTranslation } from '@/i18n';
 const INDUSTRI_OPTIONS = INDUSTRY_CATEGORIES;
 
 export default function Register() {
+    const { auth } = usePage().props;
     const { t } = useTranslation();
     const { data, setData, post, processing, errors } = useForm({
         company_name: '',
@@ -188,18 +189,34 @@ export default function Register() {
                     className="mb-2 text-sm font-semibold"
                 />
                 <div className="grid grid-cols-2 gap-4">
-                    <Link
-                        href={route('register')}
-                        className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-white/70 p-4 text-center text-slate transition-all hover:bg-gold/10 hover:border-gold hover:text-gold-deep"
-                    >
-                        <span className="text-2xl mb-1.5">🪪</span>
-                        <span className="text-sm font-semibold">
-                            Anggota (Member)
-                        </span>
-                        <span className="text-xs text-slate mt-0.5">
-                            Kartu digital, promo &amp; jejaring
-                        </span>
-                    </Link>
+                    {auth?.user?.role === 'member' ? (
+                        <button
+                            type="button"
+                            onClick={() => alert('Anda sudah login sebagai member. Harap logout terlebih dahulu jika ingin mendaftar akun baru.')}
+                            className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-white/70 p-4 text-center text-slate transition-all hover:bg-gold/10 hover:border-gold hover:text-gold-deep cursor-pointer"
+                        >
+                            <span className="text-2xl mb-1.5">🪪</span>
+                            <span className="text-sm font-semibold">
+                                Anggota (Member)
+                            </span>
+                            <span className="text-xs text-slate mt-0.5">
+                                Kartu digital, promo &amp; jejaring
+                            </span>
+                        </button>
+                    ) : (
+                        <Link
+                            href={route('register')}
+                            className="flex flex-col items-center justify-center rounded-2xl border border-ink/15 bg-white/70 p-4 text-center text-slate transition-all hover:bg-gold/10 hover:border-gold hover:text-gold-deep"
+                        >
+                            <span className="text-2xl mb-1.5">🪪</span>
+                            <span className="text-sm font-semibold">
+                                Anggota (Member)
+                            </span>
+                            <span className="text-xs text-slate mt-0.5">
+                                Kartu digital, promo &amp; jejaring
+                            </span>
+                        </Link>
+                    )}
 
                     <button
                         type="button"

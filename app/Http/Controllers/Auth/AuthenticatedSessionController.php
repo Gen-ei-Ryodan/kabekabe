@@ -21,7 +21,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the member login view (kbkb.id/login).
      */
-    public function create(): Response
+    public function create(): Response|RedirectResponse
     {
         return $this->renderLogin('member');
     }
@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the partner login view (kbkb.id/partner).
      */
-    public function createPartner(): Response
+    public function createPartner(): Response|RedirectResponse
     {
         return $this->renderLogin('partner');
     }
@@ -37,19 +37,19 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the admin login view (kbkb.id/admin).
      */
-    public function createAdmin(): Response
+    public function createAdmin(): Response|RedirectResponse
     {
         return $this->renderLogin('admin');
     }
 
-    private function renderLogin(string $portal): Response
+    private function renderLogin(string $portal): Response|RedirectResponse
     {
         $guard = $portal === 'partner' ? 'partner' : 'web';
         $expectedRole = $this->expectedRole($portal);
         $user = Auth::guard($guard)->user();
 
         if ($user && $user->role === $expectedRole) {
-            return redirect()->intended(route($user->homeRoute()));
+            return redirect()->route($user->homeRoute());
         }
 
         return Inertia::render('Auth/Login', [

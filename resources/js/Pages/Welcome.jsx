@@ -1,7 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
 
 export default function Welcome() {
+    const { auth } = usePage().props;
+    const isMemberLoggedIn = auth?.user?.role === 'member';
+
     return (
         <>
             <Head title="Masuk ke KBKB" />
@@ -32,7 +35,7 @@ export default function Welcome() {
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         {/* Member Card */}
                         <Link
-                            href={route('login')}
+                            href={isMemberLoggedIn ? route('member.home') : route('login')}
                             className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-gold/30 bg-white/80 p-6 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:border-gold hover:shadow-card sm:p-8"
                         >
                             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/15 text-gold-deep transition-transform duration-200 group-hover:scale-110">
@@ -51,7 +54,7 @@ export default function Welcome() {
                                 Masuk ke akun member untuk kartu digital, promo khusus, dan info komunitas.
                             </p>
                             <span className="mt-5 inline-flex items-center text-xs font-semibold text-gold-deep group-hover:underline">
-                                Masuk sebagai Member &rarr;
+                                {isMemberLoggedIn ? 'Buka Akun Member →' : 'Masuk sebagai Member →'}
                             </span>
                         </Link>
 
