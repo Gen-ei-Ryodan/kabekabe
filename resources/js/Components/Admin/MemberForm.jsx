@@ -70,6 +70,8 @@ export default function MemberForm({
         h.toLowerCase().includes(hobbySearch.toLowerCase())
     );
 
+    const hasAvatar = (avatarPreview || avatarUrl) && !data.remove_avatar;
+
     return (
         <form onSubmit={onSubmit} className="space-y-6">
             {/* 0. FOTO PROFIL */}
@@ -80,7 +82,7 @@ export default function MemberForm({
                     </h3>
                     <div className="flex items-center gap-4">
                         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-ink/10 bg-paper">
-                            {(avatarPreview || avatarUrl) ? (
+                            {hasAvatar ? (
                                 <img
                                     src={avatarPreview || avatarUrl}
                                     alt="Avatar"
@@ -105,9 +107,9 @@ export default function MemberForm({
                                     htmlFor="avatar-upload"
                                     className="btn-ink cursor-pointer text-xs px-3 py-1.5"
                                 >
-                                    {avatarPreview || avatarUrl ? 'Ganti Foto' : 'Pilih Foto'}
+                                    {hasAvatar ? 'Ganti Foto' : 'Pilih Foto'}
                                 </label>
-                                {(avatarPreview || avatarUrl) && (
+                                {hasAvatar && (
                                     <button
                                         type="button"
                                         onClick={removeAvatar}
