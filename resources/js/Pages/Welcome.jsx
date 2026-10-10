@@ -4,6 +4,7 @@ import LanguageSwitcher from '@/Components/LanguageSwitcher';
 export default function Welcome() {
     const { auth } = usePage().props;
     const isMemberLoggedIn = auth?.user?.role === 'member';
+    const isPartnerLoggedIn = Boolean(auth?.partner);
 
     return (
         <>
@@ -60,7 +61,7 @@ export default function Welcome() {
 
                         {/* Partner Card */}
                         <Link
-                            href={route('partner.login')}
+                            href={isPartnerLoggedIn ? route('vendor.dashboard') : route('partner.login')}
                             className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-gold/30 bg-white/80 p-6 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:border-gold hover:shadow-card sm:p-8"
                         >
                             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/15 text-gold-deep transition-transform duration-200 group-hover:scale-110">
@@ -79,7 +80,7 @@ export default function Welcome() {
                                 Masuk ke portal partner bisnis untuk kelola promo, diskon, dan transaksi member.
                             </p>
                             <span className="mt-5 inline-flex items-center text-xs font-semibold text-gold-deep group-hover:underline">
-                                Masuk sebagai Partner &rarr;
+                                {isPartnerLoggedIn ? 'Buka Dashboard Partner →' : 'Masuk sebagai Partner →'}
                             </span>
                         </Link>
                     </div>

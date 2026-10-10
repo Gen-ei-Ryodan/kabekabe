@@ -34,21 +34,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    $user = auth()->user();
-
-    if ($user) {
-        return match ($user->role) {
-            User::ROLE_ADMIN => redirect()->route('admin.dashboard'),
-            User::ROLE_VENDOR => redirect()->route('vendor.dashboard'),
-            default => redirect()->route('member.home'),
-        };
-    }
-
-    // Sesi partner hidup di guard terpisah, tidak terlihat oleh auth()->user().
-    if (Auth::guard('partner')->check()) {
-        return redirect()->route('vendor.dashboard');
-    }
-
     return Inertia::render('Welcome');
 });
 

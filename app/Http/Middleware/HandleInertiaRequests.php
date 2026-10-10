@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $partnerUser = Auth::guard('partner')->user();
 
         return [
             ...parent::share($request),
@@ -48,6 +49,12 @@ class HandleInertiaRequests extends Middleware
                     'notifications_unread' => $user->isMember()
                         ? $user->appNotifications()->unread()->count()
                         : 0,
+                ] : null,
+                'partner' => $partnerUser ? [
+                    'id' => $partnerUser->id,
+                    'name' => $partnerUser->name,
+                    'email' => $partnerUser->email,
+                    'role' => $partnerUser->role,
                 ] : null,
             ],
             'flash' => [
