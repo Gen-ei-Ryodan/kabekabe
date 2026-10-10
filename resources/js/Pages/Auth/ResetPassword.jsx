@@ -29,7 +29,9 @@ export default function ResetPassword({ email, portal = 'member' }) {
             <Head title={t('flow.resetPassword.title')} />
 
             <header className="mb-6">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-ink">{t('flow.resetPassword.heading')}</h1>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-ink uppercase">
+                    GANTI PASSWORD {portal}
+                </h1>
                 <p className="mt-2 text-sm text-slate">
                     {t('flow.resetPassword.instructionBefore')}{' '}
                     <span className="font-semibold text-ink">{email}</span>.

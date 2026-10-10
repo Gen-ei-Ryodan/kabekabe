@@ -49,23 +49,28 @@ class PasswordResetLinkController extends Controller
             ->where('role', $role)
             ->first();
 
-        if ($user) {
-            app(PasswordOtpService::class)->issue(
-                $user,
-                PasswordOtpService::PURPOSE_RESET,
-                'Kode OTP Reset Password',
-                'Gunakan kode 6 digit di bawah ini untuk melanjutkan proses reset password akun KBKB Anda.',
-            );
+        if (! $user) {
+            $portalLabel = strtoupper($portal);
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => "Email tidak terdaftar sebagai akun $portalLabel.",
+            ]);
         }
 
-        // Selalu arahkan ke halaman verifikasi OTP tanpa mengungkap apakah email terdaftar.
+        $portalUpper = strtoupper($portal);
+        app(PasswordOtpService::class)->issue(
+            $user,
+            PasswordOtpService::PURPOSE_RESET,
+            "Kode OTP Reset Password $portalUpper",
+            "Gunakan kode 6 digit di bawah ini untuk melanjutkan proses reset password akun $portalUpper KBKB Anda.",
+        );
+
         $request->session()->put('password_reset_email', $email);
         $request->session()->put('password_reset_role', $role);
         $request->session()->forget('password_reset_verified');
 
         return redirect()
             ->route('password.otp')
-            ->with('status', 'Jika email terdaftar, kode OTP sudah dikirim ke email Anda.');
+            ->with('status', 'Kode OTP telah dikirim ke email Anda.');
     }
 
     private static function portal(mixed $value): string

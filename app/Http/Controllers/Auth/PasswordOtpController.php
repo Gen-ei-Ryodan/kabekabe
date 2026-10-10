@@ -79,18 +79,22 @@ class PasswordOtpController extends Controller
 
         $user = $this->user($request, $email);
 
-        if ($user) {
-            app(PasswordOtpService::class)->issue(
-                $user,
-                PasswordOtpService::PURPOSE_RESET,
-                'Kode OTP Reset Password',
-                'Ini adalah kode OTP baru untuk proses reset password akun KBKB Anda.',
-            );
+        if (! $user) {
+            return redirect()->route('password.request')->withErrors(['email' => 'Akun tidak ditemukan.']);
         }
+
+        $portal = User::portalForRole($this->role($request));
+        $portalUpper = strtoupper($portal);
+        app(PasswordOtpService::class)->issue(
+            $user,
+            PasswordOtpService::PURPOSE_RESET,
+            "Kode OTP Reset Password $portalUpper",
+            "Ini adalah kode OTP baru untuk proses reset password akun $portalUpper KBKB Anda.",
+        );
 
         $request->session()->forget('password_reset_verified');
 
-        return back()->with('status', 'Kode OTP baru sudah dikirim (jika email terdaftar).');
+        return back()->with('status', 'Kode OTP baru telah dikirim ke email Anda.');
     }
 
     private function role(Request $request): string

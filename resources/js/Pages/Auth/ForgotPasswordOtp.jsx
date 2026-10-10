@@ -31,7 +31,9 @@ export default function ForgotPasswordOtp({ email, status, portal = 'member' }) 
             <Head title={t('flow.otp.title')} />
 
             <header className="mb-6">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-ink">{t('flow.otp.heading')}</h1>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-ink uppercase">
+                    GANTI PASSWORD {portal}
+                </h1>
                 <p className="mt-2 text-sm text-slate">
                     {t('flow.otp.instructionBefore')}{' '}
                     <span className="font-semibold text-ink">{email}</span>{' '}

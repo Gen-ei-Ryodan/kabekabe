@@ -41,6 +41,9 @@ export default function ForgotPassword({ status, portal = 'member' }) {
 
                         <div className="absolute inset-0 p-6 sm:p-10 md:p-12">
                             <div className="absolute bottom-6 right-6 w-full max-w-xs space-y-4 sm:bottom-10 sm:right-10 sm:max-w-sm md:bottom-12 md:right-12">
+                                <h2 className="text-2xl font-bold text-white uppercase tracking-wider">
+                                    GANTI PASSWORD {portal}
+                                </h2>
                                 <p className="text-sm text-white/80">
                                     {t('flow.forgotPassword.instruction')}
                                 </p>
