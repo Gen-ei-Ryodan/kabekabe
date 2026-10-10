@@ -174,12 +174,18 @@ export default function MemberForm({
                         <select
                             id="gender"
                             className="input"
-                            value={data.gender || ''}
+                            value={
+                                data.gender === 'Pria' || data.gender === 'male' || data.gender === 'Laki-laki'
+                                    ? 'male'
+                                    : data.gender === 'Wanita' || data.gender === 'female' || data.gender === 'Perempuan'
+                                    ? 'female'
+                                    : (data.gender || '')
+                            }
                             onChange={(e) => setData('gender', e.target.value)}
                         >
                             <option value="">Pilih jenis kelamin</option>
-                            <option value="male">Laki-laki (male)</option>
-                            <option value="female">Perempuan (female)</option>
+                            <option value="male">Laki-laki</option>
+                            <option value="female">Perempuan</option>
                         </select>
                         {errors.gender && <p className="mt-1 text-xs text-ember">{errors.gender}</p>}
                     </div>
@@ -591,8 +597,19 @@ export default function MemberForm({
                     Masa aktif sampai: {data.membership_expires_at ? formatDateLong(data.membership_expires_at) : 'belum diatur'}
                 </p>
 
+                {Object.keys(errors || {}).length > 0 && (
+                    <div className="rounded-xl border border-ember/30 bg-ember/10 p-3 text-xs text-ember">
+                        <p className="font-semibold">Ada kesalahan pada pengisian data:</p>
+                        <ul className="mt-1 list-inside list-disc space-y-0.5">
+                            {Object.entries(errors).map(([key, msg]) => (
+                                <li key={key}>{typeof msg === 'string' ? msg : JSON.stringify(msg)}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <div className={isCreate ? '' : 'sm:col-span-2'}>
+                    <div>
                         <label className="label" htmlFor="password">
                             {isCreate ? 'Kata Sandi *' : 'Kata Sandi Baru (kosongkan bila tidak diubah)'}
                         </label>
@@ -618,8 +635,9 @@ export default function MemberForm({
                             autoComplete="new-password"
                             value={data.password_confirmation || ''}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
-                            required={isCreate && Boolean(data.password)}
+                            required={isCreate || Boolean(data.password)}
                         />
+                        {errors.password_confirmation && <p className="mt-1 text-xs text-ember">{errors.password_confirmation}</p>}
                     </div>
                 </div>
             </section>

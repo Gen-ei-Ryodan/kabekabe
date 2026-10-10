@@ -45,7 +45,13 @@ function CreateMemberDrawer({ onClose }) {
 
     const submit = (e) => {
         e.preventDefault();
-        form.post(route('admin.members.store'), { preserveScroll: true });
+        form.post(route('admin.members.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset('password', 'password_confirmation');
+                onClose();
+            },
+        });
     };
 
     return (
@@ -94,7 +100,13 @@ function EditMemberDrawer({ member, onClose }) {
 
     const submit = (e) => {
         e.preventDefault();
-        form.put(route('admin.members.update', member.id), { preserveScroll: true });
+        form.put(route('admin.members.update', member.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset('password', 'password_confirmation');
+                onClose();
+            },
+        });
     };
 
     return (

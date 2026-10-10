@@ -20,7 +20,7 @@ class UpdateMemberRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'nickname' => ['nullable', 'string', 'max:100'],
-            'gender' => ['nullable', 'string', Rule::in(['male', 'female'])],
+            'gender' => ['nullable', 'string', 'max:50'],
             'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
             'birth_place' => ['nullable', 'string', 'max:100'],
             'marital_status' => ['nullable', 'string', 'max:50'],
