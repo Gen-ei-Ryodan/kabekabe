@@ -36,20 +36,21 @@ export default function MemberEdit({ member, membership }) {
 
     const submit = (e) => {
         e.preventDefault();
-        const fd = new FormData();
-        Object.entries(form.data).forEach(([key, val]) => {
-            if (key === 'hobbies' || key === 'business_fields') {
-                (Array.isArray(val) ? val : []).forEach((v, i) => fd.append(`${key}[${i}]`, v));
-            } else if (key === 'avatar' && val instanceof File) {
-                fd.append('avatar', val);
-            } else if (key === 'remove_avatar' && val) {
-                fd.append('remove_avatar', '1');
-            } else if (val !== null && val !== undefined) {
-                fd.append(key, val);
-            }
-        });
-        fd.append('_method', 'PUT');
-        form.post(route('admin.members.update', member.id), { data: fd, preserveScroll: true, forceFormData: true });
+        if (form.data.avatar instanceof File) {
+            form.transform((data) => ({
+                ...data,
+                _method: 'PUT',
+            }));
+            form.post(route('admin.members.update', member.id), {
+                preserveScroll: true,
+                forceFormData: true,
+            });
+        } else {
+            form.transform((data) => data);
+            form.put(route('admin.members.update', member.id), {
+                preserveScroll: true,
+            });
+        }
     };
 
     return (
