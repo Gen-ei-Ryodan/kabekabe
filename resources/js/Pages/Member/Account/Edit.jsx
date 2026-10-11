@@ -1,12 +1,18 @@
+import { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import MemberLayout from '@/Layouts/MemberLayout';
 import Reveal from '@/Components/Reveal';
 import Avatar from '@/Components/Avatar';
 import TextInput from '@/Components/TextInput';
+import Modal from '@/Components/Modal';
 import { useTranslation } from '@/i18n';
 
 export default function AccountEdit({ account, password_otp_sent }) {
     const { t } = useTranslation();
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [clientErrors, setClientErrors] = useState({});
+    const [cooldown, setCooldown] = useState(0);
+
     const { data, setData, post, put, processing, errors } = useForm({
         name: account.name || '',
         email: account.email || '',
@@ -21,26 +27,88 @@ export default function AccountEdit({ account, password_otp_sent }) {
         otp: '',
     });
 
-    const otpSent = Boolean(password_otp_sent);
-    const willChangePassword = Boolean(data.password) || otpSent;
+    useEffect(() => {
+        if (cooldown <= 0) return;
+        const timer = setInterval(() => {
+            setCooldown((prev) => prev - 1);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [cooldown]);
 
-    const sendOtp = () => {
+    const resendOtp = () => {
+        if (cooldown > 0) return;
         post(route('member.account.password.send-otp'), {
             preserveState: true,
             preserveScroll: true,
+            onSuccess: () => {
+                setCooldown(60);
+            },
         });
     };
 
     const submit = (e) => {
         e.preventDefault();
+        setClientErrors({});
 
-        // Ganti password: minta kode OTP ke email dulu sebelum disimpan.
-        if (data.password && !otpSent) {
-            sendOtp();
+        const wantsPasswordChange = Boolean(data.password || data.current_password || data.password_confirmation);
+
+        if (wantsPasswordChange) {
+            const errs = {};
+            if (!data.current_password) {
+                errs.current_password = 'Password saat ini wajib diisi jika ingin ganti password.';
+            }
+            if (!data.password) {
+                errs.password = 'Password baru wajib diisi.';
+            } else if (data.password.length < 8) {
+                errs.password = 'Password baru minimal 8 karakter.';
+            }
+            if (data.password !== data.password_confirmation) {
+                errs.password_confirmation = 'Konfirmasi password baru tidak cocok.';
+            }
+
+            if (Object.keys(errs).length > 0) {
+                setClientErrors(errs);
+                return;
+            }
+
+            // Kirim OTP via endpoint lalu tampilkan Pop-up Modal OTP
+            post(route('member.account.password.send-otp'), {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowOtpModal(true);
+                    setCooldown(60);
+                },
+            });
             return;
         }
 
+        // Simpan perubahan profil biasa tanpa password
         put(route('member.account.update'), { preserveScroll: true });
+    };
+
+    const handleVerifyAndSave = (e) => {
+        e.preventDefault();
+        setClientErrors({});
+
+        if (!data.otp || data.otp.length < 6) {
+            setClientErrors({ otp: 'Masukkan 6 digit kode OTP dari email Anda.' });
+            return;
+        }
+
+        put(route('member.account.update'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowOtpModal(false);
+                setData((prev) => ({
+                    ...prev,
+                    current_password: '',
+                    password: '',
+                    password_confirmation: '',
+                    otp: '',
+                }));
+            },
+        });
     };
 
     return (
@@ -197,7 +265,11 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         value={data.current_password}
                                         onChange={(e) => setData('current_password', e.target.value)}
                                     />
-                                    {errors.current_password && <p className="mt-1 text-xs text-ember">{errors.current_password}</p>}
+                                    {(errors.current_password || clientErrors.current_password) && (
+                                        <p className="mt-1 text-xs text-ember font-medium">
+                                            {errors.current_password || clientErrors.current_password}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -211,7 +283,11 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         value={data.password}
                                         onChange={(e) => setData('password', e.target.value)}
                                     />
-                                    {errors.password && <p className="mt-1 text-xs text-ember">{errors.password}</p>}
+                                    {(errors.password || clientErrors.password) && (
+                                        <p className="mt-1 text-xs text-ember font-medium">
+                                            {errors.password || clientErrors.password}
+                                        </p>
+                                    )}
                                     <p className="mt-1 text-[11px] text-slate-soft">{t('account.passwordHint')}</p>
                                 </div>
 
@@ -226,44 +302,12 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         value={data.password_confirmation}
                                         onChange={(e) => setData('password_confirmation', e.target.value)}
                                     />
-                                    {errors.password_confirmation && <p className="mt-1 text-xs text-ember">{errors.password_confirmation}</p>}
+                                    {(errors.password_confirmation || clientErrors.password_confirmation) && (
+                                        <p className="mt-1 text-xs text-ember font-medium">
+                                            {errors.password_confirmation || clientErrors.password_confirmation}
+                                        </p>
+                                    )}
                                 </div>
-
-                                {willChangePassword && (
-                                    <div className="sm:col-span-2 rounded-xl border border-gold/40 bg-gold/10 p-4">
-                                        <label className="label" htmlFor="otp">
-                                            {t('account.otpLabel')} {otpSent && <span className="text-ember">*</span>}
-                                        </label>
-                                        <input
-                                            id="otp"
-                                            name="otp"
-                                            type="text"
-                                            inputMode="numeric"
-                                            autoComplete="one-time-code"
-                                            maxLength={6}
-                                            className="input font-mono tracking-[0.4em]"
-                                            placeholder={t('account.otpPlaceholder')}
-                                            value={data.otp}
-                                            onChange={(e) => setData('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                        />
-                                        {errors.otp && <p className="mt-1 text-xs text-ember">{errors.otp}</p>}
-                                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                                            <p className="text-[11px] text-slate">
-                                                {otpSent
-                                                    ? t('account.otpSentInfo', { email: account.email })
-                                                    : t('account.otpNotSentInfo')}
-                                            </p>
-                                            <button
-                                                type="button"
-                                                onClick={sendOtp}
-                                                disabled={processing}
-                                                className="text-[11px] font-bold text-gold-deep hover:underline disabled:opacity-50"
-                                            >
-                                                {otpSent ? t('account.resendOtp') : t('account.sendOtp')}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </section>
                     </Reveal>
@@ -276,6 +320,75 @@ export default function AccountEdit({ account, password_otp_sent }) {
                         </button>
                     </div>
                 </form>
+
+                {/* MODAL POP-UP OTP GANTI PASSWORD */}
+                <Modal show={showOtpModal} onClose={() => setShowOtpModal(false)} maxWidth="md">
+                    <div className="p-6 text-center sm:p-8">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/15 text-gold-deep mb-4">
+                            <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+
+                        <h3 className="font-display text-xl font-bold text-ink">
+                            Verifikasi Ganti Password
+                        </h3>
+                        <p className="mt-2 text-xs text-slate leading-relaxed">
+                            Kode OTP 6 digit telah dikirim ke <strong className="text-ink">{account.email}</strong>. Masukkan kode tersebut untuk menyelesaikan perubahan kata sandi Anda.
+                        </p>
+
+                        <form onSubmit={handleVerifyAndSave} className="mt-6 space-y-4">
+                            <div>
+                                <input
+                                    id="modal_otp"
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    maxLength={6}
+                                    autoFocus
+                                    className="input text-center font-mono text-xl tracking-[0.4em] py-3 font-bold"
+                                    placeholder="••••••"
+                                    value={data.otp}
+                                    onChange={(e) => setData('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                />
+                                {(errors.otp || clientErrors.otp) && (
+                                    <p className="mt-2 text-xs text-ember font-medium">
+                                        {errors.otp || clientErrors.otp}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="flex items-center justify-between text-xs pt-1">
+                                <span className="text-slate">Tidak menerima kode?</span>
+                                <button
+                                    type="button"
+                                    onClick={resendOtp}
+                                    disabled={cooldown > 0 || processing}
+                                    className="font-semibold text-gold-deep hover:underline disabled:opacity-50 disabled:no-underline"
+                                >
+                                    {cooldown > 0 ? `Kirim ulang (${cooldown}s)` : 'Kirim Ulang Kode OTP'}
+                                </button>
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOtpModal(false)}
+                                    className="btn-ghost flex-1 py-2.5 text-sm"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing || data.otp.length < 6}
+                                    className="btn-gold flex-1 py-2.5 text-sm"
+                                >
+                                    {processing ? 'Menyimpan...' : 'Konfirmasi & Simpan'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </Modal>
             </div>
         </>
     );
