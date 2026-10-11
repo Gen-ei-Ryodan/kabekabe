@@ -49,6 +49,10 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::guard($guard)->user();
 
         if ($user && $user->role === $expectedRole) {
+            if ($user->must_change_password) {
+                return redirect()->route($guard === 'partner' ? 'partner.password.change-initial' : 'password.change-initial');
+            }
+
             return redirect()->route($user->homeRoute());
         }
 
@@ -140,6 +144,11 @@ class AuthenticatedSessionController extends Controller
 
         if ($user->must_change_password) {
             return redirect()->route($guard === 'partner' ? 'partner.password.change-initial' : 'password.change-initial');
+        }
+
+        if ($guard === 'partner') {
+            $request->session()->forget('url.intended');
+            return redirect()->route($user->homeRoute());
         }
 
         return redirect()->intended(route($user->homeRoute()));

@@ -40,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Guest redirect per portal: /vendor* + /partner* -> login partner,
         // /admin* -> login admin, sisanya default ke /login (member).
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if (in_array('partner', $e->guards(), true)) {
+            if (in_array('partner', $e->guards(), true) || $request->is('vendor', 'vendor/*', 'partner', 'partner/*')) {
                 return redirect()->route('partner.login');
             }
 

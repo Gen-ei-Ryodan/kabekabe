@@ -27,7 +27,7 @@ class InitialPasswordController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $user = $request->user();
+        $user = \Illuminate\Support\Facades\Auth::guard('partner')->user() ?? $request->user();
 
         $user->forceFill([
             'password' => Hash::make($request->password),
