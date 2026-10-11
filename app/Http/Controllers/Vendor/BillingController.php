@@ -8,15 +8,21 @@ use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class BillingController extends Controller
 {
+    private function vendorUser(): ?\App\Models\User
+    {
+        return Auth::guard('partner')->user() ?? auth()->user();
+    }
+
     public function index(): Response
     {
-        $user = auth()->user();
-        $partner = $user->partner;
+        $user = $this->vendorUser();
+        $partner = $user?->partner;
 
         abort_if(! $partner, 403, 'Anda bukan akun Partner.');
 
@@ -79,7 +85,7 @@ class BillingController extends Controller
 
     public function storeAd(Request $request): RedirectResponse
     {
-        $partner = auth()->user()->partner;
+        $partner = $this->vendorUser()?->partner;
         abort_if(! $partner, 403);
 
         $validated = $request->validate([
@@ -116,7 +122,7 @@ class BillingController extends Controller
 
     public function payAd(PartnerAd $ad): RedirectResponse
     {
-        $partner = auth()->user()->partner;
+        $partner = $this->vendorUser()?->partner;
         abort_if(! $partner || $ad->partner_id !== $partner->id, 403);
 
         $ad->update([

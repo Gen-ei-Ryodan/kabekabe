@@ -17,7 +17,7 @@ export default function VendorLayout({ children }) {
     const { auth, ziggy } = usePage().props;
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    const user = auth?.user;
+    const user = auth?.partner || auth?.user;
 
     const isActive = (routeName) => ziggy?.current() === routeName || ziggy?.current()?.startsWith(routeName.split('.').slice(0, 2).join('.'));
 

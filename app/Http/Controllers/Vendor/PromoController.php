@@ -9,6 +9,7 @@ use App\Models\Promo;
 use App\Services\PromoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,9 +19,14 @@ class PromoController extends Controller
         private readonly PromoService $promos,
     ) {}
 
+    private function vendorUser(): ?\App\Models\User
+    {
+        return Auth::guard('partner')->user() ?? auth()->user();
+    }
+
     public function index(Request $request): Response
     {
-        $partner = auth()->user()->partner;
+        $partner = $this->vendorUser()?->partner;
 
         abort_if($partner === null, 403);
 
@@ -40,7 +46,7 @@ class PromoController extends Controller
 
     public function create(): Response|RedirectResponse
     {
-        $partner = auth()->user()->partner;
+        $partner = $this->vendorUser()?->partner;
 
         abort_if($partner === null, 403);
 
@@ -55,7 +61,7 @@ class PromoController extends Controller
 
     public function store(StorePromoRequest $request): RedirectResponse
     {
-        $partner = $request->user()->partner;
+        $partner = ($request->user('partner') ?? $this->vendorUser())?->partner;
 
         abort_if($partner === null, 403);
 
@@ -78,7 +84,7 @@ class PromoController extends Controller
 
         $promo = $partner->promos()->create($data);
 
-        $this->promos->submit($promo, $request->user());
+        $this->promos->submit($promo, $request->user('partner') ?? $this->vendorUser());
 
         return redirect()
             ->route('vendor.promos.index')
@@ -87,7 +93,8 @@ class PromoController extends Controller
 
     public function show(Promo $promo): Response
     {
-        abort_unless(auth()->user()->can('view', $promo), 403);
+        $user = $this->vendorUser();
+        abort_unless($user && $user->can('view', $promo), 403);
 
         $promo->load('partner');
 
@@ -98,7 +105,8 @@ class PromoController extends Controller
 
     public function edit(Promo $promo): Response
     {
-        abort_unless(auth()->user()->can('update', $promo), 403);
+        $user = $this->vendorUser();
+        abort_unless($user && $user->can('update', $promo), 403);
 
         return Inertia::render('Vendor/Promos/Edit', [
             'promo' => $promo,
@@ -120,7 +128,7 @@ class PromoController extends Controller
 
         $promo->update($data);
 
-        $this->promos->submit($promo, $request->user());
+        $this->promos->submit($promo, $request->user('partner') ?? $this->vendorUser());
 
         return redirect()
             ->route('vendor.promos.index')
@@ -129,7 +137,8 @@ class PromoController extends Controller
 
     public function destroy(Request $request, Promo $promo): RedirectResponse
     {
-        abort_unless($request->user()->can('delete', $promo), 403);
+        $user = $request->user('partner') ?? $this->vendorUser();
+        abort_unless($user && $user->can('delete', $promo), 403);
 
         $promo->delete();
 

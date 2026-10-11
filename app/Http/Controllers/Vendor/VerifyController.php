@@ -40,7 +40,7 @@ class VerifyController extends Controller
 
         $active = $member->hasActiveMembership();
 
-        $vendor = $request->user();
+        $vendor = $request->user('partner') ?? \Illuminate\Support\Facades\Auth::guard('partner')->user() ?? $request->user();
         $scan = null;
         $lastScan = null;
         $withinWindow = false;

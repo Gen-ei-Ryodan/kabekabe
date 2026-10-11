@@ -40,7 +40,7 @@ export default {
     'account.otpLabel': 'OTP Code from Email',
     'account.otpPlaceholder': '••••••',
     'account.otpSentInfo': 'A 6-digit code has been sent to {email} (valid for 10 minutes). Enter the code then click Save Changes.',
-    'account.otpNotSentInfo': 'Click "Save Changes" to send an OTP code to your email first.',
+    'account.otpNotSentInfo': 'Enter the OTP code sent to your email after pressing the "Send OTP Code" button.',
     'account.sendOtp': 'Send OTP Code',
     'account.resendOtp': 'Resend OTP Code',
     'account.processing': 'Processing…',

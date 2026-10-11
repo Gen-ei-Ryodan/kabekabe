@@ -233,17 +233,74 @@ export default function PartnerForm({
             </section>
 
             {/* 2. STATUS KEANGGOTAAN MEMBER KBKB */}
-            <section className="space-y-4 rounded-xl border border-gold/30 bg-gold/5 p-4 sm:p-5">
-                <div className="border-b border-gold/20 pb-2">
-                    <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
-                        2. Status Keanggotaan Member KBKB
-                    </h3>
-                    <p className="text-xs text-slate mt-0.5">
-                        Apakah pemilik / PIC usaha sudah terdaftar sebagai Member KBKB?
-                    </p>
-                </div>
+            {!isCreate ? (
+                <section className="space-y-4 rounded-xl border border-gold/30 bg-gold/5 p-4 sm:p-5">
+                    <div className="border-b border-gold/20 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
+                                2. Status Keanggotaan Member KBKB
+                            </h3>
+                            <p className="text-xs text-slate mt-0.5">
+                                Data tersimpan otomatis dari pendaftaran awal (tidak perlu diisi ulang saat edit profil usaha).
+                            </p>
+                        </div>
+                        <span className={`inline-flex items-center w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+                            Boolean(data.is_member)
+                                ? 'bg-sage/20 text-emerald-800 border border-sage/40'
+                                : 'bg-slate/15 text-slate border border-slate/30'
+                        }`}>
+                            {Boolean(data.is_member) ? '✓ Terdaftar Member KBKB' : 'Mitra Non-Member'}
+                        </span>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-ink/10 bg-white/70 p-4">
+                        <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                            {Boolean(data.is_member) ? (
+                                <>
+                                    <div>
+                                        <span className="eyebrow block">Nama Member</span>
+                                        <span className="font-semibold text-ink">{data.member_name || data.pic_name || '—'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="eyebrow block">No. Anggota / ID Member</span>
+                                        <span className="font-mono font-semibold text-ink">{data.member_id_number || data.member_code || '—'}</span>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <span className="eyebrow block">Email Akun Member</span>
+                                        <span className="font-medium text-ink">{data.member_email || '—'}</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div>
+                                        <span className="eyebrow block">Nama PIC</span>
+                                        <span className="font-semibold text-ink">{data.pic_name || '—'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="eyebrow block">No. WhatsApp PIC</span>
+                                        <span className="font-medium text-ink">{data.pic_whatsapp || data.phone || '—'}</span>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <span className="eyebrow block">Email PIC</span>
+                                        <span className="font-medium text-ink">{data.pic_email || data.email || '—'}</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            ) : (
+                <section className="space-y-4 rounded-xl border border-gold/30 bg-gold/5 p-4 sm:p-5">
+                    <div className="border-b border-gold/20 pb-2">
+                        <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
+                            2. Status Keanggotaan Member KBKB
+                        </h3>
+                        <p className="text-xs text-slate mt-0.5">
+                            Apakah pemilik / PIC usaha sudah terdaftar sebagai Member KBKB?
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                     <button
                         type="button"
                         onClick={() => setData('is_member', true)}
@@ -591,6 +648,7 @@ export default function PartnerForm({
                     </div>
                 )}
             </section>
+            )}
 
             {/* 3. INFO PENGATURAN VENDOR, DISKON & URUTAN */}
             <section className="space-y-4 rounded-xl border border-ink/10 bg-white/40 p-4">

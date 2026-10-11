@@ -29,5 +29,5 @@ export default {
     'auth.success.initialPassword': 'password awal',
     'auth.success.emailOutro': ' tersebut untuk masuk, lalu segera ganti password demi keamanan akun Anda.',
     'auth.success.spamNote': 'Jika Anda tidak menemukan email di kotak masuk, silakan periksa folder spam atau promosi.',
-    'auth.success.backToLogin': 'Kembali ke Halaman Masuk',
+    'auth.success.backToLogin': 'Kembali ke Halaman Awal',
 };

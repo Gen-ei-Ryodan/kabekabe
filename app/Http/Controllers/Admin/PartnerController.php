@@ -213,6 +213,16 @@ class PartnerController extends Controller
             $validated['member_id_number'] = $member->member_code;
             $validated['member_name'] = $member->name;
             $validated['member_birth_date'] = $member->birth_date?->toDateString();
+        } else {
+            // Bila tidak mengubah email member saat edit, pertahankan data keanggotaan member yang sudah tersimpan
+            unset(
+                $validated['member_user_id'],
+                $validated['member_email'],
+                $validated['member_code'],
+                $validated['member_id_number'],
+                $validated['member_name'],
+                $validated['member_birth_date']
+            );
         }
 
         if ($request->hasFile('logo')) {
@@ -350,7 +360,10 @@ class PartnerController extends Controller
         $partner->forceFill($data)->save();
 
         if ($partner->user) {
-            $partner->user->forceFill(['approval_status' => User::APPROVAL_APPROVED])->save();
+            $partner->user->forceFill([
+                'approval_status' => User::APPROVAL_APPROVED,
+                'email_verified_at' => $partner->user->email_verified_at ?? now(),
+            ])->save();
         }
 
         $emailSent = true;

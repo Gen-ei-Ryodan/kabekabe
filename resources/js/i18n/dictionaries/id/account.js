@@ -40,7 +40,7 @@ export default {
     'account.otpLabel': 'Kode OTP dari Email',
     'account.otpPlaceholder': '••••••',
     'account.otpSentInfo': 'Kode 6 digit dikirim ke {email} (berlaku 10 menit). Masukkan kode lalu klik Simpan Perubahan.',
-    'account.otpNotSentInfo': 'Klik "Simpan Perubahan" untuk mengirim kode OTP ke email Anda terlebih dahulu.',
+    'account.otpNotSentInfo': 'Masukkan kode OTP yang dikirim ke email Anda setelah menekan tombol "Kirim Kode OTP".',
     'account.sendOtp': 'Kirim Kode OTP',
     'account.resendOtp': 'Kirim Ulang Kode OTP',
     'account.processing': 'Memproses…',

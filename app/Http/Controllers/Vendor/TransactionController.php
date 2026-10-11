@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\TransactionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,9 +22,14 @@ class TransactionController extends Controller
         private readonly TransactionService $transactions,
     ) {}
 
+    private function vendorUser(): ?User
+    {
+        return Auth::guard('partner')->user() ?? auth()->user();
+    }
+
     public function index(Request $request): Response
     {
-        $partner = auth()->user()->partner;
+        $partner = $this->vendorUser()?->partner;
 
         abort_if($partner === null, 403);
 
@@ -67,7 +73,7 @@ class TransactionController extends Controller
 
     public function create(Request $request): Response|RedirectResponse
     {
-        $partner = auth()->user()->partner;
+        $partner = $this->vendorUser()?->partner;
 
         abort_if($partner === null, 403);
 
@@ -84,7 +90,7 @@ class TransactionController extends Controller
         if ($request->filled('scan_id')) {
             $savedScan = MemberScan::query()
                 ->whereKey($request->integer('scan_id'))
-                ->where('scanned_by_vendor_id', auth()->id())
+                ->where('scanned_by_vendor_id', $this->vendorUser()?->id)
                 ->with('member.membership')
                 ->firstOrFail();
             $member = $this->resolveScannedMember($savedScan->member->member_code);
@@ -124,7 +130,7 @@ class TransactionController extends Controller
         $member->ensureMemberCode();
 
         $active = $member->hasActiveMembership();
-        $vendor = auth()->user();
+        $vendor = $this->vendorUser();
         $scanData = null;
         $scanId = null;
         $withinWindow = false;
@@ -168,7 +174,7 @@ class TransactionController extends Controller
 
     public function store(StoreTransactionRequest $request): RedirectResponse
     {
-        $partner = $request->user()->partner;
+        $partner = ($request->user('partner') ?? $this->vendorUser())?->partner;
 
         abort_if($partner === null, 403);
 

@@ -15,6 +15,10 @@ class EnsureRole
     {
         $user = $request->user();
 
+        if (! $user && in_array('vendor', $roles, true)) {
+            $user = \Illuminate\Support\Facades\Auth::guard('partner')->user();
+        }
+
         if (! $user || ! in_array($user->role, $roles, true)) {
             abort(403, 'You do not have access to this page.');
         }

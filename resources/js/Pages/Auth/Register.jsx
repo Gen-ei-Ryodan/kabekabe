@@ -503,8 +503,7 @@ export default function Register() {
                                         className="mt-1"
                                     />
                                     <p className="mt-1 text-xs text-slate">
-                                        Kosongkan bila ingin memakai email
-                                        partner yang sama.
+                                        Tulis email jika ingin menggunakan email login yang berbeda.
                                     </p>
                                 </div>
 

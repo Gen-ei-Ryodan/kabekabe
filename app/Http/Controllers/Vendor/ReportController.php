@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Services\ReportingService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,7 +13,8 @@ class ReportController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $partner = auth()->user()->partner;
+        $user = Auth::guard('partner')->user() ?? auth()->user();
+        $partner = $user?->partner;
 
         abort_if($partner === null, 403);
 

@@ -29,5 +29,5 @@ export default {
     'auth.success.initialPassword': 'initial password',
     'auth.success.emailOutro': ' to sign in, then change it immediately to keep your account secure.',
     'auth.success.spamNote': 'If you cannot find the email in your inbox, please check the spam or promotions folder.',
-    'auth.success.backToLogin': 'Back to Login Page',
+    'auth.success.backToLogin': 'Back to Home Page',
 };

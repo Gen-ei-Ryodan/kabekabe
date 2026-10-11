@@ -20,7 +20,7 @@ class UpdateAccountRequest extends FormRequest
 
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->where('role', 'member')->ignore($this->user()->id)],
             'religion' => ['nullable', 'string', 'in:islam,kristen,katolik,hindu,buddha,konghucu,lainnya'],
             'address' => ['nullable', 'string', 'max:500'],
             'whatsapp' => ['nullable', 'string', 'max:30'],

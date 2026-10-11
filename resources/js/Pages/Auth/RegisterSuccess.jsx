@@ -48,7 +48,7 @@ export default function RegisterSuccess({ name, email, role }) {
 
                 <div className="mt-8">
                     <Link
-                        href={route('login')}
+                        href="/"
                         className="inline-flex w-full items-center justify-center rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-paper shadow-card hover:bg-ink/90 transition-colors"
                     >
                         {t('auth.success.backToLogin')}

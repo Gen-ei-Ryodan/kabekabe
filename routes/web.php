@@ -155,7 +155,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // ---------- VENDOR (guard partner: 1 window bisa login member + partner) ----------
-Route::middleware(['auth:partner', 'verified'])->group(function () {
+Route::middleware(['auth:partner'])->group(function () {
     Route::middleware('role:vendor')->prefix('vendor')->name('vendor.')->group(function () {
         Route::get('/dashboard', VendorDashboardController::class)->name('dashboard');
 

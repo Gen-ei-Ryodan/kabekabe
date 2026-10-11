@@ -26,10 +26,10 @@ export default function ThankYou({ status }) {
 
                 <div className="mt-8">
                     <Link
-                        href={route('login')}
+                        href="/"
                         className="btn-gold inline-flex items-center px-6 py-3"
                     >
-                        Go to Login
+                        Kembali ke Halaman Awal
                     </Link>
                 </div>
             </div>
