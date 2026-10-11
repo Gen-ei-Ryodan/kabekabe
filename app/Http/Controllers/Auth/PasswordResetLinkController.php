@@ -44,6 +44,21 @@ class PasswordResetLinkController extends Controller
         $portal = static::portal($request->input('portal'));
         $role = User::roleForPortal($portal);
 
+        // Staging: hanya izinkan akun tertentu untuk reset password member
+        if ($role === User::ROLE_MEMBER) {
+            $allowedMemberEmails = [
+                'jurgen@dutaintika.com',
+                'cviennae@gmail.com',
+                'viennaern@gmail.com',
+            ];
+
+            if (! in_array(strtolower(trim($email)), $allowedMemberEmails, true)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => 'Email tidak terdaftar sebagai akun MEMBER.',
+                ]);
+            }
+        }
+
         $user = User::query()
             ->where('email', $email)
             ->where('role', $role)

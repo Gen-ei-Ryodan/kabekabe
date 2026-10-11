@@ -45,6 +45,25 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Staging: hanya izinkan akun tertentu untuk login portal member
+        if ($role === User::ROLE_MEMBER) {
+            $allowedMemberEmails = [
+                'jurgen@dutaintika.com',
+                'cviennae@gmail.com',
+                'viennaern@gmail.com',
+            ];
+
+            $inputEmail = strtolower(trim((string) $this->input('email')));
+
+            if (! in_array($inputEmail, $allowedMemberEmails, true)) {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => 'Akun tidak ditemukan.',
+                ]);
+            }
+        }
+
         $credentials = $this->only('email', 'password');
 
         if (! Auth::guard($guard)->attempt($credentials + ['role' => $role], $this->boolean('remember'))) {
