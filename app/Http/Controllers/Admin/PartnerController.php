@@ -111,30 +111,59 @@ class PartnerController extends Controller
     public function store(StorePartnerRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $isMember = (bool) ($validated['is_member'] ?? false);
-        $member = $isMember
-            ? User::query()->where('role', User::ROLE_MEMBER)->where('email', $validated['member_email'] ?? '')->first()
-            : null;
+        $isMember = ($validated['is_member'] ?? '') === 'yes';
 
-        if ($isMember && ! $member) {
-            return back()->withErrors(['member_email' => 'Email member tidak ditemukan.'])->withInput();
+        // Handle Master Identity based on is_member status
+        if ($isMember) {
+            // Cari User member via member_email dan gunakan MasterIdentity miliknya
+            $member = User::query()->where('role', User::ROLE_MEMBER)->where('email', $validated['member_email'] ?? '')->first();
+
+            if (! $member) {
+                return back()->withErrors(['member_email' => 'Email member tidak ditemukan.'])->withInput();
+            }
+
+            $identity = $member->masterIdentity ?? MasterIdentity::forEmail($member->email, [
+                'name' => $member->name,
+                'phone' => $member->phone,
+            ]);
+            $masterIdentityId = $identity?->id;
+        } else {
+            // Bukan member: buat/kaitkan MasterIdentity::forEmail dari biodata PIC
+            $identity = MasterIdentity::forEmail($validated['vendor_email'], [
+                'name' => $validated['vendor_name'],
+                'phone' => $validated['phone'] ?? null,
+                'birth_date' => $validated['birth_date'] ?? null,
+                'birth_place' => $validated['birth_place'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'religion' => $validated['religion'] ?? null,
+                'marital_status' => $validated['marital_status'] ?? null,
+                'address' => $validated['member_address'] ?? $validated['address'] ?? null,
+                'city' => $validated['member_city'] ?? $validated['city'] ?? null,
+                'district' => $validated['member_district'] ?? $validated['district'] ?? null,
+                'hobbies' => $validated['hobbies'] ?? null,
+            ]);
+            $masterIdentityId = $identity?->id;
         }
 
-        // Satu identity personal dipakai untuk user vendor & partner-nya
-        // (dan otomatis sama bila emailnya sudah dipakai Member).
-        $identity = MasterIdentity::forEmail($validated['vendor_email'], ['name' => $validated['vendor_name']]);
+        // Hitung category dari industry menggunakan PartnerCategory::fromIndustries
+        $industryInput = $validated['industry'] ?? null;
+        $industryArray = is_array($industryInput) ? $industryInput : ($industryInput ? explode(',', (string) $industryInput) : []);
+        $industryArray = array_map('trim', array_filter($industryArray));
+        $category = ! empty($validated['category']) ? $validated['category'] : PartnerCategory::fromIndustries($industryArray);
+        $industryString = is_array($industryInput) ? implode(', ', $industryArray) : ($industryInput ?? null);
 
+        // Create vendor user
         $vendorUser = User::create([
             'name' => $validated['vendor_name'],
             'nickname' => $validated['nickname'] ?? null,
             'email' => $validated['vendor_email'],
             'password' => $validated['vendor_password'],
             'role' => User::ROLE_VENDOR,
-            'master_identity_id' => $identity?->id,
-            'phone' => $validated['phone'] ?? $validated['member_phone'] ?? null,
-            'whatsapp' => $validated['phone'] ?? $validated['member_phone'] ?? null,
+            'master_identity_id' => $masterIdentityId,
+            'phone' => $validated['phone'] ?? null,
+            'whatsapp' => $validated['phone'] ?? null,
             'gender' => $isMember ? null : ($validated['gender'] ?? null),
-            'birth_date' => $member?->birth_date?->toDateString() ?? ($isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null)),
+            'birth_date' => $isMember ? null : ($validated['birth_date'] ?? null),
             'birth_place' => $isMember ? null : ($validated['birth_place'] ?? null),
             'hobbies' => $isMember ? null : ($validated['hobbies'] ?? null),
             'marital_status' => $isMember ? null : ($validated['marital_status'] ?? null),
@@ -150,14 +179,14 @@ class PartnerController extends Controller
             'name' => $validated['name'],
             'trade_name' => $validated['trade_name'] ?? null,
             'slug' => Partner::slugFor(($validated['trade_name'] ?? null) ?: $validated['name']),
-            'category' => $validated['category'],
-            'industry' => $validated['industry'] ?? null,
+            'category' => $category,
+            'industry' => $industryString,
             'employee_count' => $validated['employee_count'] ?? null,
             'established_since' => $validated['established_since'] ?? null,
-            'pic_name' => $validated['pic_name'] ?? ($member?->name ?: $validated['vendor_name']),
-            'pic_email' => $validated['pic_email'] ?? null,
-            'pic_whatsapp' => $validated['pic_whatsapp'] ?? null,
-            'pic_phone' => $validated['pic_phone'] ?? null,
+            'pic_name' => $isMember ? ($member?->name ?: $validated['vendor_name']) : ($validated['pic_name'] ?? $validated['vendor_name']),
+            'pic_email' => $isMember ? null : ($validated['pic_email'] ?? null),
+            'pic_whatsapp' => $isMember ? null : ($validated['pic_whatsapp'] ?? null),
+            'pic_phone' => $isMember ? null : ($validated['pic_phone'] ?? null),
             'description' => $validated['description'] ?? null,
             'address' => $validated['address'] ?? null,
             'district' => $validated['district'] ?? null,
@@ -170,18 +199,18 @@ class PartnerController extends Controller
             'is_active' => true,
             'status' => Partner::STATUS_ACTIVE,
             'is_member' => $isMember,
-            'member_user_id' => $member?->id,
-            'member_email' => $member?->email,
-            'member_code' => $member?->member_code,
-            'member_id_number' => $member?->member_code ?? ($isMember ? ($validated['member_id_number'] ?? null) : null),
-            'member_name' => $member?->name ?? ($isMember ? ($validated['member_name'] ?? null) : $validated['vendor_name']),
-            'member_birth_date' => $member?->birth_date?->toDateString() ?? ($isMember ? ($validated['member_birth_date'] ?? null) : ($validated['birth_date'] ?? null)),
+            'member_user_id' => $isMember ? $member?->id : null,
+            'member_email' => $isMember ? $member?->email : null,
+            'member_code' => $isMember ? $member?->member_code : null,
+            'member_id_number' => $isMember ? ($member?->member_code ?? $validated['member_id_number'] ?? null) : null,
+            'member_name' => $isMember ? ($member?->name ?? $validated['vendor_name']) : ($validated['member_name'] ?? $validated['vendor_name']),
+            'member_birth_date' => $isMember ? ($member?->birth_date?->toDateString() ?? $validated['member_birth_date'] ?? null) : ($validated['member_birth_date'] ?? null),
             'total_belanja' => $validated['total_belanja'] ?? null,
             'diskon1' => $validated['diskon1'] ?? null,
             'diskon2' => $validated['diskon2'] ?? null,
             'diskon3' => $validated['diskon3'] ?? null,
             'sort_number' => $validated['sort_number'] ?? null,
-            'master_identity_id' => $identity?->id,
+            'master_identity_id' => $masterIdentityId,
         ]);
 
         return redirect()
@@ -199,22 +228,38 @@ class PartnerController extends Controller
     public function update(UpdatePartnerRequest $request, Partner $partner): RedirectResponse
     {
         $validated = $request->validated();
+        $isMember = $validated['is_member'] === 'yes';
 
-        if (($validated['is_member'] ?? false) && ! empty($validated['member_email'])) {
+        // Handle Master Identity and member linking based on is_member
+        if ($isMember && ! empty($validated['member_email'])) {
             $member = User::query()->where('role', User::ROLE_MEMBER)->where('email', $validated['member_email'])->first();
 
             if (! $member) {
                 return back()->withErrors(['member_email' => 'Email member tidak ditemukan.'])->withInput();
             }
 
-            $validated['member_user_id'] = $member->id;
-            $validated['member_email'] = $member->email;
-            $validated['member_code'] = $member->member_code;
-            $validated['member_id_number'] = $member->member_code;
-            $validated['member_name'] = $member->name;
-            $validated['member_birth_date'] = $member->birth_date?->toDateString();
+            $partner->forceFill([
+                'member_user_id' => $member->id,
+                'is_member' => true,
+                'member_id_number' => $member->member_code,
+                'member_name' => $member->name,
+                'member_email' => $member->email,
+                'member_code' => $member->member_code,
+                'member_birth_date' => $member->birth_date?->toDateString(),
+            ])->save();
+
+            // Update user with member data
+            if ($partner->user) {
+                $partner->user->forceFill([
+                    'name' => $member->name,
+                    'nickname' => $member->nickname,
+                    'email' => $member->email,
+                    'approval_status' => User::APPROVAL_APPROVED,
+                ])->save();
+            }
         } else {
-            // Bila tidak mengubah email member saat edit, pertahankan data keanggotaan member yang sudah tersimpan
+            // Bila tidak mengubah status member saat edit, pertahankan data keanggotaan yang sudah tersimpan
+            // Hapus field member dari validasi jika bukan member
             unset(
                 $validated['member_user_id'],
                 $validated['member_email'],
@@ -223,6 +268,20 @@ class PartnerController extends Controller
                 $validated['member_name'],
                 $validated['member_birth_date']
             );
+
+            // Update user - when switching to non-member, keep user data as-is or clear member-linked fields
+            if ($partner->user) {
+                $partner->user->forceFill([
+                    'approval_status' => User::APPROVAL_APPROVED,
+                ])->save();
+            }
+        }
+
+        // Handle category derivation from industry
+        if (empty($validated['category'])) {
+            $industryInput = $validated['industry'];
+            $industryArray = is_array($industryInput) ? $industryInput : ($industryInput ? explode(',', $industryInput) : []);
+            $validated['category'] = PartnerCategory::fromIndustries(array_filter($industryArray));
         }
 
         if ($request->hasFile('logo')) {

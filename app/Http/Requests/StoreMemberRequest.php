@@ -44,6 +44,14 @@ class StoreMemberRequest extends FormRequest
             'membership_status' => ['nullable', 'string', Rule::in(['active', 'inactive'])],
             'membership_started_at' => ['nullable', 'date'],
             'membership_expires_at' => ['nullable', 'date', 'after_or_equal:membership_started_at'],
+            'is_partner' => ['nullable', 'string', Rule::in(['yes', 'no'])],
+            'partner_email' => ['nullable', 'email', 'max:255'],
+            'is_household' => ['nullable', 'boolean'],
+            'companies' => ['nullable', 'array'],
+            'companies.*.company' => ['nullable', 'string', 'max:255'],
+            'companies.*.industry' => ['nullable', 'string', 'max:100'],
+            'companies.*.position' => ['nullable', 'string', 'max:100'],
+            'companies.*.address' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

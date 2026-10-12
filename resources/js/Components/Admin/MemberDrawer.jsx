@@ -37,10 +37,14 @@ function CreateMemberDrawer({ onClose }) {
         business_address: '',
         business_district: '',
         business_city: '',
+        is_household: false,
+        companies: [{ company: '', industry: '', position: '', address: '' }],
         hobbies: [],
         membership_status: 'active',
         membership_started_at: today,
         membership_expires_at: defaultExpires,
+        is_partner: 'no',
+        partner_email: '',
     });
 
     const submit = (e) => {
@@ -91,6 +95,8 @@ function EditMemberDrawer({ member, onClose }) {
         business_district: member.business_district || '',
         business_city: member.business_city || '',
         hobbies: Array.isArray(member.hobbies) ? member.hobbies : [],
+        is_partner: member.is_partner || 'no',
+        partner_email: member.partner_email || '',
         password: '',
         password_confirmation: '',
         membership_status: member.membership_status === 'inactive' ? 'inactive' : 'active',

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ImportRowsRequest;
 use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\UpdateMemberRequest;
+use App\Models\MasterIdentity;
 use App\Models\User;
 use App\Services\ApprovalNotifier;
 use App\Services\Import\ImportTemplateDownloader;
@@ -185,33 +186,118 @@ class MemberController extends Controller
     {
         $validated = $request->validated();
 
-        $member = User::create([
-            'name' => $validated['name'],
-            'nickname' => $validated['nickname'] ?? null,
-            'gender' => $validated['gender'] ?? null,
-            'birth_date' => $validated['birth_date'] ?? null,
-            'birth_place' => $validated['birth_place'] ?? null,
-            'marital_status' => $validated['marital_status'] ?? null,
-            'religion' => $validated['religion'] ?? null,
-            'place_of_worship_address' => $validated['place_of_worship_address'] ?? null,
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-            'role' => User::ROLE_MEMBER,
-            'phone' => $validated['phone'] ?? null,
-            'whatsapp' => $validated['whatsapp'] ?? $validated['phone'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'district' => $validated['district'] ?? null,
-            'city' => $validated['city'] ?? null,
-            'company' => $validated['company'] ?? null,
-            'industry' => $validated['industry'] ?? null,
-            'business_fields' => $validated['business_fields'] ?? null,
-            'business_address' => $validated['business_address'] ?? null,
-            'business_district' => $validated['business_district'] ?? null,
-            'business_city' => $validated['business_city'] ?? null,
-            'hobbies' => $validated['hobbies'] ?? null,
-            'approval_status' => User::APPROVAL_APPROVED,
-        ]);
+        // Normalisasi companies array menjadi string company, industry, business_fields, business_address
+        $companies = $validated['companies'] ?? [];
+        $formattedCompanyParts = [];
+        $extractedIndustries = [];
+        $extractedFields = [];
 
+        foreach ($companies as $c) {
+            $cName = trim((string) ($c['company'] ?? ''));
+            $cInd = trim((string) ($c['industry'] ?? ''));
+            $cPos = trim((string) ($c['position'] ?? ''));
+            $cAddr = trim((string) ($c['address'] ?? ''));
+
+            if ($cName !== '' || $cInd !== '' || $cPos !== '' || $cAddr !== '') {
+                $formattedCompanyParts[] = $cInd !== '' ? "{$cName} ({$cInd})" : $cName;
+                $extractedFields[] = $cName;
+                if ($cInd !== '') {
+                    $extractedIndustries[] = $cInd;
+                }
+            }
+        }
+
+        $validated['company'] = ! empty($formattedCompanyParts) ? implode(', ', $formattedCompanyParts) : ($validated['company'] ?? null);
+        $validated['industry'] = ! empty($extractedIndustries) ? implode(', ', $extractedIndustries) : ($validated['industry'] ?? null);
+        $validated['business_fields'] = ! empty($extractedFields) ? $extractedFields : ($validated['business_fields'] ?? null);
+        $validated['business_address'] = $companies[0]['address'] ?? $validated['business_address'] ?? null;
+
+        // Handle is_partner and partner_email: connect to existing MasterIdentity
+        if (($validated['is_partner'] ?? '') === 'yes' && ! empty($validated['partner_email'])) {
+            $partner = Partner::where('email', $validated['partner_email'])->first()
+                ?? User::where('email', $validated['partner_email'])->where('role', User::ROLE_VENDOR)->first()?->partner;
+            $identity = $partner?->masterIdentity ?? MasterIdentity::forEmail($validated['partner_email'], [
+                'name' => $validated['name'],
+                'email' => $validated['partner_email'],
+            ]);
+            $masterIdentityId = $identity?->id;
+
+            // Create user member
+            $member = User::create([
+                'name' => $validated['name'],
+                'nickname' => $validated['nickname'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'birth_date' => $validated['birth_date'] ?? null,
+                'birth_place' => $validated['birth_place'] ?? null,
+                'marital_status' => $validated['marital_status'] ?? null,
+                'religion' => $validated['religion'] ?? null,
+                'place_of_worship_address' => $validated['place_of_worship_address'] ?? null,
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'role' => User::ROLE_MEMBER,
+                'phone' => $validated['phone'] ?? null,
+                'whatsapp' => $validated['whatsapp'] ?? $validated['phone'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'district' => $validated['district'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'company' => $validated['company'] ?? null,
+                'industry' => $validated['industry'] ?? null,
+                'business_fields' => $validated['business_fields'] ?? null,
+                'business_address' => $validated['business_address'] ?? null,
+                'business_district' => $validated['business_district'] ?? null,
+                'business_city' => $validated['business_city'] ?? null,
+                'hobbies' => $validated['hobbies'] ?? null,
+                'approval_status' => User::APPROVAL_APPROVED,
+                'master_identity_id' => $masterIdentityId,
+            ]);
+        } else {
+            // Normal Member: create MasterIdentity from biodata
+            $identity = MasterIdentity::forEmail($validated['email'], [
+                'name' => $validated['name'],
+                'phone' => $validated['phone'] ?? null,
+                'birth_date' => $validated['birth_date'] ?? null,
+                'birth_place' => $validated['birth_place'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'religion' => $validated['religion'] ?? null,
+                'marital_status' => $validated['marital_status'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'district' => $validated['district'] ?? null,
+                'hobbies' => $validated['hobbies'] ?? null,
+            ]);
+            $masterIdentityId = $identity?->id;
+
+            // Create user member
+            $member = User::create([
+                'name' => $validated['name'],
+                'nickname' => $validated['nickname'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'birth_date' => $validated['birth_date'] ?? null,
+                'birth_place' => $validated['birth_place'] ?? null,
+                'marital_status' => $validated['marital_status'] ?? null,
+                'religion' => $validated['religion'] ?? null,
+                'place_of_worship_address' => $validated['place_of_worship_address'] ?? null,
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'role' => User::ROLE_MEMBER,
+                'phone' => $validated['phone'] ?? null,
+                'whatsapp' => $validated['whatsapp'] ?? $validated['phone'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'district' => $validated['district'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'company' => $validated['company'] ?? null,
+                'industry' => $validated['industry'] ?? null,
+                'business_fields' => $validated['business_fields'] ?? null,
+                'business_address' => $validated['business_address'] ?? null,
+                'business_district' => $validated['business_district'] ?? null,
+                'business_city' => $validated['business_city'] ?? null,
+                'hobbies' => $validated['hobbies'] ?? null,
+                'approval_status' => User::APPROVAL_APPROVED,
+                'master_identity_id' => $masterIdentityId,
+            ]);
+        }
+
+        // Apply membership range
         if ($this->hasMembershipRange($validated)) {
             $this->applyMembershipRange($member, $validated);
         } elseif (! empty($validated['valid_until'])) {
@@ -316,6 +402,62 @@ class MemberController extends Controller
     public function update(UpdateMemberRequest $request, User $member): RedirectResponse
     {
         $validated = $request->validated();
+
+        // Normalisasi companies array menjadi string company, industry, business_fields, business_address
+        if (isset($validated['companies']) && is_array($validated['companies'])) {
+            $companies = $validated['companies'];
+            $formattedCompanyParts = [];
+            $extractedIndustries = [];
+            $extractedFields = [];
+
+            foreach ($companies as $c) {
+                $cName = trim((string) ($c['company'] ?? ''));
+                $cInd = trim((string) ($c['industry'] ?? ''));
+                $cPos = trim((string) ($c['position'] ?? ''));
+                $cAddr = trim((string) ($c['address'] ?? ''));
+
+                if ($cName !== '' || $cInd !== '' || $cPos !== '' || $cAddr !== '') {
+                    $formattedCompanyParts[] = $cInd !== '' ? "{$cName} ({$cInd})" : $cName;
+                    $extractedFields[] = $cName;
+                    if ($cInd !== '') {
+                        $extractedIndustries[] = $cInd;
+                    }
+                }
+            }
+
+            $validated['company'] = ! empty($formattedCompanyParts) ? implode(', ', $formattedCompanyParts) : ($validated['company'] ?? null);
+            $validated['industry'] = ! empty($extractedIndustries) ? implode(', ', $extractedIndustries) : ($validated['industry'] ?? null);
+            $validated['business_fields'] = ! empty($extractedFields) ? $extractedFields : ($validated['business_fields'] ?? null);
+            $validated['business_address'] = $companies[0]['address'] ?? $validated['business_address'] ?? null;
+        }
+
+        // Handle is_partner update
+        if (isset($validated['is_partner'])) {
+            if ($validated['is_partner'] === 'yes' && $validated['partner_email']) {
+                $identity = MasterIdentity::forEmail($validated['partner_email'], [
+                    'name' => $validated['name'],
+                    'email' => $validated['partner_email'],
+                ]);
+                $member->forceFill(['master_identity_id' => $identity?->id])->save();
+            } elseif ($validated['is_partner'] === 'no') {
+                // If switching from partner to member, create new MasterIdentity
+                $identity = MasterIdentity::forEmail($validated['email'], [
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'] ?? null,
+                    'birth_date' => $validated['birth_date'] ?? null,
+                    'birth_place' => $validated['birth_place'] ?? null,
+                    'gender' => $validated['gender'] ?? null,
+                    'religion' => $validated['religion'] ?? null,
+                    'marital_status' => $validated['marital_status'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'city' => $validated['city'] ?? null,
+                    'district' => $validated['district'] ?? null,
+                    'hobbies' => $validated['hobbies'] ?? null,
+                ]);
+                $member->forceFill(['master_identity_id' => $identity?->id])->save();
+            }
+        }
 
         $updateData = [
             'name' => $validated['name'],

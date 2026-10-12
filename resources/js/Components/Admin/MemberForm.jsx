@@ -2,6 +2,7 @@ import { useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import { formatDateLong } from '@/Utils/format';
 import { INDUSTRY_CATEGORIES, HOBBY_LIST } from '@/constants/membership';
+import MasterIdentityBiodata from '@/Components/MasterIdentityBiodata';
 
 export default function MemberForm({
     data,
@@ -13,6 +14,8 @@ export default function MemberForm({
     onSubmit,
     isCreate = false,
     avatarUrl = null,
+    isPartner = 'no',
+    partnerEmail = '',
 }) {
     const [hobbySearch, setHobbySearch] = useState('');
     const [customHobbyInput, setCustomHobbyInput] = useState('');
@@ -126,7 +129,9 @@ export default function MemberForm({
                 </section>
             )}
 
-            {/* 1. DATA AKUN & PRIBADI */}
+            {!isCreate && (
+            <>
+{/* 1. DATA AKUN & PRIBADI */}
             <section className="space-y-4 rounded-xl border border-ink/10 bg-white/40 p-4">
                 <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
                     1. Data Akun & Pribadi
@@ -546,6 +551,96 @@ export default function MemberForm({
                     </div>
                 </div>
             </section>
+            </>
+            )}
+
+{isCreate && (
+                <>
+                    {/* AKUN LOGIN MEMBER */}
+                    <section className="space-y-4 rounded-xl border border-ink/10 bg-white/40 p-4">
+                        <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
+                            1. Akun Login Member
+                        </h3>
+                        <div>
+                            <label className="label" htmlFor="email">Email Akun Member *</label>
+                            <input
+                                id="email"
+                                type="email"
+                                className="input"
+                                value={data.email || ''}
+                                onChange={(e) => setData('email', e.target.value)}
+                                placeholder="email.member@domain.com"
+                                required
+                            />
+                            {errors.email && <p className="mt-1 text-xs text-ember">{errors.email}</p>}
+                        </div>
+                    </section>
+
+                    {/* SAMBUNGKAN DENGAN PARTNER KBKB */}
+                    <section className="space-y-4 rounded-xl border border-gold/30 bg-gold/5 p-4">
+                        <h3 className="font-display text-sm font-bold uppercase tracking-wider text-gold-deep">
+                            2. Identitas Partner KBKB
+                        </h3>
+                        <div>
+                            <label className="label" htmlFor="is_partner">Apakah calon member sudah memiliki akun Partner KBKB?</label>
+                            <div className="flex gap-3 mt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setData('is_partner', 'no')}
+                                    className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold transition-all ${
+                                        (data.is_partner || 'no') === 'no'
+                                            ? 'border-gold bg-gold text-ink shadow-sm font-bold'
+                                            : 'border-ink/15 bg-white text-slate hover:bg-ink/5'
+                                    }`}
+                                >
+                                    <span>✗</span> Tidak (Isi Biodata Baru)
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setData('is_partner', 'yes')}
+                                    className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold transition-all ${
+                                        data.is_partner === 'yes'
+                                            ? 'border-gold bg-gold text-ink shadow-sm font-bold'
+                                            : 'border-ink/15 bg-white text-slate hover:bg-ink/5'
+                                    }`}
+                                >
+                                    <span>✓</span> Ya, Sudah Punya Akun Partner
+                                </button>
+                            </div>
+
+                            {data.is_partner === 'yes' ? (
+                                <div className="mt-3 rounded-xl border border-ink/10 bg-white/80 p-4 space-y-3">
+                                    <div>
+                                        <label className="label" htmlFor="partner_email">Email Partner Terdaftar *</label>
+                                        <input
+                                            id="partner_email"
+                                            type="email"
+                                            className="input"
+                                            value={data.partner_email || ''}
+                                            onChange={(e) => setData('partner_email', e.target.value)}
+                                            placeholder="partner@kbkb.id"
+                                            required
+                                        />
+                                        {errors.partner_email && <p className="mt-1 text-xs text-ember">{errors.partner_email}</p>}
+                                    </div>
+                                    <p className="text-xs text-slate">
+                                        Biodata personal akan otomatis tersambung ke Master Identity akun Partner tersebut.
+                                    </p>
+                                </div>
+                            ) : null}
+                        </div>
+                    </section>
+
+                    {(data.is_partner || 'no') === 'no' && (
+                        <MasterIdentityBiodata
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            showEmail={false}
+                        />
+                    )}
+                </>
+            )}
 
             {/* 5. KEANGGOTAAN & KATA SANDI */}
             <section className="space-y-4 rounded-xl border border-ink/10 bg-white/40 p-4">

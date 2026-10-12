@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import { INDUSTRY_CATEGORIES, HOBBY_LIST } from '@/constants/membership';
+import MasterIdentityBiodata from '@/Components/MasterIdentityBiodata';
 
 const toDateInput = (val) => {
     if (!val) return '';
@@ -84,15 +85,14 @@ export default function PartnerForm({
                     </div>
 
                     <div>
-                        <label className="label" htmlFor="category">Kategori Partner *</label>
+                        <label className="label" htmlFor="category">Kategori Partner</label>
                         <input
                             id="category"
                             type="text"
                             className="input"
                             value={data.category || ''}
                             onChange={(e) => setData('category', e.target.value)}
-                            placeholder="Restoran, Retail, Cafe, Kesehatan..."
-                            required
+                            placeholder="Otomatis dari industri atau isi manual (F&B, Retail, dll)"
                         />
                         {errors.category && <p className="mt-1 text-xs text-ember">{errors.category}</p>}
                     </div>
@@ -232,8 +232,8 @@ export default function PartnerForm({
                 </div>
             </section>
 
-            {/* 2. STATUS KEANGGOTAAN MEMBER KBKB */}
-            {!isCreate ? (
+            {/* 2. DATA PIC / OWNER (MASTER IDENTITY) */}
+{!isCreate ? (
                 <section className="space-y-4 rounded-xl border border-gold/30 bg-gold/5 p-4 sm:p-5">
                     <div className="border-b border-gold/20 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
@@ -351,300 +351,16 @@ export default function PartnerForm({
                         </p>
                     </div>
                 ) : (
-                    <div className="mt-3 rounded-xl border border-ink/10 bg-white/70 p-4 space-y-4">
-                        <div className="border-b border-ink/10 pb-2">
-                            <p className="text-xs font-bold uppercase tracking-wider text-gold-deep">
-                                Biodata Lengkap PIC / Calon Member KBKB
-                            </p>
-                            <p className="text-xs text-slate mt-0.5">
-                                Lengkapi data PIC untuk profil member komunitas.
-                            </p>
+                    <div className="mt-4 space-y-4">
+                        <div className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-xs text-gold-deep font-semibold">
+                            Biodata PIC / Owner (Master Identity): Calon pengguna belum terdaftar sebagai member KBKB, silakan lengkapi biodata personal berikut.
                         </div>
-
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label className="label" htmlFor="pic_name">Nama Lengkap PIC *</label>
-                                <input
-                                    id="pic_name"
-                                    type="text"
-                                    className="input"
-                                    value={data.pic_name || ''}
-                                    onChange={(e) => setData('pic_name', e.target.value)}
-                                    placeholder="Nama PIC sesuai KTP"
-                                />
-                                {errors.pic_name && <p className="mt-1 text-xs text-ember">{errors.pic_name}</p>}
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="nickname">Nama Panggilan PIC</label>
-                                <input
-                                    id="nickname"
-                                    type="text"
-                                    className="input"
-                                    value={data.nickname || ''}
-                                    onChange={(e) => setData('nickname', e.target.value)}
-                                    placeholder="Panggilan akrab"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="gender">Jenis Kelamin</label>
-                                <select
-                                    id="gender"
-                                    className="input"
-                                    value={data.gender || ''}
-                                    onChange={(e) => setData('gender', e.target.value)}
-                                >
-                                    <option value="">Pilih Jenis Kelamin...</option>
-                                    <option value="Laki-laki">Laki-laki</option>
-                                    <option value="Perempuan">Perempuan</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="marital_status">Status Pernikahan</label>
-                                <select
-                                    id="marital_status"
-                                    className="input"
-                                    value={data.marital_status || ''}
-                                    onChange={(e) => setData('marital_status', e.target.value)}
-                                >
-                                    <option value="">Pilih Status Pernikahan...</option>
-                                    <option value="Belum Menikah">Belum Menikah</option>
-                                    <option value="Menikah">Menikah</option>
-                                    <option value="Pernah Menikah">Pernah Menikah</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="birth_place">Kota Kelahiran</label>
-                                <input
-                                    id="birth_place"
-                                    type="text"
-                                    className="input"
-                                    value={data.birth_place || ''}
-                                    onChange={(e) => setData('birth_place', e.target.value)}
-                                    placeholder="Kota Kelahiran"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="birth_date">Tanggal Lahir</label>
-                                <input
-                                    id="birth_date"
-                                    type="date"
-                                    className="input"
-                                    value={toDateInput(data.birth_date)}
-                                    onChange={(e) => setData('birth_date', e.target.value)}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="religion">Agama</label>
-                                <select
-                                    id="religion"
-                                    className="input"
-                                    value={data.religion || ''}
-                                    onChange={(e) => setData('religion', e.target.value)}
-                                >
-                                    <option value="">Pilih Agama...</option>
-                                    <option value="Katolik">Katolik</option>
-                                    <option value="Kristen">Kristen</option>
-                                    <option value="Islam">Islam</option>
-                                    <option value="Buddha">Buddha</option>
-                                    <option value="Hindu">Hindu</option>
-                                    <option value="Konghucu">Konghucu</option>
-                                    <option value="Lainnya">Lainnya</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="place_of_worship_address">Alamat Tempat Ibadah</label>
-                                <input
-                                    id="place_of_worship_address"
-                                    type="text"
-                                    className="input"
-                                    value={data.place_of_worship_address || ''}
-                                    onChange={(e) => setData('place_of_worship_address', e.target.value)}
-                                    placeholder="Nama/lokasi gereja/tempat ibadah"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="pic_email">Alamat Email PIC *</label>
-                                <input
-                                    id="pic_email"
-                                    type="email"
-                                    className="input"
-                                    value={data.pic_email || ''}
-                                    onChange={(e) => setData('pic_email', e.target.value)}
-                                    placeholder="pic@email.com"
-                                    required
-                                />
-                                {errors.pic_email && <p className="mt-1 text-xs text-ember">{errors.pic_email}</p>}
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="pic_whatsapp">No. WhatsApp PIC *</label>
-                                <input
-                                    id="pic_whatsapp"
-                                    type="tel"
-                                    className="input"
-                                    value={data.pic_whatsapp || data.member_phone || ''}
-                                    onChange={(e) => {
-                                        setData('pic_whatsapp', e.target.value);
-                                        setData('member_phone', e.target.value);
-                                    }}
-                                    placeholder="081234567890"
-                                    required
-                                />
-                                {errors.pic_whatsapp && <p className="mt-1 text-xs text-ember">{errors.pic_whatsapp}</p>}
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="pic_phone">No. Telepon PIC *</label>
-                                <input
-                                    id="pic_phone"
-                                    type="tel"
-                                    className="input"
-                                    value={data.pic_phone || ''}
-                                    onChange={(e) => setData('pic_phone', e.target.value)}
-                                    placeholder="021-1234567"
-                                    required
-                                />
-                                {errors.pic_phone && <p className="mt-1 text-xs text-ember">{errors.pic_phone}</p>}
-                            </div>
-
-                            <div className="sm:col-span-2">
-                                <label className="label" htmlFor="member_address">Alamat Tinggal Pribadi</label>
-                                <textarea
-                                    id="member_address"
-                                    rows={2}
-                                    className="input"
-                                    value={data.member_address || ''}
-                                    onChange={(e) => setData('member_address', e.target.value)}
-                                    placeholder="Jalan, RT/RW, Kelurahan..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="member_district">Kecamatan Tinggal</label>
-                                <input
-                                    id="member_district"
-                                    type="text"
-                                    className="input"
-                                    value={data.member_district || ''}
-                                    onChange={(e) => setData('member_district', e.target.value)}
-                                    placeholder="Kecamatan tempat tinggal"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label" htmlFor="member_city">Kota / Kabupaten Tinggal</label>
-                                <input
-                                    id="member_city"
-                                    type="text"
-                                    className="input"
-                                    value={data.member_city || ''}
-                                    onChange={(e) => setData('member_city', e.target.value)}
-                                    placeholder="Kota tempat tinggal"
-                                />
-                            </div>
-                        </div>
-
-                        {/* HOBI PIC */}
-                        <div className="border-t border-ink/10 pt-3 space-y-2">
-                            <div className="flex items-center justify-between">
-                                <label className="label">Hobi & Kesukaan PIC</label>
-                                <span className="text-xs text-slate">
-                                    Terpilih: {Array.isArray(data.hobbies) ? data.hobbies.length : 0}
-                                </span>
-                            </div>
-
-                            {Array.isArray(data.hobbies) && data.hobbies.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5">
-                                    {data.hobbies.map((h) => (
-                                        <span
-                                            key={h}
-                                            className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-semibold text-gold-deep"
-                                        >
-                                            {h}
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleHobby(h)}
-                                                className="hover:text-ember ml-1"
-                                            >
-                                                ✕
-                                            </button>
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={hobbySearch}
-                                    onChange={(e) => setHobbySearch(e.target.value)}
-                                    placeholder="Cari dari daftar hobi..."
-                                    className="input flex-1 text-xs"
-                                />
-                                {hobbySearch && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setHobbySearch('')}
-                                        className="btn-ghost text-xs px-2"
-                                    >
-                                        Reset
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="max-h-36 overflow-y-auto rounded-xl border border-ink/10 bg-white p-2">
-                                <div className="flex flex-wrap gap-1.5">
-                                    {filteredHobbies.map((h) => {
-                                        const isSelected = Array.isArray(data.hobbies) && data.hobbies.includes(h);
-                                        return (
-                                            <button
-                                                key={h}
-                                                type="button"
-                                                onClick={() => toggleHobby(h)}
-                                                className={`rounded-lg border px-2 py-0.5 text-xs transition-all ${
-                                                    isSelected
-                                                        ? 'border-gold bg-gold/20 text-gold-deep font-semibold'
-                                                        : 'border-ink/10 bg-white text-slate hover:border-gold/50'
-                                                }`}
-                                            >
-                                                {isSelected ? '✓ ' : '+ '}{h}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="flex gap-2 pt-1">
-                                <input
-                                    type="text"
-                                    value={customHobbyInput}
-                                    onChange={(e) => setCustomHobbyInput(e.target.value)}
-                                    placeholder="Hobi lainnya..."
-                                    className="input flex-1 text-xs"
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            addCustomHobby();
-                                        }
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={addCustomHobby}
-                                    className="btn-ink text-xs px-3"
-                                >
-                                    + Tambah
-                                </button>
-                            </div>
-                        </div>
+                        <MasterIdentityBiodata
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            showEmail={false}
+                        />
                     </div>
                 )}
             </section>

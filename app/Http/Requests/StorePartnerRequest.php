@@ -19,7 +19,7 @@ class StorePartnerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'trade_name' => ['nullable', 'string', 'max:255'],
-            'category' => ['required', 'string', 'max:50'],
+            'category' => ['nullable', 'string', 'max:50'],
             'industry' => ['nullable', 'string', 'max:150'],
             'employee_count' => ['nullable', 'integer', 'min:0'],
             'established_since' => ['nullable', 'string', 'max:50'],
@@ -37,23 +37,19 @@ class StorePartnerRequest extends FormRequest
             'diskon1' => ['nullable', 'string', 'max:255'],
             'diskon2' => ['nullable', 'string', 'max:255'],
             'diskon3' => ['nullable', 'string', 'max:255'],
-            // Keanggotaan KBKB
-            'is_member' => ['nullable', 'boolean'],
+            // Keanggotaan KBKB - supports boolean or 'yes'/'no'
+            'is_member' => ['nullable'],
             'member_email' => [
-                Rule::requiredIf(fn () => $this->boolean('is_member')),
+                Rule::requiredIf(function () {
+                    return filter_var($this->input('is_member'), FILTER_VALIDATE_BOOLEAN) || $this->input('is_member') === 'yes';
+                }),
                 'nullable',
                 'email',
                 'max:255',
                 Rule::exists('users', 'email')->where('role', User::ROLE_MEMBER),
             ],
-            'member_id_number' => ['nullable', 'string', 'max:100'],
-            'member_name' => ['nullable', 'string', 'max:255'],
-            'member_birth_date' => ['nullable', 'date'],
-            // Biodata PIC / Vendor (wajib lengkap saat PIC bukan member)
-            'pic_name' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:255'],
-            'pic_email' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'email', 'max:255'],
-            'pic_whatsapp' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:30'],
-            'pic_phone' => [Rule::requiredIf(fn () => ! $this->boolean('is_member')), 'nullable', 'string', 'max:30'],
+            // Biodata PIC / Owner (Master Identity)
+            'pic_name' => ['nullable', 'string', 'max:255'],
             'nickname' => ['nullable', 'string', 'max:100'],
             'gender' => ['nullable', 'string', 'max:50'],
             'birth_place' => ['nullable', 'string', 'max:100'],
@@ -61,10 +57,19 @@ class StorePartnerRequest extends FormRequest
             'marital_status' => ['nullable', 'string', 'max:50'],
             'religion' => ['nullable', 'string', 'max:100'],
             'place_of_worship_address' => ['nullable', 'string', 'max:500'],
-            'member_phone' => ['nullable', 'string', 'max:30'],
+            'pic_email' => ['nullable', 'email', 'max:255'],
+            'pic_whatsapp' => ['nullable', 'string', 'max:30'],
+            'pic_phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:1000'],
+            'district' => ['nullable', 'string', 'max:100'],
+            'city' => ['nullable', 'string', 'max:100'],
             'member_address' => ['nullable', 'string', 'max:500'],
             'member_district' => ['nullable', 'string', 'max:100'],
             'member_city' => ['nullable', 'string', 'max:100'],
+            'is_household' => ['nullable', 'boolean'],
+            'companies' => ['nullable', 'array'],
+            'business_district' => ['nullable', 'string', 'max:100'],
+            'business_city' => ['nullable', 'string', 'max:100'],
             'hobbies' => ['nullable', 'array'],
             'hobbies.*' => ['string', 'max:255'],
             // Vendor Login credentials

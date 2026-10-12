@@ -34,10 +34,14 @@ export default function MemberCreate() {
         business_address: '',
         business_district: '',
         business_city: '',
+        is_household: false,
+        companies: [{ company: '', industry: '', position: '', address: '' }],
         hobbies: [],
         membership_status: 'active',
         membership_started_at: today,
         membership_expires_at: defaultExpires,
+        is_partner: 'no',
+        partner_email: '',
     });
 
     const submit = (e) => {
