@@ -78,8 +78,15 @@ class StorePartnerRequest extends FormRequest
                 'required',
                 'email',
                 'max:255',
-                // Email boleh sama dengan email Member (uniqueness users hanya per role).
-                Rule::unique('users', 'email')->where('role', User::ROLE_VENDOR),
+                // Email boleh sama dengan email Member, dan abaikan user vendor yatim piatu yang tidak punya partner.
+                Rule::unique('users', 'email')->where(function ($query) {
+                    $query->where('role', User::ROLE_VENDOR)
+                        ->whereExists(function ($sub) {
+                            $sub->selectRaw(1)
+                                ->from('partners')
+                                ->whereColumn('partners.user_id', 'users.id');
+                        });
+                }),
             ],
             'vendor_password' => ['required', 'string', Password::defaults(), 'confirmed'],
         ];

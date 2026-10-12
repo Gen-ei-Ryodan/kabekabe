@@ -152,6 +152,13 @@ class PartnerController extends Controller
         $category = ! empty($validated['category']) ? $validated['category'] : PartnerCategory::fromIndustries($industryArray);
         $industryString = is_array($industryInput) ? implode(', ', $industryArray) : ($industryInput ?? null);
 
+        // Bersihkan akun vendor yatim piatu (bekas partner yang pernah dihapus)
+        User::query()
+            ->where('role', User::ROLE_VENDOR)
+            ->where('email', $validated['vendor_email'])
+            ->doesntHave('partner')
+            ->delete();
+
         // Create vendor user
         $vendorUser = User::create([
             'name' => $validated['vendor_name'],
@@ -460,8 +467,13 @@ class PartnerController extends Controller
     public function destroy(Partner $partner): RedirectResponse
     {
         $name = $partner->name;
+        $vendorUser = $partner->user;
 
         $partner->delete();
+
+        if ($vendorUser && $vendorUser->role === User::ROLE_VENDOR) {
+            $vendorUser->delete();
+        }
 
         return redirect()
             ->route('admin.partners.index')
