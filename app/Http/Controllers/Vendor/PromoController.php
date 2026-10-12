@@ -109,7 +109,10 @@ class PromoController extends Controller
         abort_unless($user && $user->can('update', $promo), 403);
 
         return Inertia::render('Vendor/Promos/Edit', [
-            'promo' => $promo,
+            'promo' => array_merge($promo->toArray(), [
+                'start_date' => $promo->start_date?->format('Y-m-d') ?? '',
+                'end_date' => $promo->end_date?->format('Y-m-d') ?? '',
+            ]),
         ]);
     }
 

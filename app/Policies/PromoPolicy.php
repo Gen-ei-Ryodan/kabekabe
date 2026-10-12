@@ -42,8 +42,7 @@ class PromoPolicy
         }
 
         return $user->isVendor()
-            && $promo->partner->user_id === $user->id
-            && in_array($promo->status, [Promo::STATUS_PENDING, Promo::STATUS_REJECTED], true);
+            && $promo->partner->user_id === $user->id;
     }
 
     public function approve(User $user): bool

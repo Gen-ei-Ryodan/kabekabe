@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import VendorLayout from '@/Layouts/VendorLayout';
 import StatusChip from '@/Components/StatusChip';
 import Pagination from '@/Components/Pagination';
 import EmptyState from '@/Components/EmptyState';
+import Modal from '@/Components/Modal';
 import { formatDate, formatRupiah } from '@/Utils/format';
 
 export default function PromoIndex({ promos, filters }) {
     const { ziggy } = usePage().props;
+    const [deletingPromo, setDeletingPromo] = useState(null);
 
     const selectStatus = (status) => {
         router.get(route('vendor.promos.index'), { status: status === 'all' ? undefined : status }, { preserveState: true, replace: true });
@@ -97,16 +100,13 @@ export default function PromoIndex({ promos, filters }) {
                                         <Link href={route('vendor.promos.edit', promo.id)} className="btn-ghost text-xs">
                                             {promo.status === 'rejected' ? 'Revisi & Ajukan Ulang' : 'Edit'}
                                         </Link>
-                                        {promo.status !== 'approved' && (
-                                            <button
-                                                onClick={() => {
-                                                    if (confirm('Hapus promo ini?')) router.delete(route('vendor.promos.destroy', promo.id));
-                                                }}
-                                                className="btn-danger text-xs"
-                                            >
-                                                Hapus
-                                            </button>
-                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeletingPromo(promo)}
+                                            className="btn-danger text-xs"
+                                        >
+                                            Hapus
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -115,6 +115,38 @@ export default function PromoIndex({ promos, filters }) {
                 )}
 
                 <Pagination links={promos.links} />
+
+                {/* Modal Konfirmasi Hapus Promo */}
+                <Modal show={deletingPromo !== null} onClose={() => setDeletingPromo(null)} maxWidth="md">
+                    <div className="p-6">
+                        <h3 className="font-display text-lg font-bold text-ink">Hapus Promo</h3>
+                        <p className="mt-2 text-sm text-slate">
+                            Apakah Anda yakin ingin menghapus promo <strong>{deletingPromo?.title}</strong>? Promo yang dihapus akan dihilangkan dari sistem.
+                        </p>
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setDeletingPromo(null)}
+                                className="btn-ghost text-xs"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (deletingPromo) {
+                                        router.delete(route('vendor.promos.destroy', deletingPromo.id), {
+                                            onSuccess: () => setDeletingPromo(null),
+                                        });
+                                    }
+                                }}
+                                className="btn-danger text-xs"
+                            >
+                                Ya, Hapus
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </>
     );

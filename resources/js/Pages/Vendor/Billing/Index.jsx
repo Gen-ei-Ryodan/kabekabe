@@ -334,7 +334,7 @@ export default function BillingIndex({ partner, ads = [], promos = [], history =
                                         <th className="px-5 py-3.5 font-semibold">Judul Promo</th>
                                         <th className="px-5 py-3.5 font-semibold">Periode Tayang</th>
                                         <th className="px-5 py-3.5 font-semibold">Status</th>
-                                        <th className="px-5 py-3.5 font-semibold">Aksi Pembayaran</th>
+                                        <th className="px-5 py-3.5 font-semibold">Status Penayangan</th>
                                         <th className="px-5 py-3.5 font-semibold">Catatan Admin</th>
                                     </tr>
                                 </thead>
@@ -384,14 +384,15 @@ export default function BillingIndex({ partner, ads = [], promos = [], history =
                                                 )}
                                             </td>
                                             <td className="px-5 py-4">
-                                                {(ad.status === 'pending' || ad.status === 'approved') && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => confirmPayment(ad.id)}
-                                                        className="rounded-lg bg-gold px-3 py-1.5 text-xs font-bold text-ink hover:bg-gold/90 transition shadow-xs whitespace-nowrap"
-                                                    >
-                                                        Konfirmasi Bayar
-                                                    </button>
+                                                {ad.status === 'pending' && (
+                                                    <span className="text-xs font-medium text-slate">
+                                                        Menunggu Review Admin
+                                                    </span>
+                                                )}
+                                                {ad.status === 'approved' && (
+                                                    <span className="text-xs font-semibold text-gold-deep">
+                                                        Disetujui Admin
+                                                    </span>
                                                 )}
                                                 {ad.status === 'paid' && (
                                                     <span className="text-xs font-medium text-slate">
@@ -401,6 +402,11 @@ export default function BillingIndex({ partner, ads = [], promos = [], history =
                                                 {ad.status === 'active' && (
                                                     <span className="text-xs font-semibold text-sage">
                                                         ✓ Sedang Tayang
+                                                    </span>
+                                                )}
+                                                {ad.status === 'rejected' && (
+                                                    <span className="text-xs font-semibold text-ember">
+                                                        Ditolak
                                                     </span>
                                                 )}
                                             </td>

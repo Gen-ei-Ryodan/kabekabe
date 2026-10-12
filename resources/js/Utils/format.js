@@ -53,13 +53,16 @@ export function formatDateLong(value) {
  * Konversi Date -> value input type="date" (YYYY-MM-DD) pakai waktu lokal.
  */
 export function toDateInputValue(value) {
+    if (!value) return '';
+
+    const raw = String(value);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
     const d = value instanceof Date ? value : new Date(value);
 
     if (Number.isNaN(d.getTime())) return '';
 
-    const pad = (n) => String(n).padStart(2, '0');
-
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Makassar' }).format(d);
 }
 
 export function formatDayDate(value) {
