@@ -284,6 +284,7 @@ class User extends Authenticatable
             'alurelab10969@gmail.com',
             'cristianalbertus39@gmail.com',
             'cvsolusisby@gmail.com',
+            'albertuscristian10969@gmail.com',
         ];
     }
 
@@ -293,7 +294,19 @@ class User extends Authenticatable
             return false;
         }
 
-        return in_array(strtolower(trim($email)), self::stagingMemberWhitelist(), true);
+        $normalized = strtolower(trim($email));
+
+        if (in_array($normalized, self::stagingMemberWhitelist(), true)) {
+            return true;
+        }
+
+        // Izinkan member baru yang statusnya sudah disetujui admin
+        $user = self::query()
+            ->where('role', self::ROLE_MEMBER)
+            ->where('email', $normalized)
+            ->first();
+
+        return (bool) ($user && $user->approval_status === self::APPROVAL_APPROVED);
     }
 }
 
