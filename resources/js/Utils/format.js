@@ -77,6 +77,24 @@ export function formatDayDate(value) {
     }).format(date);
 }
 
+export function formatDayDateWita(value) {
+    if (!value) return 'Tidak Terbatas (Permanen)';
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return '-';
+
+    const formatted = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Makassar',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+
+    return `${formatted} WITA`;
+}
+
 export function formatMonth(value) {
     if (!value) return '-';
 

@@ -29,8 +29,21 @@ class DashboardController extends Controller
             ->limit(8)
             ->get();
 
+        \Carbon\Carbon::setLocale('id');
+        $isActive = $partner->isActive();
+        $expiresAtWita = $partner->expires_at
+            ? $partner->expires_at->setTimezone('Asia/Makassar')->translatedFormat('l, d F Y').' WITA'
+            : 'Tidak Terbatas (Permanen)';
+
+        $partnerData = array_merge($partner->toArray(), [
+            'is_active' => $isActive,
+            'status_label' => $isActive ? 'AKTIF' : 'TIDAK AKTIF',
+            'expires_at_formatted' => $expiresAtWita,
+            'days_remaining' => $partner->expires_at ? max(0, (int) now()->diffInDays($partner->expires_at, false)) : null,
+        ]);
+
         return Inertia::render('Vendor/Dashboard', [
-            'partner' => $partner,
+            'partner' => $partnerData,
             'stats' => $this->reports->vendorDashboard($partner),
             'recent_transactions' => $recent,
         ]);
