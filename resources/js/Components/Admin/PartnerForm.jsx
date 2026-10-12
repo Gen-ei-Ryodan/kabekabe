@@ -48,8 +48,8 @@ export default function PartnerForm({
         i.toLowerCase().includes(industrySearch.toLowerCase())
     );
 
-    // is_member check: supports 'yes' / 'no' or boolean
-    const isMemberActive = data.is_member === 'yes' || Boolean(data.is_member) === true;
+    // is_member check: 'yes' or true means already a member; 'no' or false means not a member
+    const isMemberActive = data.is_member === 'yes' || data.is_member === true;
 
     return (
         <form onSubmit={onSubmit} className="space-y-6">
