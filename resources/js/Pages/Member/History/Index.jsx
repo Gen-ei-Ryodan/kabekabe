@@ -129,6 +129,29 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                     </div>
                 </form>
 
+                {(filters?.from || filters?.to) && (
+                    <Reveal>
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-5 py-3.5">
+                            <div className="flex items-center gap-2.5 text-sm text-ink">
+                                <span className="text-base">📅</span>
+                                <span>
+                                    Menampilkan data riwayat yang disaring dari{' '}
+                                    <strong className="text-gold-deep">{filters.from ? formatDate(filters.from) : 'awal'}</strong>{' '}
+                                    sampai{' '}
+                                    <strong className="text-gold-deep">{filters.to ? formatDate(filters.to) : 'hari ini'}</strong>
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={resetDateFilter}
+                                className="rounded-xl border border-gold/40 bg-white/80 px-3.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-gold-deep hover:bg-white hover:text-ink transition-colors shadow-sm"
+                            >
+                                {t('history.reset')} Filter
+                            </button>
+                        </div>
+                    </Reveal>
+                )}
+
                 {tab === 'payments' ? (
                     <>
                         <Reveal>
@@ -164,6 +187,11 @@ export default function HistoryIndex({ payments, transactions, total_benefit, to
                                                     <span className="font-mono text-[10px] uppercase tracking-wide text-slate-soft">
                                                         {formatDate(payment.paid_at || payment.created_at, true)}
                                                     </span>
+                                                    {payment.duration_label && (
+                                                        <span className="inline-flex items-center rounded-md bg-gold/15 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-gold-deep">
+                                                            {payment.duration_label}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <p className="mt-1 font-display text-lg font-bold">
                                                     {formatRupiah(payment.amount)}

@@ -69,6 +69,8 @@ class HistoryController extends Controller
                 Payment::STATUS_EXPIRED => 'Expired',
                 default => ucfirst((string) $payment->status),
             },
+            'period_months' => $payment->period_months ?? $payment->plan?->duration_months,
+            'duration_label' => ($payment->period_months || $payment->plan?->duration_months) ? (($payment->period_months ?? $payment->plan?->duration_months) . ' Bulan / ' . (($payment->period_months ?? $payment->plan?->duration_months) * 30) . ' Hari') : null,
             'plan' => $payment->plan ? [
                 'id' => $payment->plan->id,
                 'name' => $payment->plan->name,

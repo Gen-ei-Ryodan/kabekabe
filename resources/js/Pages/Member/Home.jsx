@@ -12,6 +12,8 @@ import { useTranslation } from '@/i18n';
 function RankingCard({ title, subtitle, items = [], emptyText }) {
     const medals = ['🥇', '🥈', '🥉'];
 
+    const limitedItems = items.slice(0, 3);
+
     return (
         <div className="card-surface flex flex-col p-3 sm:p-4">
             <div className="flex flex-col border-b border-ink/5 pb-2 sm:pb-3">
@@ -26,8 +28,8 @@ function RankingCard({ title, subtitle, items = [], emptyText }) {
             </div>
 
             <div className="divide-y divide-ink/5 pt-1">
-                {items && items.length > 0 ? (
-                    items.map((v, i) => (
+                {limitedItems && limitedItems.length > 0 ? (
+                    limitedItems.map((v, i) => (
                         <div key={v.partner_id || i} className="flex items-center gap-2 py-2 first:pt-1.5 last:pb-0 sm:gap-3 sm:py-2.5">
                             <span className="flex h-5 w-5 shrink-0 items-center justify-center text-xs sm:h-7 sm:w-7 sm:text-base">
                                 {medals[i] || `${i + 1}.`}

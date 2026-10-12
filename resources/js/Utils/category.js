@@ -13,9 +13,12 @@
 export function categoryLabel(t, category) {
     if (!category) return category;
 
-    const key = `category.${category}`;
+    // Normalisasi 'FNB' menjadi 'F&B'
+    const normalizedCategory = category.replace('FNB', 'F&B');
+
+    const key = `category.${normalizedCategory}`;
     const label = t(key);
 
     // t() mengembalikan key-nya sendiri bila tidak ditemukan di kamus.
-    return label === key ? category : label;
+    return label === key ? normalizedCategory : label;
 }

@@ -24,7 +24,7 @@ class HomeController extends Controller
             ->select('partner_id', DB::raw('COUNT(*) as total'))
             ->groupBy('partner_id')
             ->orderBy('total', 'desc')
-            ->limit(5)
+            ->limit(3)
             ->with('partner:id,name,logo')
             ->get()
             ->map(fn (Transaction $t) => [
@@ -38,7 +38,7 @@ class HomeController extends Controller
             ->select('partner_id', DB::raw('SUM(total_amount) as total_amount'))
             ->groupBy('partner_id')
             ->orderBy('total_amount', 'desc')
-            ->limit(5)
+            ->limit(3)
             ->with('partner:id,name,logo')
             ->get()
             ->map(fn (Transaction $t) => [

@@ -15,12 +15,31 @@ class PartnerController extends Controller
     {
         $category = $request->string('category')->toString();
         $search = $request->string('search')->toString();
+
+        // Normalize 'FNB' to 'F&B'
+        $normalizedCategory = str_replace('FNB', 'F&B', $category);
+
         $query = Partner::query()->active()->withCount(['promos' => fn ($q) => $q->where('status', 'approved')]);
         $promoQuery = Promo::query()->visibleToMembers();
 
-        if ($category !== '' && $category !== 'all') {
-            $query->where('category', $category);
-            $promoQuery->whereHas('partner', fn ($q) => $q->where('category', $category));
+        // Filter out null/empty, normalize FNB to F&B, get unique values
+        $availableCategories = Partner::query()->active()
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->pluck('category')
+            ->map(fn ($cat) => $cat === 'FNB' ? 'F&B' : $cat)
+            ->unique()
+            ->values();
+
+        if ($normalizedCategory !== '' && $normalizedCategory !== 'all') {
+            if ($normalizedCategory === 'F&B' || $category === 'FNB') {
+                $query->whereIn('category', ['F&B', 'FNB']);
+                $promoQuery->whereHas('partner', fn ($q) => $q->whereIn('category', ['F&B', 'FNB']));
+            } else {
+                $query->where('category', $category);
+                $promoQuery->whereHas('partner', fn ($q) => $q->where('category', $category));
+            }
         }
 
         if ($search !== '') {
@@ -44,7 +63,7 @@ class PartnerController extends Controller
 
         return Inertia::render('Member/Partners/Index', [
             'partners' => $partners,
-            'categories' => Partner::query()->active()->distinct()->pluck('category'),
+            'categories' => $availableCategories,
             'filters' => ['category' => $category, 'search' => $search],
             'promos' => $promoQuery
                 ->orderByRaw('COALESCE(sort_number, 999999) ASC')
