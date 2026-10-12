@@ -111,7 +111,7 @@ class PartnerController extends Controller
     public function store(StorePartnerRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $isMember = ($validated['is_member'] ?? '') === 'yes';
+        $isMember = ($validated['is_member'] ?? '') === 'yes' || filter_var($validated['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         // Handle Master Identity based on is_member status
         if ($isMember) {
@@ -228,7 +228,7 @@ class PartnerController extends Controller
     public function update(UpdatePartnerRequest $request, Partner $partner): RedirectResponse
     {
         $validated = $request->validated();
-        $isMember = $validated['is_member'] === 'yes';
+        $isMember = ($validated['is_member'] ?? '') === 'yes' || filter_var($validated['is_member'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         // Handle Master Identity and member linking based on is_member
         if ($isMember && ! empty($validated['member_email'])) {

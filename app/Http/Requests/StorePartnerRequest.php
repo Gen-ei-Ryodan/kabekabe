@@ -20,7 +20,7 @@ class StorePartnerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'trade_name' => ['nullable', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:50'],
-            'industry' => ['nullable', 'string', 'max:150'],
+            'industry' => ['nullable'],
             'employee_count' => ['nullable', 'integer', 'min:0'],
             'established_since' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'string', 'max:30'],

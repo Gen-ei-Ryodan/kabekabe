@@ -18,7 +18,7 @@ function CreatePartnerDrawer({ onClose }) {
         name: '',
         trade_name: '',
         category: '',
-        industry: '',
+        industry: [],
         employee_count: '',
         established_since: '',
         phone: '',
@@ -33,12 +33,14 @@ function CreatePartnerDrawer({ onClose }) {
         diskon1: '',
         diskon2: '',
         diskon3: '',
-        is_member: false,
+        is_member: 'no',
         member_email: '',
         member_id_number: '',
         member_name: '',
         pic_name: '',
         pic_phone: '',
+        pic_email: '',
+        pic_whatsapp: '',
         nickname: '',
         gender: '',
         birth_place: '',
@@ -65,7 +67,13 @@ function CreatePartnerDrawer({ onClose }) {
 
     const submit = (e) => {
         e.preventDefault();
-        form.post(route('admin.partners.store'), { preserveScroll: true });
+        form.post(route('admin.partners.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset();
+                onClose();
+            },
+        });
     };
 
     return (
