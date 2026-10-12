@@ -46,13 +46,7 @@ class PasswordResetLinkController extends Controller
 
         // Staging: hanya izinkan akun tertentu untuk reset password member
         if ($role === User::ROLE_MEMBER) {
-            $allowedMemberEmails = [
-                'jurgen@dutaintika.com',
-                'cviennae@gmail.com',
-                'viennaern@gmail.com',
-            ];
-
-            if (! in_array(strtolower(trim($email)), $allowedMemberEmails, true)) {
+            if (! User::isStagingMemberAllowed($email)) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'email' => 'Email tidak terdaftar sebagai akun MEMBER.',
                 ]);

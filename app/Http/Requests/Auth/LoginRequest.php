@@ -47,15 +47,9 @@ class LoginRequest extends FormRequest
 
         // Staging: hanya izinkan akun tertentu untuk login portal member
         if ($role === User::ROLE_MEMBER) {
-            $allowedMemberEmails = [
-                'jurgen@dutaintika.com',
-                'cviennae@gmail.com',
-                'viennaern@gmail.com',
-            ];
+            $inputEmail = (string) $this->input('email');
 
-            $inputEmail = strtolower(trim((string) $this->input('email')));
-
-            if (! in_array($inputEmail, $allowedMemberEmails, true)) {
+            if (! User::isStagingMemberAllowed($inputEmail)) {
                 RateLimiter::hit($this->throttleKey());
 
                 throw ValidationException::withMessages([

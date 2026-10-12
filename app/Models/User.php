@@ -255,4 +255,45 @@ class User extends Authenticatable
 
         return '/storage/'.$this->avatar;
     }
+
+    /**
+     * Whitelist email member yang diizinkan login & reset password selama staging.
+     *
+     * @return array<int, string>
+     */
+    public static function stagingMemberWhitelist(): array
+    {
+        return [
+            'jurgen@dutaintika.com',
+            'cviennae@gmail.com',
+            'viennaern@gmail.com',
+            'ray.komputerku@gmail.com',
+            'paulinerenny@gmail.com',
+            'tasyaw168@gmail.com',
+            'love_shally@yahoo.com',
+            'lusicici73@gmail.com',
+            'remedy.san@gmail.com',
+            'cbr1@hotmail.com',
+            'ersad.ery@gmail.com',
+            'sinar168@gmail.com',
+            'stedja85@gmail.com',
+            'smame07@hotmail.com',
+            'marina@solidds.com',
+            'frankywibisono888@gmail.com',
+            'bunardi_denny@yahoo.com',
+            'alurelab10969@gmail.com',
+            'cristianalbertus39@gmail.com',
+            'cvsolusisby@gmail.com',
+        ];
+    }
+
+    public static function isStagingMemberAllowed(?string $email): bool
+    {
+        if (! $email) {
+            return false;
+        }
+
+        return in_array(strtolower(trim($email)), self::stagingMemberWhitelist(), true);
+    }
 }
+
