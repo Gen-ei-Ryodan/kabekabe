@@ -32,7 +32,13 @@ export default function ReportIndex({ summary, transactions, by_day, filters }) 
                             <label className="label">Sampai</label>
                             <input type="date" className="input" value={filter.data.to} onChange={(e) => filter.setData('to', e.target.value)} />
                         </div>
-                        <button type="submit" className="btn-ink text-xs">Terapkan</button>
+                        <button type="submit" className="btn-ink text-xs">Terapkan Filter</button>
+                        <a
+                            href={route('vendor.reports.export', { from: filter.data.from, to: filter.data.to })}
+                            className="btn-gold text-xs"
+                        >
+                            Unduh Laporan / Ekspor
+                        </a>
                     </form>
                 </header>
 

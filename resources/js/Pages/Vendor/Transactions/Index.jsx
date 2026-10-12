@@ -94,12 +94,17 @@ export default function TransactionIndex({ transactions, pending_scans = [], fil
                                     <th className="table-head px-4 py-3 text-right">Diskon</th>
                                     <th className="table-head px-4 py-3 text-right">Total Bayar</th>
                                     <th className="table-head px-4 py-3">Bukti Nota</th>
+                                    <th className="table-head px-4 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-ink/5">
                                 {transactions.data.map((t) => (
                                     <tr key={t.id} className="transition-colors hover:bg-paper/50">
-                                        <td className="px-4 py-3 font-mono text-xs font-semibold">{t.transaction_number}</td>
+                                        <td className="px-4 py-3 font-mono text-xs font-semibold">
+                                            <Link href={route('vendor.transactions.show', t.id)} className="text-gold-deep hover:underline">
+                                                {t.transaction_number}
+                                            </Link>
+                                        </td>
                                         <td className="px-4 py-3 text-slate">{formatDate(t.transacted_at, true)}</td>
                                         <td className="px-4 py-3">
                                             <div>
@@ -116,6 +121,14 @@ export default function TransactionIndex({ transactions, pending_scans = [], fil
                                             ) : (
                                                 <span className="text-slate-soft">—</span>
                                             )}
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <Link
+                                                href={route('vendor.transactions.show', t.id)}
+                                                className="inline-flex items-center rounded-lg border border-ink/15 bg-white px-2.5 py-1 text-xs font-semibold text-ink shadow-xs hover:bg-paper"
+                                            >
+                                                Detail
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))}

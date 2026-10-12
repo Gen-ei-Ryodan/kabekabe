@@ -46,10 +46,11 @@ class VerifyController extends Controller
         $withinWindow = false;
         $hoursLeft = 0;
 
-        if ($vendor && $vendor->role === User::ROLE_VENDOR) {
+        if ($active && $vendor && $vendor->role === User::ROLE_VENDOR) {
             $lastScan = MemberScan::query()
                 ->where('member_id', $member->id)
                 ->where('scanned_by_vendor_id', $vendor->id)
+                ->whereDoesntHave('transaction')
                 ->latest('scanned_at')
                 ->first();
 

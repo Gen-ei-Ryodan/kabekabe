@@ -173,7 +173,9 @@ Route::middleware(['auth:partner'])->group(function () {
         Route::get('/transactions', [VendorTransactionController::class, 'index'])->name('transactions.index');
         Route::get('/transactions/create', [VendorTransactionController::class, 'create'])->name('transactions.create');
         Route::post('/transactions', [VendorTransactionController::class, 'store'])->name('transactions.store');
+        Route::get('/transactions/{transaction}', [VendorTransactionController::class, 'show'])->name('transactions.show');
 
+        Route::get('/reports/export', [VendorReportController::class, 'export'])->name('reports.export');
         Route::get('/reports', VendorReportController::class)->name('reports.index');
 
         Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

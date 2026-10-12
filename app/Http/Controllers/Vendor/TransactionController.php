@@ -50,6 +50,9 @@ class TransactionController extends Controller
             ->where('scanned_by_vendor_id', $partner->user_id)
             ->where('expires_at', '>', now())
             ->whereDoesntHave('transaction')
+            ->whereHas('member', function ($q) {
+                $q->whereHas('membership', fn ($m) => $m->where('expires_at', '>', now()));
+            })
             ->with('member:id,name,member_code')
             ->latest('scanned_at')
             ->get()
@@ -136,10 +139,11 @@ class TransactionController extends Controller
         $withinWindow = false;
         $hoursLeft = 0;
 
-        if ($vendor && $vendor->role === User::ROLE_VENDOR) {
+        if ($active && $vendor && $vendor->role === User::ROLE_VENDOR) {
             $latest = MemberScan::query()
                 ->where('member_id', $member->id)
                 ->where('scanned_by_vendor_id', $vendor->id)
+                ->whereDoesntHave('transaction')
                 ->latest('scanned_at')
                 ->first();
 
@@ -239,5 +243,19 @@ class TransactionController extends Controller
         return redirect()
             ->route('vendor.transactions.index')
             ->with('success', 'Transaction recorded successfully.');
+    }
+
+    public function show(Transaction $transaction): Response
+    {
+        $partner = $this->vendorUser()?->partner;
+
+        abort_if($partner === null, 403);
+        abort_if($transaction->partner_id !== $partner->id, 403, 'Transaksi bukan milik partner Anda.');
+
+        $transaction->load(['member:id,name,member_code,company', 'partner:id,name,category', 'promo:id,title']);
+
+        return Inertia::render('Vendor/Transactions/Show', [
+            'transaction' => $transaction,
+        ]);
     }
 }

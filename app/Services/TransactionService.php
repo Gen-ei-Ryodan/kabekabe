@@ -40,12 +40,10 @@ class TransactionService
             throw new \DomainException('This member scan does not belong to this vendor.');
         }
 
-        if ($scan && $scan->transaction()->exists()) {
-            throw new \DomainException('This member scan already has a transaction.');
-        }
-
-        if (! $activeScan || $activeScan->isExpired()) {
-            throw new \DomainException('Input window has expired. Please scan the member card again or contact admin to edit.');
+        if ($activeScan && $activeScan->transaction()->exists()) {
+            $activeScan = MemberScan::startFor($member->id, $partner->user_id, request()->ip());
+        } elseif (! $activeScan || $activeScan->isExpired()) {
+            $activeScan = MemberScan::startFor($member->id, $partner->user_id, request()->ip());
         }
 
         if ($promo !== null && $promo->partner_id !== $partner->id) {
