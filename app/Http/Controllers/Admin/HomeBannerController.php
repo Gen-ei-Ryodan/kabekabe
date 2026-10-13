@@ -468,6 +468,15 @@ class HomeBannerController extends Controller
 
             $ad->update(['status' => 'active']);
 
+            if ($ad->promo_id && ($promo = Promo::find($ad->promo_id))) {
+                $promo->update([
+                    'is_active' => true,
+                    'status' => Promo::STATUS_APPROVED,
+                    'start_date' => $ad->start_date ? $ad->start_date->format('Y-m-d') : $promo->start_date,
+                    'end_date' => $ad->end_date ? $ad->end_date->format('Y-m-d') : $promo->end_date,
+                ]);
+            }
+
             return back()->with('success', 'Iklan partner berhasil ditayangkan sebagai Popup Pembuka Beranda!');
         }
 
@@ -493,6 +502,15 @@ class HomeBannerController extends Controller
         ]);
 
         $ad->update(['status' => 'active']);
+
+        if ($ad->promo_id && ($promo = Promo::find($ad->promo_id))) {
+            $promo->update([
+                'is_active' => true,
+                'status' => Promo::STATUS_APPROVED,
+                'start_date' => $ad->start_date ? $ad->start_date->format('Y-m-d') : $promo->start_date,
+                'end_date' => $ad->end_date ? $ad->end_date->format('Y-m-d') : $promo->end_date,
+            ]);
+        }
 
         return back()->with('success', 'Iklan partner berhasil ditayangkan sebagai Banner Beranda!');
     }

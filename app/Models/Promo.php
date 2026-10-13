@@ -53,6 +53,16 @@ class Promo extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function ads(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PartnerAd::class, 'promo_id');
+    }
+
+    public function latestAd(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(PartnerAd::class, 'promo_id')->latestOfMany();
+    }
+
     public function isActive(): bool
     {
         // end_date disimpan sebagai tanggal (cast 'date' → pukul 00:00), jadi

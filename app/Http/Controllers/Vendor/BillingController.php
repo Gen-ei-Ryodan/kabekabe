@@ -119,6 +119,14 @@ class BillingController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
+        // Sesuaikan tanggal promo agar otomatis sinkron dari awal pengajuan iklan oleh partner
+        if (! empty($validated['promo_id']) && ($promo = Promo::find($validated['promo_id']))) {
+            $promo->update([
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+            ]);
+        }
+
         return back()->with('success', 'Pengajuan iklan berhasil dikirim! Menunggu persetujuan admin.');
     }
 

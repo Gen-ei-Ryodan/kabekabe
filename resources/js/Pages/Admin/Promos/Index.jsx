@@ -279,6 +279,11 @@ export default function PromoIndex({ promos, filters, drawer }) {
                                                 <td className="px-3 py-3.5 text-xs text-slate whitespace-nowrap">
                                                     <p className="font-medium text-ink">{formatDate(promo.start_date)}</p>
                                                     <p className="text-[11px] text-slate-500">s/d {formatDate(promo.end_date)}</p>
+                                                    {promo.latest_ad && (
+                                                        <span className="inline-block mt-1 rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold text-gold-deep border border-gold/30">
+                                                            Iklan: {formatDate(promo.latest_ad.start_date)} - {formatDate(promo.latest_ad.end_date)}
+                                                        </span>
+                                                    )}
                                                 </td>
 
                                                 {/* Status */}
@@ -330,12 +335,21 @@ export default function PromoIndex({ promos, filters, drawer }) {
                                                         >
                                                             Detail / Edit
                                                         </button>
-                                                        {promo.status === 'approved' && (
+                                                        {promo.is_active ? (
                                                             <button
-                                                                onClick={() => router.put(route('admin.promos.toggle', promo.id), {}, { preserveScroll: true })}
-                                                                className="btn-ghost !py-1 !px-2.5 text-xs"
+                                                                type="button"
+                                                                onClick={() => router.put(route('admin.promos.toggle', promo.id), { is_active: false }, { preserveScroll: true })}
+                                                                className="btn-ghost !py-1 !px-2.5 text-xs text-ember hover:bg-ember/10"
                                                             >
-                                                                {promo.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                                                                Nonaktifkan
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => router.put(route('admin.promos.toggle', promo.id), { is_active: true }, { preserveScroll: true })}
+                                                                className="btn-gold !py-1 !px-2.5 text-xs"
+                                                            >
+                                                                Aktifkan
                                                             </button>
                                                         )}
                                                     </div>

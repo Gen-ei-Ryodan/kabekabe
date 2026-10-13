@@ -1,7 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
-import { formatRupiah, toDateInputValue } from '@/Utils/format';
+import { formatDate, formatRupiah, toDateInputValue } from '@/Utils/format';
 
 export default function PromoEdit({ promo }) {
     const form = useForm({
@@ -63,15 +63,28 @@ export default function PromoEdit({ promo }) {
                             <input type="number" min="0" className="input" value={form.data.min_purchase} onChange={(e) => form.setData('min_purchase', e.target.value)} />
                         </div>
                     </div>
+
+                    {promo.latest_ad && (
+                        <div className="rounded-xl border border-gold/30 bg-gold/10 p-3.5 text-xs text-ink">
+                            <div className="flex items-center gap-1.5 font-bold text-gold-deep">
+                                <span>📢</span>
+                                <span>Periode Iklan Mitra ({promo.latest_ad.type_label || (promo.latest_ad.type === 'popup' ? 'Pop-up Pembuka' : 'Banner Unggulan')})</span>
+                            </div>
+                            <p className="mt-1 text-slate">
+                                Mitra mengajukan penayangan iklan pada: <strong className="text-ink">{formatDate(promo.latest_ad.start_date)}</strong> s/d <strong className="text-ink">{formatDate(promo.latest_ad.end_date)}</strong>. Tanggal promo telah disesuaikan dengan periode pengajuan awal mitra.
+                            </p>
+                        </div>
+                    )}
+
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label className="label">Tanggal Mulai</label>
-                            <input type="date" className="input" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
+                            <input id="start_date" type="date" className="input" value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
                             {form.errors.start_date && <p className="mt-1 text-xs text-ember">{form.errors.start_date}</p>}
                         </div>
                         <div>
                             <label className="label">Tanggal Berakhir</label>
-                            <input type="date" className="input" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} />
+                            <input id="end_date" type="date" className="input" value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} />
                             {form.errors.end_date && <p className="mt-1 text-xs text-ember">{form.errors.end_date}</p>}
                         </div>
                     </div>

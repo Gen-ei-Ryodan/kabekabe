@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
 import StatusChip from '@/Components/StatusChip';
-import { formatRupiah, toDateInputValue } from '@/Utils/format';
+import { formatDate, formatRupiah, toDateInputValue } from '@/Utils/format';
 
 function EditPromoDrawer({ promo, onClose }) {
     const form = useForm({
@@ -64,6 +64,19 @@ function EditPromoDrawer({ promo, onClose }) {
                     <input type="number" min="0" className="input" value={form.data.min_purchase} onChange={(e) => form.setData('min_purchase', e.target.value)} />
                 </div>
             </div>
+
+            {promo.latest_ad && (
+                <div className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-xs text-ink">
+                    <div className="flex items-center gap-1.5 font-bold text-gold-deep">
+                        <span>📢</span>
+                        <span>Periode Iklan Mitra ({promo.latest_ad.type_label || (promo.latest_ad.type === 'popup' ? 'Pop-up Pembuka' : 'Banner Unggulan')})</span>
+                    </div>
+                    <p className="mt-1 text-slate">
+                        Mitra mengajukan penayangan iklan pada: <strong className="text-ink">{formatDate(promo.latest_ad.start_date)}</strong> s/d <strong className="text-ink">{formatDate(promo.latest_ad.end_date)}</strong>. Tanggal promo otomatis disesuaikan dengan periode iklan ini.
+                    </p>
+                </div>
+            )}
+
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label className="label">Tanggal Mulai</label>

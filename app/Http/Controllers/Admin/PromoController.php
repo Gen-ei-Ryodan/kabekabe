@@ -23,7 +23,7 @@ class PromoController extends Controller
     {
         $this->promos->deactivateExpired();
 
-        $query = Promo::query()->with('partner:id,name,category,logo');
+        $query = Promo::query()->with(['partner:id,name,category,logo', 'latestAd']);
 
         $status = $request->string('status')->toString();
         $search = $request->string('search')->toString();
@@ -72,6 +72,37 @@ class PromoController extends Controller
         ]);
     }
 
+    private function formatPromoForEdit(Promo $promo): array
+    {
+        $promo->loadMissing(['partner:id,name,category', 'latestAd']);
+
+        $latestAd = $promo->latestAd;
+        $adStart = $latestAd?->start_date?->format('Y-m-d');
+        $adEnd = $latestAd?->end_date?->format('Y-m-d');
+
+        $promoArray = $promo->toArray();
+
+        // Jika promo memiliki pengajuan iklan terkait, sesuaikan tanggal mulai & berakhir dengan periode iklan yang diajukan mitra
+        if ($adStart && $adEnd) {
+            $promoArray['start_date'] = $adStart;
+            $promoArray['end_date'] = $adEnd;
+        } else {
+            $promoArray['start_date'] = $promo->start_date?->format('Y-m-d');
+            $promoArray['end_date'] = $promo->end_date?->format('Y-m-d');
+        }
+
+        $promoArray['latest_ad'] = $latestAd ? [
+            'id' => $latestAd->id,
+            'type' => $latestAd->type,
+            'type_label' => $latestAd->type === \App\Models\PartnerAd::TYPE_POPUP ? 'Pop-up Pembuka (3 Hari)' : 'Banner Unggulan (5 Hari)',
+            'start_date' => $adStart,
+            'end_date' => $adEnd,
+            'status' => $latestAd->status,
+        ] : null;
+
+        return $promoArray;
+    }
+
     private function drawerPayload(Request $request): ?array
     {
         $mode = $request->string('drawer')->toString();
@@ -80,7 +111,7 @@ class PromoController extends Controller
             return null;
         }
 
-        $promo = Promo::query()->with('partner:id,name,category')->find($request->integer('id'));
+        $promo = Promo::query()->find($request->integer('id'));
 
         if (! $promo) {
             return null;
@@ -88,20 +119,27 @@ class PromoController extends Controller
 
         return [
             'mode' => 'edit',
-            'promo' => $promo,
+            'promo' => $this->formatPromoForEdit($promo),
         ];
     }
 
     public function edit(Promo $promo): Response
     {
         return Inertia::render('Admin/Promos/Edit', [
-            'promo' => $promo->load('partner:id,name,category'),
+            'promo' => $this->formatPromoForEdit($promo),
         ]);
     }
 
     public function update(UpdatePromoRequest $request, Promo $promo): RedirectResponse
     {
         $promo->update($request->validated());
+
+        if ($promo->latestAd) {
+            $promo->latestAd->update([
+                'start_date' => $promo->start_date,
+                'end_date' => $promo->end_date,
+            ]);
+        }
 
         return redirect()
             ->route('admin.promos.index')
@@ -154,10 +192,36 @@ class PromoController extends Controller
 
     public function toggle(Request $request, Promo $promo): RedirectResponse
     {
-        abort_unless($promo->status === Promo::STATUS_APPROVED, 422);
+        $isActive = $request->has('is_active') ? $request->boolean('is_active') : ! $promo->is_active;
 
-        $promo->update(['is_active' => $request->boolean('is_active')]);
+        if ($isActive) {
+            $promo->status = Promo::STATUS_APPROVED;
+            $promo->rejection_reason = null;
+            $promo->is_active = true;
 
-        return back()->with('success', $promo->is_active ? 'Promo activated.' : 'Promo deactivated.');
+            // Jika promo memiliki pengajuan iklan terkait, utamakan periode iklan yang diajukan partner
+            if ($promo->latestAd) {
+                if ($promo->latestAd->start_date) {
+                    $promo->start_date = $promo->latestAd->start_date;
+                }
+                if ($promo->latestAd->end_date && $promo->latestAd->end_date->isFuture()) {
+                    $promo->end_date = $promo->latestAd->end_date;
+                }
+            }
+
+            // Jika end_date sudah lampau atau kosong, perpanjang minimal 30 hari agar tidak langsung mati oleh deactivateExpired()
+            if (! $promo->end_date || $promo->end_date->isPast()) {
+                $promo->start_date = $promo->start_date && $promo->start_date->isPast() ? $promo->start_date : now()->toDateString();
+                $promo->end_date = now()->addDays(30)->toDateString();
+            }
+
+            $promo->save();
+
+            return back()->with('success', "Promo \"{$promo->title}\" berhasil diaktifkan (berlaku s/d {$promo->end_date->format('d M Y')}).");
+        }
+
+        $promo->update(['is_active' => false]);
+
+        return back()->with('success', "Promo \"{$promo->title}\" berhasil dinonaktifkan.");
     }
 }
