@@ -34,11 +34,29 @@ function PopupSettings({ popup, promos = [] }) {
             <div className="mb-7 flex items-start gap-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-ink font-display text-xl text-gold-light">↗</div>
                 <div>
-                    <p className="eyebrow">Momen Pembuka & Slot #1 Banner</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <p className="eyebrow">Momen Pembuka & Slot #1 Banner</p>
+                        {popup?.status_badge && (
+                            <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                                popup.status_badge === 'Aktif'
+                                    ? 'bg-sage/15 text-sage-deep'
+                                    : popup.status_badge === 'Mendatang'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-ember/15 text-ember'
+                            }`}>
+                                {popup.status_badge}
+                            </span>
+                        )}
+                    </div>
                     <h2 className="mt-1 font-display text-xl font-bold text-ink">Popup Pembuka Beranda</h2>
                     <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate">
-                        Tampilkan satu promo fokus dalam jendela popup. Promo popup aktif otomatis menduduki <strong>Slot #1 Banner Unggulan Beranda</strong>.
+                        Tampilkan satu promo fokus dalam jendela popup. Promo popup aktif otomatis menduduki <strong>Slot #1 Banner Unggulan Beranda</strong> (Durasi tayang 3 hari).
                     </p>
+                    {popup?.date_range && popup.date_range !== '-' && (
+                        <p className="mt-1 text-xs font-mono text-slate">
+                            Tanggal Tayang: {popup.date_range}
+                        </p>
+                    )}
                 </div>
             </div>
             <form onSubmit={submit} className="space-y-5">
@@ -322,8 +340,13 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
                                                         </button>
                                                     </>
                                                 )}
-                                                {ad.status === 'pending' && (
+                                                 {ad.status === 'pending' && (
                                                     <>
+                                                        {ad.slot_full && (
+                                                            <span className="rounded-md bg-ember/15 px-2.5 py-1 text-xs font-semibold text-ember" title={ad.slot_full_message}>
+                                                                Slot pada tanggal tersebut sudah penuh
+                                                            </span>
+                                                        )}
                                                         <button
                                                             onClick={() => markPaidAd(ad.id)}
                                                             className="btn-gold text-xs"
@@ -333,7 +356,9 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
                                                         </button>
                                                         <button
                                                             onClick={() => approveAd(ad.id)}
-                                                            className="btn-ghost text-xs"
+                                                            className={`btn-ghost text-xs ${ad.slot_full ? 'cursor-not-allowed opacity-50' : ''}`}
+                                                            disabled={ad.slot_full}
+                                                            title={ad.slot_full ? ad.slot_full_message : 'Setujui pengajuan iklan'}
                                                         >
                                                             Setujui
                                                         </button>
@@ -440,10 +465,26 @@ export default function BannersIndex({ banners = [], partner_ads = [], filters =
                                                 label={banner.is_active ? 'Aktif' : 'Tidak Aktif'}
                                                 pulse={banner.is_active}
                                             />
+                                            {banner.status_badge && (
+                                                <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                                                    banner.status_badge === 'Aktif'
+                                                        ? 'bg-sage/15 text-sage-deep'
+                                                        : banner.status_badge === 'Mendatang'
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : 'bg-ember/15 text-ember'
+                                                }`}>
+                                                    {banner.status_badge}
+                                                </span>
+                                            )}
                                         </div>
                                         <h3 className="mt-1 truncate font-display text-base font-bold text-ink">
                                             {banner.target_title}
                                         </h3>
+                                        {banner.date_range && banner.date_range !== '-' && (
+                                            <p className="mt-0.5 text-xs font-mono text-slate">
+                                                Tanggal Tayang: {banner.date_range}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 

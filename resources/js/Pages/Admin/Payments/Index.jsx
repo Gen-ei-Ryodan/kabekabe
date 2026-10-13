@@ -25,7 +25,7 @@ export default function PaymentIndex({ payments, filters, drawer }) {
     };
 
     const clearFilter = () => {
-        router.get(route('admin.payments.index'), { status: filters.status || 'pending' }, { preserveState: true, replace: true });
+        router.get(route('admin.payments.index'), { status: filters.status || 'all' }, { preserveState: true, replace: true });
     };
 
     const openShow = (id) => {
@@ -55,6 +55,29 @@ export default function PaymentIndex({ payments, filters, drawer }) {
                     </div>
                 </header>
 
+                <div className="flex flex-wrap gap-2">
+                    {[
+                        { key: 'all', label: 'Semua' },
+                        { key: 'pending', label: 'Menunggu' },
+                        { key: 'approved', label: 'Disetujui' },
+                        { key: 'rejected', label: 'Ditolak' },
+                    ].map((t) => (
+                        <button
+                            key={t.key}
+                            type="button"
+                            onClick={() => {
+                                filter.setData('status', t.key);
+                                router.get(route('admin.payments.index'), { search: filter.data.search || undefined, status: t.key }, { preserveState: true, replace: true });
+                            }}
+                            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                                (filter.data.status || 'all') === t.key ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
+                            }`}
+                        >
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
+
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
                     <div className="grid flex-1 gap-3 sm:grid-cols-2">
                         <div>
@@ -63,7 +86,8 @@ export default function PaymentIndex({ payments, filters, drawer }) {
                         </div>
                         <div>
                             <label className="label">Status</label>
-                            <select className="input" value={filter.data.status || 'pending'} onChange={(e) => filter.setData('status', e.target.value)}>
+                            <select className="input" value={filter.data.status || 'all'} onChange={(e) => filter.setData('status', e.target.value)}>
+                                <option value="all">Semua</option>
                                 <option value="pending">Menunggu</option>
                                 <option value="approved">Disetujui</option>
                                 <option value="rejected">Ditolak</option>

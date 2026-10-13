@@ -103,7 +103,7 @@ class TransactionController extends Controller
                 'expires_at' => $savedScan->expires_at?->format('d M Y H:i'),
                 'hours_left' => max(0, (int) round(now()->diffInMinutes($savedScan->expires_at, false) / 60)),
             ];
-            $member['within_window'] = $savedScan->expires_at->isFuture();
+            $member['within_window'] = true;
         }
 
         return Inertia::render('Vendor/Transactions/Create', [
@@ -134,32 +134,13 @@ class TransactionController extends Controller
 
         $active = $member->hasActiveMembership();
         $vendor = $this->vendorUser();
-        $scanData = null;
+        $scanData = [
+            'scanned_at' => now()->format('d M Y H:i'),
+            'expires_at' => now()->addHours(48)->format('d M Y H:i'),
+            'hours_left' => 48,
+        ];
         $scanId = null;
-        $withinWindow = false;
-        $hoursLeft = 0;
-
-        if ($active && $vendor && $vendor->role === User::ROLE_VENDOR) {
-            $latest = MemberScan::query()
-                ->where('member_id', $member->id)
-                ->where('scanned_by_vendor_id', $vendor->id)
-                ->whereDoesntHave('transaction')
-                ->latest('scanned_at')
-                ->first();
-
-            if (! $latest || $latest->isExpired()) {
-                $latest = MemberScan::startFor($member->id, $vendor->id, request()->ip());
-            }
-
-            $withinWindow = $latest->expires_at->isFuture();
-            $hoursLeft = $withinWindow ? (int) round(now()->diffInMinutes($latest->expires_at, false) / 60) : 0;
-            $scanData = [
-                'scanned_at' => $latest->scanned_at?->format('d M Y H:i'),
-                'expires_at' => $latest->expires_at?->format('d M Y H:i'),
-                'hours_left' => $hoursLeft,
-            ];
-            $scanId = $latest->id;
-        }
+        $withinWindow = true;
 
         return [
             'found' => true,

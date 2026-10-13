@@ -446,6 +446,7 @@ export default function TransactionCreate({ member, is_completing = false }) {
                                                 id="net_amount"
                                                 type="number"
                                                 min="0"
+                                                step="1"
                                                 className="input font-bold text-ink"
                                                 value={form.data.net_amount}
                                                 onChange={(e) => form.setData('net_amount', e.target.value)}

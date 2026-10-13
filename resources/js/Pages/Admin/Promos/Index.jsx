@@ -15,19 +15,44 @@ export default function PromoIndex({ promos, filters, drawer }) {
     const [draggedIndex, setDraggedIndex] = useState(null);
     const [dragOverIndex, setDragOverIndex] = useState(null);
     const [isReordering, setIsReordering] = useState(false);
+    const [tab, setTab] = useState(filters?.tab || 'aktif');
 
     // Sync items if promos.data changes via pagination / filter
     useEffect(() => {
         setItems(promos.data);
     }, [promos.data]);
 
+    useEffect(() => {
+        if (filters?.tab) {
+            setTab(filters.tab);
+        }
+    }, [filters?.tab]);
+
+    const switchTab = (nextTab) => {
+        setTab(nextTab);
+        router.get(
+            route('admin.promos.index'),
+            { search: filter.data.search || undefined, tab: nextTab },
+            { preserveState: true, replace: true }
+        );
+    };
+
     const applyFilter = (e) => {
         e.preventDefault();
-        router.get(route('admin.promos.index'), { ...filter.data }, { preserveState: true, replace: true });
+        router.get(
+            route('admin.promos.index'),
+            { search: filter.data.search || undefined, tab },
+            { preserveState: true, replace: true }
+        );
     };
 
     const clearFilter = () => {
-        router.get(route('admin.promos.index'), { status: filters.status || undefined }, { preserveState: true, replace: true });
+        filter.setData('search', '');
+        router.get(
+            route('admin.promos.index'),
+            { tab },
+            { preserveState: true, replace: true }
+        );
     };
 
     const openEdit = (id) => {
@@ -108,6 +133,36 @@ export default function PromoIndex({ promos, filters, drawer }) {
                         </div>
                     )}
                 </header>
+
+                <div className="flex gap-2 mb-4">
+                    <button
+                        type="button"
+                        onClick={() => switchTab('aktif')}
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                            tab === 'aktif' ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
+                        }`}
+                    >
+                        Promo Aktif
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => switchTab('pending')}
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                            tab === 'pending' ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
+                        }`}
+                    >
+                        Menunggu Persetujuan
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => switchTab('tidak_aktif')}
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                            tab === 'tidak_aktif' ? 'bg-ink text-paper' : 'border border-ink/15 bg-white/70 text-slate hover:bg-white'
+                        }`}
+                    >
+                        Promo Tidak Aktif
+                    </button>
+                </div>
 
                 <form onSubmit={applyFilter} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
                     <div className="grid flex-1 gap-3 sm:grid-cols-2">

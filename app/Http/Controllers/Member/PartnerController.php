@@ -22,15 +22,20 @@ class PartnerController extends Controller
         $query = Partner::query()->active()->withCount(['promos' => fn ($q) => $q->where('status', 'approved')]);
         $promoQuery = Promo::query()->visibleToMembers();
 
-        // Filter out null/empty, normalize FNB to F&B, get unique values
-        $availableCategories = Partner::query()->active()
-            ->whereNotNull('category')
-            ->where('category', '!=', '')
-            ->distinct()
-            ->pluck('category')
-            ->map(fn ($cat) => $cat === 'FNB' ? 'F&B' : $cat)
-            ->unique()
-            ->values();
+        // Always use the 11 standardized partner categories
+        $availableCategories = [
+            'Elektronik & Gadget',
+            'F&B',
+            'Kecantikan',
+            'Kesehatan',
+            'Lain-lain',
+            'Olahraga',
+            'Otomotif',
+            'Pembangunan',
+            'Real Estate',
+            'Hotel & Villa',
+            'Retail & Distributor',
+        ];
 
         if ($normalizedCategory !== '' && $normalizedCategory !== 'all') {
             if ($normalizedCategory === 'F&B' || $category === 'FNB') {

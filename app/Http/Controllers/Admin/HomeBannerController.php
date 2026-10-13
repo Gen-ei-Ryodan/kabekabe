@@ -29,41 +29,119 @@ class HomeBannerController extends Controller
             $query->where('is_active', false);
         }
 
-        $banners = $query->orderBy('sort_order')
+        $this->autoTakeDown();
+
+        $banners = $query->with('promo.partner')->orderBy('sort_order')
             ->get()
-            ->map(fn (HomeBanner $banner) => [
-                'id' => $banner->id,
-                'image_url' => $banner->imageUrl(),
-                'target_title' => $banner->promo_title ?: $banner->promo?->title,
-                'promo_title' => $banner->promo_title,
-                'promo_id' => $banner->promo_id,
-                'sort_order' => $banner->sort_order,
-                'is_active' => $banner->is_active,
-                'promo' => $banner->promo
-                    ? ['id' => $banner->promo->id, 'title' => $banner->promo->title, 'partner' => ['name' => $banner->promo->partner?->name]]
-                    : null,
-            ])
+            ->map(function (HomeBanner $banner) {
+                $startDate = $banner->promo?->start_date;
+                $endDate = $banner->promo?->end_date;
+                $ad = PartnerAd::where('promo_id', $banner->promo_id)
+                    ->where('type', PartnerAd::TYPE_BANNER)
+                    ->whereIn('status', ['active', 'paid', 'approved'])
+                    ->latest()
+                    ->first();
+                if ($ad) {
+                    $startDate = $ad->start_date ?? $startDate;
+                    $endDate = $ad->end_date ?? $endDate;
+                }
+
+                $statusBadge = 'Aktif';
+                if (! $banner->is_active) {
+                    $statusBadge = 'Tidak Aktif';
+                } elseif ($endDate && $endDate->isPast()) {
+                    $statusBadge = 'Kedaluwarsa';
+                } elseif ($startDate && $startDate->isFuture()) {
+                    $statusBadge = 'Mendatang';
+                }
+
+                return [
+                    'id' => $banner->id,
+                    'image_url' => $banner->imageUrl(),
+                    'target_title' => $banner->promo_title ?: $banner->promo?->title,
+                    'promo_title' => $banner->promo_title,
+                    'promo_id' => $banner->promo_id,
+                    'sort_order' => $banner->sort_order,
+                    'is_active' => $banner->is_active,
+                    'start_date' => $startDate?->format('d M Y'),
+                    'end_date' => $endDate?->format('d M Y'),
+                    'date_range' => ($startDate && $endDate)
+                        ? ($startDate->format('d M Y') . ' — ' . $endDate->format('d M Y'))
+                        : ($endDate ? ('Hingga ' . $endDate->format('d M Y')) : '-'),
+                    'status_badge' => $statusBadge,
+                    'promo' => $banner->promo
+                        ? ['id' => $banner->promo->id, 'title' => $banner->promo->title, 'partner' => ['name' => $banner->promo->partner?->name]]
+                        : null,
+                ];
+            })
             ->all();
 
         $partnerAds = PartnerAd::query()
             ->with(['partner:id,name', 'promo:id,title'])
             ->latest('created_at')
             ->get()
-            ->map(fn (PartnerAd $ad) => [
-                'id' => $ad->id,
-                'partner_name' => $ad->partner?->name,
-                'type' => $ad->type,
-                'type_label' => $ad->type === PartnerAd::TYPE_POPUP ? 'Pop-up Pembuka (3 Hari)' : 'Banner Beranda (5 Hari)',
-                'promo_title' => $ad->promo_title ?: $ad->promo?->title,
-                'image_url' => $ad->imageUrl(),
-                'start_date' => $ad->start_date?->format('d M Y'),
-                'end_date' => $ad->end_date?->format('d M Y'),
-                'status' => $ad->status,
-                'notes' => $ad->notes,
-                'admin_feedback' => $ad->admin_feedback,
-                'created_at' => $ad->created_at?->format('d M Y H:i'),
-                'paid_at' => $ad->paid_at?->format('d M Y H:i'),
-            ]);
+            ->map(function (PartnerAd $ad) {
+                $slotFull = false;
+                $slotFullMessage = null;
+
+                if ($ad->start_date && $ad->end_date) {
+                    if ($ad->type === PartnerAd::TYPE_POPUP) {
+                        $conflictingPopup = HomePopup::where('is_active', true)
+                            ->whereHas('promo', function ($q) use ($ad) {
+                                $q->where(function ($sub) use ($ad) {
+                                    $sub->whereBetween('start_date', [$ad->start_date, $ad->end_date])
+                                        ->orWhereBetween('end_date', [$ad->start_date, $ad->end_date]);
+                                });
+                            })->exists();
+
+                        $conflictingAdPopup = PartnerAd::where('id', '!=', $ad->id)
+                            ->where('type', PartnerAd::TYPE_POPUP)
+                            ->whereIn('status', ['approved', 'paid', 'active'])
+                            ->where(function ($q) use ($ad) {
+                                $q->whereBetween('start_date', [$ad->start_date, $ad->end_date])
+                                    ->orWhereBetween('end_date', [$ad->start_date, $ad->end_date]);
+                            })->exists();
+
+                        if ($conflictingPopup || $conflictingAdPopup) {
+                            $slotFull = true;
+                            $slotFullMessage = 'Slot pada tanggal tersebut sudah penuh (Maks 1 Pop-up)';
+                        }
+                    } else {
+                        $conflictingAdBanners = PartnerAd::where('id', '!=', $ad->id)
+                            ->where('type', PartnerAd::TYPE_BANNER)
+                            ->whereIn('status', ['approved', 'paid', 'active'])
+                            ->where(function ($q) use ($ad) {
+                                $q->whereBetween('start_date', [$ad->start_date, $ad->end_date])
+                                    ->orWhereBetween('end_date', [$ad->start_date, $ad->end_date]);
+                            })->count();
+
+                        $activeBannerCount = HomeBanner::where('type', HomeBanner::TYPE_PROMO)->where('is_active', true)->count();
+
+                        if ($conflictingAdBanners >= 3 || $activeBannerCount >= 3) {
+                            $slotFull = true;
+                            $slotFullMessage = 'Slot pada tanggal tersebut sudah penuh (Maks 3 Banner Unggulan)';
+                        }
+                    }
+                }
+
+                return [
+                    'id' => $ad->id,
+                    'partner_name' => $ad->partner?->name,
+                    'type' => $ad->type,
+                    'type_label' => $ad->type === PartnerAd::TYPE_POPUP ? 'Pop-up Pembuka (3 Hari)' : 'Banner Unggulan (5 Hari)',
+                    'promo_title' => $ad->promo_title ?: $ad->promo?->title,
+                    'image_url' => $ad->imageUrl(),
+                    'start_date' => $ad->start_date?->format('d M Y'),
+                    'end_date' => $ad->end_date?->format('d M Y'),
+                    'status' => $ad->status,
+                    'slot_full' => $slotFull,
+                    'slot_full_message' => $slotFullMessage,
+                    'notes' => $ad->notes,
+                    'admin_feedback' => $ad->admin_feedback,
+                    'created_at' => $ad->created_at?->format('d M Y H:i'),
+                    'paid_at' => $ad->paid_at?->format('d M Y H:i'),
+                ];
+            });
 
         $drawer = $this->drawerPayload($request);
         $paidAdsCount = PartnerAd::query()->where('status', 'paid')->count();
@@ -214,19 +292,47 @@ class HomeBannerController extends Controller
     private function popupPayload(): ?array
     {
         $popup = HomePopup::query()->with('promo.partner')->first();
+        if (! $popup) return null;
 
-        return $popup ? [
+        $startDate = $popup->promo?->start_date;
+        $endDate = $popup->promo?->end_date;
+        $ad = PartnerAd::where('promo_id', $popup->promo_id)
+            ->where('type', PartnerAd::TYPE_POPUP)
+            ->whereIn('status', ['active', 'paid', 'approved'])
+            ->latest()
+            ->first();
+        if ($ad) {
+            $startDate = $ad->start_date ?? $startDate;
+            $endDate = $ad->end_date ?? $endDate;
+        }
+
+        $statusBadge = 'Aktif';
+        if (! $popup->is_active) {
+            $statusBadge = 'Tidak Aktif';
+        } elseif ($endDate && $endDate->isPast()) {
+            $statusBadge = 'Kedaluwarsa';
+        } elseif ($startDate && $startDate->isFuture()) {
+            $statusBadge = 'Mendatang';
+        }
+
+        return [
             'id' => $popup->id,
             'promo_id' => $popup->promo_id,
             'promo_title' => $popup->promo_title,
             'image_path' => $popup->image_path,
             'image_url' => $popup->imageUrl(),
             'is_active' => $popup->is_active,
+            'start_date' => $startDate?->format('d M Y'),
+            'end_date' => $endDate?->format('d M Y'),
+            'date_range' => ($startDate && $endDate)
+                ? ($startDate->format('d M Y') . ' — ' . $endDate->format('d M Y'))
+                : ($endDate ? ('Hingga ' . $endDate->format('d M Y')) : '-'),
+            'status_badge' => $statusBadge,
             'promo' => $popup->promo ? [
                 'title' => $popup->promo->title,
                 'partner' => ['name' => $popup->promo->partner?->name],
             ] : null,
-        ] : null;
+        ];
     }
 
     private function validateBanner(Request $request, ?HomeBanner $banner = null): array
@@ -265,9 +371,9 @@ class HomeBannerController extends Controller
                 $active->where('id', '!=', $banner->id);
             }
 
-            if ($active->count() >= 4) {
+            if ($active->count() >= 3) {
                 throw ValidationException::withMessages([
-                    'is_active' => 'Maksimal 4 banner aktif dikelola admin (Slot 1 otomatis dari Pop-up Pembuka).',
+                    'is_active' => 'Maksimal 3 banner unggulan aktif di slider beranda (Slot 1 otomatis dari Pop-up Pembuka).',
                 ]);
             }
         }
@@ -277,6 +383,47 @@ class HomeBannerController extends Controller
 
     public function approveAd(PartnerAd $ad): RedirectResponse
     {
+        $this->autoTakeDown();
+
+        // Cek kapasitas slot sebelum ACC
+        if ($ad->start_date && $ad->end_date) {
+            if ($ad->type === PartnerAd::TYPE_POPUP) {
+                $conflictingPopup = HomePopup::where('is_active', true)
+                    ->whereHas('promo', function ($q) use ($ad) {
+                        $q->where(function ($sub) use ($ad) {
+                            $sub->whereBetween('start_date', [$ad->start_date, $ad->end_date])
+                                ->orWhereBetween('end_date', [$ad->start_date, $ad->end_date]);
+                        });
+                    })->exists();
+
+                $conflictingAdPopup = PartnerAd::where('id', '!=', $ad->id)
+                    ->where('type', PartnerAd::TYPE_POPUP)
+                    ->whereIn('status', ['approved', 'paid', 'active'])
+                    ->where(function ($q) use ($ad) {
+                        $q->whereBetween('start_date', [$ad->start_date, $ad->end_date])
+                            ->orWhereBetween('end_date', [$ad->start_date, $ad->end_date]);
+                    })->exists();
+
+                if ($conflictingPopup || $conflictingAdPopup) {
+                    return back()->with('error', 'Slot pada rentang tanggal tersebut sudah penuh (Maksimal 1 Pop-up).');
+                }
+            } else {
+                $conflictingAdBanners = PartnerAd::where('id', '!=', $ad->id)
+                    ->where('type', PartnerAd::TYPE_BANNER)
+                    ->whereIn('status', ['approved', 'paid', 'active'])
+                    ->where(function ($q) use ($ad) {
+                        $q->whereBetween('start_date', [$ad->start_date, $ad->end_date])
+                            ->orWhereBetween('end_date', [$ad->start_date, $ad->end_date]);
+                    })->count();
+
+                $activeBannerCount = HomeBanner::where('type', HomeBanner::TYPE_PROMO)->where('is_active', true)->count();
+
+                if ($conflictingAdBanners >= 3 || $activeBannerCount >= 3) {
+                    return back()->with('error', 'Slot pada rentang tanggal tersebut sudah penuh (Maksimal 3 Banner Unggulan).');
+                }
+            }
+        }
+
         $ad->update([
             'status' => PartnerAd::STATUS_APPROVED,
             'approved_at' => now(),
@@ -307,6 +454,8 @@ class HomeBannerController extends Controller
 
     public function publishAd(PartnerAd $ad): RedirectResponse
     {
+        $this->autoTakeDown();
+
         if ($ad->type === PartnerAd::TYPE_POPUP) {
             $popup = HomePopup::first() ?? new HomePopup;
             $popup->fill([
@@ -320,6 +469,16 @@ class HomeBannerController extends Controller
             $ad->update(['status' => 'active']);
 
             return back()->with('success', 'Iklan partner berhasil ditayangkan sebagai Popup Pembuka Beranda!');
+        }
+
+        $activeBannerCount = HomeBanner::query()
+            ->where('type', HomeBanner::TYPE_PROMO)
+            ->where('is_active', true)
+            ->count();
+
+        if ($activeBannerCount >= 3) {
+            return back()
+                ->with('error', 'Slot banner unggulan penuh (3/3). Nonaktifkan banner lama terlebih dahulu.');
         }
 
         $maxOrder = HomeBanner::query()->max('sort_order') ?? 0;
@@ -336,6 +495,52 @@ class HomeBannerController extends Controller
         $ad->update(['status' => 'active']);
 
         return back()->with('success', 'Iklan partner berhasil ditayangkan sebagai Banner Beranda!');
+    }
+
+    private function autoTakeDown(): void
+    {
+        // Deactivate expired popups
+        $popups = HomePopup::where('is_active', true)->with('promo')->get();
+        foreach ($popups as $popup) {
+            $endDate = $popup->promo?->end_date;
+            $ad = PartnerAd::where('promo_id', $popup->promo_id)
+                ->where('type', PartnerAd::TYPE_POPUP)
+                ->where('status', 'active')
+                ->latest()
+                ->first();
+            if ($ad && $ad->end_date) {
+                $endDate = $ad->end_date;
+            }
+            if ($endDate && $endDate->isPast()) {
+                $popup->update(['is_active' => false]);
+                if ($ad) {
+                    $ad->update(['status' => 'completed']);
+                }
+            }
+        }
+
+        // Deactivate expired banners
+        $banners = HomeBanner::where('type', HomeBanner::TYPE_PROMO)
+            ->where('is_active', true)
+            ->with('promo')
+            ->get();
+        foreach ($banners as $banner) {
+            $endDate = $banner->promo?->end_date;
+            $ad = PartnerAd::where('promo_id', $banner->promo_id)
+                ->where('type', PartnerAd::TYPE_BANNER)
+                ->where('status', 'active')
+                ->latest()
+                ->first();
+            if ($ad && $ad->end_date) {
+                $endDate = $ad->end_date;
+            }
+            if ($endDate && $endDate->isPast()) {
+                $banner->update(['is_active' => false]);
+                if ($ad) {
+                    $ad->update(['status' => 'completed']);
+                }
+            }
+        }
     }
 
     private function promoSelect(): array

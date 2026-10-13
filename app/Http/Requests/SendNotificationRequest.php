@@ -17,7 +17,9 @@ class SendNotificationRequest extends FormRequest
             'title' => ['required', 'string', 'max:120'],
             'body' => ['required', 'string', 'max:2000'],
             'type' => ['nullable', 'in:promo,membership,community,system,transaction'],
-            'recipient_id' => ['nullable', 'integer', 'exists:users,id'],
+            'recipient_ids' => ['nullable', 'array'],
+            'recipient_ids.*' => ['integer', 'exists:users,id'],
+            'recipient_id' => ['nullable'],
             'action_url' => ['nullable', 'string', 'max:255'],
         ];
     }

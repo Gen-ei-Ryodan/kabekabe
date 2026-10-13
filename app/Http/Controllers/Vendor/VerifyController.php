@@ -42,26 +42,9 @@ class VerifyController extends Controller
 
         $vendor = $request->user('partner') ?? \Illuminate\Support\Facades\Auth::guard('partner')->user() ?? $request->user();
         $scan = null;
-        $lastScan = null;
-        $withinWindow = false;
-        $hoursLeft = 0;
 
         if ($active && $vendor && $vendor->role === User::ROLE_VENDOR) {
-            $lastScan = MemberScan::query()
-                ->where('member_id', $member->id)
-                ->where('scanned_by_vendor_id', $vendor->id)
-                ->whereDoesntHave('transaction')
-                ->latest('scanned_at')
-                ->first();
-
-            if ($lastScan && $lastScan->expires_at->isFuture()) {
-                $withinWindow = true;
-                $hoursLeft = (int) round(now()->diffInMinutes($lastScan->expires_at, false) / 60);
-            } else {
-                $scan = MemberScan::startFor($member->id, $vendor->id, $request->ip());
-                $withinWindow = true;
-                $hoursLeft = MemberScan::SCAN_WINDOW_HOURS;
-            }
+            $scan = MemberScan::startFor($member->id, $vendor->id, $request->ip());
         }
 
         return Inertia::render('Vendor/Verify', [
@@ -80,13 +63,9 @@ class VerifyController extends Controller
                 'scan' => $scan ? [
                     'scanned_at' => $scan->scanned_at?->format('d M Y H:i'),
                     'expires_at' => $scan->expires_at?->format('d M Y H:i'),
-                    'hours_left' => $hoursLeft,
-                ] : ($lastScan ? [
-                    'scanned_at' => $lastScan->scanned_at?->format('d M Y H:i'),
-                    'expires_at' => $lastScan->expires_at?->format('d M Y H:i'),
-                    'hours_left' => $hoursLeft,
-                ] : null),
-                'within_window' => $withinWindow,
+                    'hours_left' => MemberScan::SCAN_WINDOW_HOURS,
+                ] : null,
+                'within_window' => true,
                 'scan_window_hours' => MemberScan::SCAN_WINDOW_HOURS,
             ],
         ]);

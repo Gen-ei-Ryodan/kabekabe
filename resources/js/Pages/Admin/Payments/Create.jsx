@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { formatRupiah, formatDate, formatDateLong, daysUntil, toDateInputValue } from '@/Utils/format';
@@ -10,6 +11,7 @@ const defaultExpires = (() => {
 })();
 
 export default function PaymentCreate({ members }) {
+    const [memberSearch, setMemberSearch] = useState('');
     const form = useForm({
         member_id: '',
         started_at: today,
@@ -22,6 +24,26 @@ export default function PaymentCreate({ members }) {
     const selectedMember = members.find((m) => m.id == form.data.member_id);
     const daysLeft = selectedMember?.membership?.expires_at ? daysUntil(selectedMember.membership.expires_at) : null;
     const memberPlan = selectedMember?.membership_plan;
+
+    const filteredMembers = members.filter((m) => {
+        if (!memberSearch.trim()) return true;
+        const q = memberSearch.toLowerCase();
+        return (
+            (m.name && m.name.toLowerCase().includes(q)) ||
+            (m.member_code && m.member_code.toLowerCase().includes(q)) ||
+            (m.email && m.email.toLowerCase().includes(q))
+        );
+    });
+
+    const selectMember = (m) => {
+        form.setData('member_id', String(m.id));
+        setMemberSearch('');
+    };
+
+    const clearSelectedMember = () => {
+        form.setData('member_id', '');
+        setMemberSearch('');
+    };
 
     const submit = (e) => {
         e.preventDefault();
@@ -48,23 +70,62 @@ export default function PaymentCreate({ members }) {
                 <form onSubmit={submit} className="mt-8 space-y-6">
                     <div className="card-surface p-6 sm:p-8">
                         <h2 className="font-display text-lg font-bold">Member</h2>
-                        <div className="mt-4">
-                            <label className="label" htmlFor="member_id">Pilih Member</label>
-                            <select
-                                id="member_id"
-                                className="input"
-                                value={form.data.member_id}
-                                onChange={(e) => form.setData('member_id', e.target.value)}
-                            >
-                                <option value="">Pilih member…</option>
-                                {members.map((member) => (
-                                    <option key={member.id} value={member.id}>
-                                        {member.name} · {member.member_code}
-                                    </option>
-                                ))}
-                            </select>
-                            {form.errors.member_id && <p className="mt-1 text-xs text-ember">{form.errors.member_id}</p>}
-                        </div>
+                        
+                        {!selectedMember ? (
+                            <div className="mt-4">
+                                <label className="label" htmlFor="member_search">Cari Nama / Kode Anggota <span className="text-ember">*</span></label>
+                                <input
+                                    type="text"
+                                    id="member_search"
+                                    className="input"
+                                    placeholder="Ketik nama atau kode anggota (mis. MMB-00001)..."
+                                    value={memberSearch}
+                                    onChange={(e) => setMemberSearch(e.target.value)}
+                                    autoFocus
+                                />
+                                {form.errors.member_id && <p className="mt-1 text-xs text-ember">{form.errors.member_id}</p>}
+                                
+                                <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-ink/10 bg-white shadow-xs divide-y divide-ink/5">
+                                    {filteredMembers.length > 0 ? (
+                                        filteredMembers.slice(0, 15).map((m) => (
+                                            <div
+                                                key={m.id}
+                                                className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-gold/10 transition-colors"
+                                                onClick={() => selectMember(m)}
+                                            >
+                                                <div>
+                                                    <span className="font-medium text-sm text-ink">{m.name}</span>
+                                                    <span className="text-xs text-slate ml-2 font-mono">({m.member_code})</span>
+                                                </div>
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                                    m.membership_status === 'active' ? 'bg-sage/15 text-sage-deep' : 'bg-slate-100 text-slate'
+                                                }`}>
+                                                    {m.membership_status === 'active' ? 'AKTIF' : 'TIDAK AKTIF'}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="px-4 py-3 text-xs text-slate text-center">
+                                            Tidak ada member ditemukan dengan kata kunci "{memberSearch}"
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mt-4 flex items-center justify-between rounded-xl border border-gold/30 bg-gold/5 p-4">
+                                <div>
+                                    <p className="font-display font-bold text-ink">{selectedMember.name}</p>
+                                    <p className="text-xs font-mono text-slate">{selectedMember.member_code} · {selectedMember.email}</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={clearSelectedMember}
+                                    className="btn-ghost text-xs text-ember"
+                                >
+                                    Ganti Member
+                                </button>
+                            </div>
+                        )}
 
                         {selectedMember && (
                             <div className="mt-4 rounded-xl bg-slate-50 p-4">
@@ -143,11 +204,11 @@ export default function PaymentCreate({ members }) {
                                     id="amount"
                                     type="number"
                                     min="0"
-                                    step="1000"
+                                    step="1"
                                     className="input"
                                     value={form.data.amount}
                                     onChange={(e) => form.setData('amount', e.target.value)}
-                                    placeholder="Contoh: 500000"
+                                    placeholder="Contoh: 61300"
                                     required
                                 />
                                 {form.data.amount !== '' && (

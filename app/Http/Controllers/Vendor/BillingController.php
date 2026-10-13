@@ -91,10 +91,12 @@ class BillingController extends Controller
         $validated = $request->validate([
             'type' => ['required', 'in:popup,banner'],
             'promo_title' => ['required', 'string', 'max:255'],
-            'promo_id' => ['nullable', 'integer', 'exists:promos,id'],
+            'promo_id' => ['required', 'integer', 'exists:promos,id'],
             'start_date' => ['required', 'date'],
             'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'notes' => ['nullable', 'string', 'max:500'],
+        ], [
+            'promo_id.required' => 'Silakan pilih promo yang akan dihubungkan dengan iklan ini.',
         ]);
 
         $startDate = Carbon::parse($validated['start_date']);

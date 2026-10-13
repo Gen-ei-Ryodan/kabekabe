@@ -7,6 +7,7 @@ import { formatDate, formatRupiah } from '@/Utils/format';
 
 export default function CommunityShow({ event, members }) {
     const [activeTab, setActiveTab] = useState('attendance');
+    const [memberSearch, setMemberSearch] = useState('');
 
     const memberForm = useForm({ member_id: '' });
     const nonMemberForm = useForm({ name: '', phone: '', email: '' });
@@ -23,7 +24,10 @@ export default function CommunityShow({ event, members }) {
         e.preventDefault();
         memberForm.post(route('admin.community.attendance.store', event.id), {
             preserveScroll: true,
-            onSuccess: () => memberForm.reset('member_id'),
+            onSuccess: () => {
+                memberForm.reset('member_id');
+                setMemberSearch('');
+            },
         });
     };
 
@@ -101,21 +105,89 @@ export default function CommunityShow({ event, members }) {
                                 </div>
                             </div>
 
-                            <form onSubmit={handleMemberAttendance} className="card-surface p-5">
+                            <div className="card-surface p-5">
                                 <h3 className="font-display font-bold">Input Manual Member</h3>
-                                <p className="mt-1 text-xs text-slate">Pilih member dari daftar.</p>
-                                <div className="mt-3 flex gap-2">
-                                    <select className="input" value={memberForm.data.member_id} onChange={(e) => memberForm.setData('member_id', e.target.value)}>
-                                        <option value="">Pilih member</option>
-                                        {members.map((m) => (
-                                            <option key={m.id} value={m.id} disabled={attendedMemberIds.includes(m.id)}>
-                                                {m.name} ({m.member_code}) {attendedMemberIds.includes(m.id) ? '— sudah hadir' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <button type="submit" className="btn-ink text-xs" disabled={memberForm.processing || !memberForm.data.member_id}>Catat</button>
-                                </div>
-                            </form>
+                                <p className="mt-1 text-xs text-slate">Ketik nama atau kode anggota untuk mencatat kehadiran.</p>
+                                
+                                <form onSubmit={handleMemberAttendance} className="mt-3 space-y-3">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="input w-full"
+                                            placeholder="Ketik nama atau kode (mis. MMB-00001)..."
+                                            value={memberSearch}
+                                            onChange={(e) => setMemberSearch(e.target.value)}
+                                        />
+                                        
+                                        {memberSearch.trim() && (
+                                            <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-ink/10 bg-white shadow-md divide-y divide-ink/5">
+                                                {members
+                                                    .filter(
+                                                        (m) =>
+                                                            (m.name && m.name.toLowerCase().includes(memberSearch.toLowerCase())) ||
+                                                            (m.member_code && m.member_code.toLowerCase().includes(memberSearch.toLowerCase()))
+                                                    )
+                                                    .slice(0, 15)
+                                                    .map((m) => {
+                                                        const isAttended = attendedMemberIds.includes(m.id);
+                                                        const isSelected = String(memberForm.data.member_id) === String(m.id);
+                                                        return (
+                                                            <div
+                                                                key={m.id}
+                                                                className={`flex items-center justify-between px-3.5 py-2.5 transition-colors ${
+                                                                    isAttended
+                                                                        ? 'bg-slate-50 opacity-60 cursor-not-allowed'
+                                                                        : isSelected
+                                                                        ? 'bg-gold/15 cursor-pointer font-semibold'
+                                                                        : 'hover:bg-gold/10 cursor-pointer'
+                                                                }`}
+                                                                onClick={() => {
+                                                                    if (!isAttended) {
+                                                                        memberForm.setData('member_id', String(m.id));
+                                                                        setMemberSearch(`${m.name} (${m.member_code})`);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <div>
+                                                                    <span className="text-sm font-medium text-ink">{m.name}</span>
+                                                                    <span className="text-xs text-slate ml-2 font-mono">{m.member_code}</span>
+                                                                </div>
+                                                                {isAttended ? (
+                                                                    <span className="text-[10px] font-bold text-sage-deep bg-sage/15 px-2 py-0.5 rounded-full">
+                                                                        Sudah Hadir
+                                                                    </span>
+                                                                ) : isSelected ? (
+                                                                    <span className="text-[10px] font-bold text-gold-deep bg-gold/20 px-2 py-0.5 rounded-full">
+                                                                        Terpilih
+                                                                    </span>
+                                                                ) : null}
+                                                            </div>
+                                                        );
+                                                    })}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-1">
+                                        {memberForm.data.member_id ? (
+                                            <span className="text-xs text-gold-deep font-semibold">
+                                                Member siap dicatat
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs text-slate">
+                                                Pilih member dari hasil pencarian di atas
+                                            </span>
+                                        )}
+                                        <button
+                                            type="submit"
+                                            className="btn-gold text-xs"
+                                            disabled={memberForm.processing || !memberForm.data.member_id}
+                                        >
+                                            {memberForm.processing ? 'Mencatat…' : 'Catat Kehadiran'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
 
                         <form onSubmit={handleNonMember} className="card-surface p-5">

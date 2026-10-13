@@ -48,9 +48,9 @@ class HomeController extends Controller
                 'total_amount' => (int) $t->total_amount,
             ]);
 
-        $activePopup = HomePopup::query()->with('promo.partner:id,name')->first();
+        $activePopup = HomePopup::query()->where('is_active', true)->with('promo.partner')->first();
         $popupBanner = null;
-        if ($activePopup && $activePopup->is_active && $activePopup->promo && $activePopup->promo->isActive()) {
+        if ($activePopup && $activePopup->promo && $activePopup->promo->isActive()) {
             $popupBanner = [
                 'id' => 'popup-'.$activePopup->id,
                 'type' => HomeBanner::TYPE_PROMO,
@@ -63,14 +63,16 @@ class HomeController extends Controller
                     'min_purchase' => $activePopup->promo->min_purchase,
                     'start_date' => $activePopup->promo->start_date?->toISOString(),
                     'end_date' => $activePopup->promo->end_date?->toISOString(),
-                    'partner' => ['name' => $activePopup->promo->partner?->name],
+                    'start_display' => $activePopup->promo->start_date ? $activePopup->promo->start_date->toISOString() : '-',
+                    'end_display' => $activePopup->promo->end_date ? $activePopup->promo->end_date->toISOString() : '-',
+                    'status_badge' => $activePopup->promo->isActive() && !($activePopup->promo->start_date?->isFuture()) && !($activePopup->promo->end_date?->isPast()) ? 'Aktif' : ($activePopup->promo->start_date?->isFuture() ? 'Mendatang' : 'Kedaluwarsa'),
                 ],
             ];
         }
 
         $adminBanners = HomeBanner::query()
-            ->active()
             ->where('type', HomeBanner::TYPE_PROMO)
+            ->where('is_active', true)
             ->with('promo.partner:id,name')
             ->orderBy('sort_order')
             ->get()
@@ -78,7 +80,7 @@ class HomeController extends Controller
                 'id' => $banner->id,
                 'type' => $banner->type,
                 'image_url' => $banner->imageUrl() ?? $banner->promo?->promo_image_url,
-                'promo' => $banner->type === HomeBanner::TYPE_PROMO && $banner->promo && $banner->promo->isActive()
+                'promo' => $banner->promo && $banner->promo->isActive()
                     ? [
                         'id' => $banner->promo->id,
                         'title' => $banner->promo_title ?: $banner->promo->title,
@@ -87,7 +89,9 @@ class HomeController extends Controller
                         'min_purchase' => $banner->promo->min_purchase,
                         'start_date' => $banner->promo->start_date?->toISOString(),
                         'end_date' => $banner->promo->end_date?->toISOString(),
-                        'partner' => ['name' => $banner->promo->partner?->name],
+                        'start_display' => $banner->promo->start_date ? $banner->promo->start_date->toISOString() : '-',
+                        'end_display' => $banner->promo->end_date ? $banner->promo->end_date->toISOString() : '-',
+                        'status_badge' => $banner->promo->isActive() && !($banner->promo->start_date?->isFuture()) && !($banner->promo->end_date?->isPast()) ? 'Aktif' : ($banner->promo->start_date?->isFuture() ? 'Mendatang' : 'Kedaluwarsa'),
                     ]
                     : null,
             ])
@@ -95,17 +99,22 @@ class HomeController extends Controller
             ->values();
 
         $allBanners = collect();
+        // Slot #1: Selalu diisi oleh Pop-up Pembuka yang sedang aktif (durasi 3 hari)
         if ($popupBanner) {
             $allBanners->push($popupBanner);
         }
+        // Slots #2-4: Maksimal 3 Banner Unggulan aktif (total slider maksimal 4 banner)
+        $bannerCount = 0;
         foreach ($adminBanners as $b) {
-            if ($allBanners->count() >= 5) {
+            if ($bannerCount >= 3 || $allBanners->count() >= 4) {
                 break;
             }
-            if ($popupBanner && isset($b['promo']['id']) && $b['promo']['id'] === $popupBanner['promo']['id']) {
+            // Skip jika banner ini sama promo dengan popup di slot #1
+            if ($popupBanner && isset($b['promo']['id'], $popupBanner['promo']['id']) && $b['promo']['id'] === $popupBanner['promo']['id']) {
                 continue;
             }
             $allBanners->push($b);
+            $bannerCount++;
         }
 
         return Inertia::render('Member/Home', [

@@ -36,18 +36,27 @@ class NotificationController extends Controller
     {
         $validated = $request->validated();
 
-        $recipientId = $validated['recipient_id'] ?? null;
+        $recipientIds = $request->input('recipient_ids', []);
+        if (empty($recipientIds) && ! empty($validated['recipient_id'])) {
+            $recipientIds = (array) $validated['recipient_id'];
+        }
+        $recipientIds = array_values(array_filter(array_map('intval', (array) $recipientIds)));
 
-        if ($recipientId) {
-            $this->notifications->send(
-                $recipientId,
-                $validated['title'],
-                $validated['body'],
-                $validated['type'] ?? null,
-                $validated['action_url'] ?? null,
-            );
+        if (! empty($recipientIds)) {
+            // Send to specific members
+            $count = 0;
+            foreach ($recipientIds as $id) {
+                $this->notifications->send(
+                    $id,
+                    $validated['title'],
+                    $validated['body'],
+                    $validated['type'] ?? null,
+                    $validated['action_url'] ?? null,
+                );
+                $count++;
+            }
 
-            $message = 'Notifikasi terkirim ke member terpilih.';
+            $message = "Notifikasi terkirim ke {$count} member.";
         } else {
             $count = $this->notifications->broadcastToMembers(
                 $validated['title'],

@@ -34,10 +34,10 @@ class PaymentController extends Controller
     {
         $query = Payment::query()->with(['member:id,name,member_code,company', 'plan:id,name,duration_months']);
 
-        $status = $request->string('status')->toString() ?: 'pending';
+        $status = $request->string('status')->toString() ?: 'all';
         $search = $request->string('search')->toString();
 
-        if (in_array($status, ['pending', 'approved', 'rejected', 'expired'], true)) {
+        if ($status !== 'all' && in_array($status, ['pending', 'approved', 'rejected', 'expired'], true)) {
             $query->where('status', $status);
         }
 

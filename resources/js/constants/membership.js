@@ -71,9 +71,9 @@ export const INDUSTRY_TO_PARTNER_CATEGORY = {
     'Konstruksi - Interior': 'Pembangunan',
     'Konstruksi - Exterior': 'Pembangunan',
     'Real Estate': 'Real Estate',
-    'Hotel & Villa': 'Real Estate',
+    'Hotel & Villa': 'Hotel & Villa',
     'Penyewaan & Sewa Guna': 'Real Estate',
-    'Perdagangan Besar/Eceran': 'Supplier',
+    'Perdagangan Besar/Eceran': 'Retail & Distributor',
 };
 
 export const PARTNER_CATEGORY_OPTIONS = [
@@ -81,12 +81,13 @@ export const PARTNER_CATEGORY_OPTIONS = [
     'F&B',
     'Kecantikan',
     'Kesehatan',
+    'Lain-lain',
     'Olahraga',
     'Otomotif',
     'Pembangunan',
     'Real Estate',
-    'Supplier',
-    'Lain-lain',
+    'Hotel & Villa',
+    'Retail & Distributor',
 ];
 
 /**

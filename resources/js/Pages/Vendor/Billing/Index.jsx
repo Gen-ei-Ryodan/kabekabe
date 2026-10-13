@@ -233,24 +233,31 @@ export default function BillingIndex({ partner, ads = [], promos = [], history =
                                     {form.errors.promo_title && <p className="mt-1 text-xs text-ember">{form.errors.promo_title}</p>}
                                 </div>
 
-                                {promos.length > 0 && (
-                                    <div>
-                                        <label className="label" htmlFor="promo_id">Hubungkan dengan Promo Terdaftar (Opsional)</label>
-                                        <select
-                                            id="promo_id"
-                                            className="input"
-                                            value={form.data.promo_id}
-                                            onChange={(e) => form.setData('promo_id', e.target.value)}
-                                        >
-                                            <option value="">-- Tanpa tautan promo khusus --</option>
-                                            {promos.map((p) => (
-                                                <option key={p.id} value={p.id}>{p.title}</option>
-                                            ))}
-                                        </select>
-                                        <p className="mt-1 text-xs text-slate">Jika dipilih, banner/popup akan mengarahkan member langsung ke detail promo ini.</p>
-                                        {form.errors.promo_id && <p className="mt-1 text-xs text-ember">{form.errors.promo_id}</p>}
-                                    </div>
-                                )}
+                                <div>
+                                    <label className="label" htmlFor="promo_id">Hubungkan dengan Promo Terdaftar <span className="text-ember">*</span></label>
+                                    {promos.length > 0 ? (
+                                        <>
+                                            <select
+                                                id="promo_id"
+                                                className="input"
+                                                value={form.data.promo_id}
+                                                onChange={(e) => form.setData('promo_id', e.target.value)}
+                                                required
+                                            >
+                                                <option value="">-- Pilih promo terdaftar --</option>
+                                                {promos.map((p) => (
+                                                    <option key={p.id} value={p.id}>{p.title}</option>
+                                                ))}
+                                            </select>
+                                            <p className="mt-1 text-xs text-slate">Wajib memilih promo aktif sebelum mengajukan iklan agar banner dapat diklik member.</p>
+                                        </>
+                                    ) : (
+                                        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                                            Anda belum memiliki promo aktif yang terdaftar. Silakan daftarkan promo terlebih dahulu di menu Promo agar dapat dihubungkan ke iklan banner.
+                                        </div>
+                                    )}
+                                    {form.errors.promo_id && <p className="mt-1 text-xs text-ember">{form.errors.promo_id}</p>}
+                                </div>
 
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div>

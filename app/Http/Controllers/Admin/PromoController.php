@@ -27,8 +27,18 @@ class PromoController extends Controller
 
         $status = $request->string('status')->toString();
         $search = $request->string('search')->toString();
+        $tab = $request->string('tab')->toString() ?: 'aktif';
 
-        if (in_array($status, ['pending', 'approved', 'rejected'], true)) {
+        // Apply tab filter
+        if ($tab === 'aktif') {
+            $query->where('status', 'approved')->where('is_active', true);
+        } elseif ($tab === 'pending') {
+            $query->where('status', 'pending');
+        } elseif ($tab === 'tidak_aktif') {
+            $query->where(function ($q) {
+                $q->where('is_active', false)->orWhere('status', 'rejected');
+            });
+        } elseif (in_array($status, ['pending', 'approved', 'rejected'], true)) {
             $query->where('status', $status);
         }
 
@@ -53,7 +63,11 @@ class PromoController extends Controller
 
         return Inertia::render('Admin/Promos/Index', [
             'promos' => $promos,
-            'filters' => ['status' => $status, 'search' => $search],
+            'filters' => [
+                'status' => $status,
+                'search' => $search,
+                'tab' => $tab,
+            ],
             'drawer' => $drawer,
         ]);
     }
