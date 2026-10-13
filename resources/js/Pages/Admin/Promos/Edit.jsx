@@ -1,7 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
-import { formatRupiah } from '@/Utils/format';
+import { formatRupiah, toDateInputValue } from '@/Utils/format';
 
 export default function PromoEdit({ promo }) {
     const form = useForm({
@@ -10,8 +10,8 @@ export default function PromoEdit({ promo }) {
         discount_type: promo.discount_type,
         discount_value: String(promo.discount_value),
         min_purchase: String(promo.min_purchase),
-        start_date: promo.start_date,
-        end_date: promo.end_date,
+        start_date: toDateInputValue(promo.start_date),
+        end_date: toDateInputValue(promo.end_date),
         terms: promo.terms || '',
     });
 

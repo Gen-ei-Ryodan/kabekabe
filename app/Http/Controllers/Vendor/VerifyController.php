@@ -40,11 +40,13 @@ class VerifyController extends Controller
 
         $active = $member->hasActiveMembership();
 
-        $vendor = $request->user('partner') ?? \Illuminate\Support\Facades\Auth::guard('partner')->user() ?? $request->user();
+        $vendorUser = $request->user('partner') ?? \Illuminate\Support\Facades\Auth::guard('partner')->user() ?? $request->user();
+        $partner = $vendorUser?->partner;
+        $vendorId = $partner ? $partner->user_id : $vendorUser?->id;
         $scan = null;
 
-        if ($active && $vendor && $vendor->role === User::ROLE_VENDOR) {
-            $scan = MemberScan::startFor($member->id, $vendor->id, $request->ip());
+        if ($active && $vendorId) {
+            $scan = MemberScan::startFor($member->id, $vendorId, $request->ip());
         }
 
         return Inertia::render('Vendor/Verify', [
@@ -61,6 +63,7 @@ class VerifyController extends Controller
                 'status_label' => $active ? 'ACTIVE' : 'INACTIVE',
                 'expires_at' => $member->membership?->expires_at?->format('d M Y'),
                 'scan' => $scan ? [
+                    'id' => $scan->id,
                     'scanned_at' => $scan->scanned_at?->format('d M Y H:i'),
                     'expires_at' => $scan->expires_at?->format('d M Y H:i'),
                     'hours_left' => MemberScan::SCAN_WINDOW_HOURS,

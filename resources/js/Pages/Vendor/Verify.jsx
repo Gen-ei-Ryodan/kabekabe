@@ -81,7 +81,7 @@ export default function Verify({ result }) {
                                             Member ini berhak menikmati promo dan diskon khusus mitra.
                                         </p>
                                         <a
-                                            href={route('vendor.transactions.create', { member_code: result.member.member_code })}
+                                            href={route('vendor.transactions.create', { scan_id: result.scan?.id, member_code: result.member.member_code })}
                                             className="btn-ink mt-6"
                                         >
                                             Catat Transaksi untuk Member Ini

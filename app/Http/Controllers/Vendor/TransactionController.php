@@ -88,22 +88,15 @@ class TransactionController extends Controller
 
         $scan = $request->string('scan')->toString() ?: $request->string('member_code')->toString();
 
-        $member = $this->resolveScannedMember($scan);
-
         if ($request->filled('scan_id')) {
             $savedScan = MemberScan::query()
                 ->whereKey($request->integer('scan_id'))
-                ->where('scanned_by_vendor_id', $this->vendorUser()?->id)
+                ->where('scanned_by_vendor_id', $partner->user_id)
                 ->with('member.membership')
                 ->firstOrFail();
-            $member = $this->resolveScannedMember($savedScan->member->member_code);
-            $member['scan_id'] = $savedScan->id;
-            $member['scan'] = [
-                'scanned_at' => $savedScan->scanned_at?->format('d M Y H:i'),
-                'expires_at' => $savedScan->expires_at?->format('d M Y H:i'),
-                'hours_left' => max(0, (int) round(now()->diffInMinutes($savedScan->expires_at, false) / 60)),
-            ];
-            $member['within_window'] = true;
+            $member = $this->resolveScannedMember($savedScan->member->member_code, $partner->user_id, $savedScan);
+        } else {
+            $member = $this->resolveScannedMember($scan, $partner->user_id);
         }
 
         return Inertia::render('Vendor/Transactions/Create', [
@@ -112,7 +105,7 @@ class TransactionController extends Controller
         ]);
     }
 
-    private function resolveScannedMember(string $scan): ?array
+    private function resolveScannedMember(string $scan, int $vendorId, ?MemberScan $existingScan = null): ?array
     {
         if ($scan === '') {
             return null;
@@ -133,14 +126,22 @@ class TransactionController extends Controller
         $member->ensureMemberCode();
 
         $active = $member->hasActiveMembership();
-        $vendor = $this->vendorUser();
-        $scanData = [
+
+        $scanModel = $existingScan;
+        if (! $scanModel && $active) {
+            $scanModel = MemberScan::startFor($member->id, $vendorId, request()->ip());
+        }
+
+        $scanData = $scanModel ? [
+            'id' => $scanModel->id,
+            'scanned_at' => $scanModel->scanned_at?->format('d M Y H:i'),
+            'expires_at' => $scanModel->expires_at?->format('d M Y H:i'),
+            'hours_left' => max(0, (int) round(now()->diffInMinutes($scanModel->expires_at, false) / 60)),
+        ] : [
             'scanned_at' => now()->format('d M Y H:i'),
             'expires_at' => now()->addHours(48)->format('d M Y H:i'),
             'hours_left' => 48,
         ];
-        $scanId = null;
-        $withinWindow = true;
 
         return [
             'found' => true,
@@ -152,8 +153,8 @@ class TransactionController extends Controller
             'status_label' => $active ? 'ACTIVE' : 'INACTIVE',
             'expires_at' => $member->membership?->expires_at?->format('d M Y'),
             'scan' => $scanData,
-            'scan_id' => $scanId,
-            'within_window' => $withinWindow,
+            'scan_id' => $scanModel?->id,
+            'within_window' => true,
         ];
     }
 
