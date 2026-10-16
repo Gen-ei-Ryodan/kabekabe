@@ -15,7 +15,11 @@ export default function ThankYou({ status }) {
 
                 <h1 className="font-display text-2xl font-bold tracking-tight">Terima kasih!</h1>
                 <p className="mt-2 text-sm text-slate">
-                    Pendaftaran Partner Anda berhasil dikirim! Mohon tunggu proses persetujuan Admin hingga 1x24 jam kerja. Setelah pendaftaran Anda disetujui, informasi login berupa email dan kata sandi akan dikirimkan ke alamat email yang Anda daftarkan. Harap periksa kotak masuk email Anda secara berkala, termasuk folder spam atau junk.
+                    Pendaftaran Partner Anda berhasil dikirim! Mohon tunggu proses persetujuan Admin hingga 1x24 jam kerja.
+                    <br /><br />
+                    Setelah pendaftaran Anda disetujui, informasi login berupa email dan kata sandi akan dikirimkan ke alamat email yang Anda daftarkan.
+                    <br /><br />
+                    Harap periksa kotak masuk email Anda secara berkala, termasuk folder spam atau junk.
                 </p>
 
                 {status && (

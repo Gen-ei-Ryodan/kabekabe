@@ -25,7 +25,7 @@ export default function RegisterSuccess({ name, email, role }) {
 
                 <div className="my-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-left text-sm text-amber-900">
                     <p className="font-semibold">{t('auth.success.pendingTitle')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-amber-800">
+                    <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-amber-800">
                         {t('auth.success.pendingBody')}
                     </p>
                 </div>

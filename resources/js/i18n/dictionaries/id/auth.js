@@ -22,7 +22,7 @@ export default {
     'auth.success.thanksIntro': 'Terima kasih telah mendaftar sebagai',
     'auth.success.thanksOutro': '. Pendaftaran atas nama {name} telah kami terima dan sedang menunggu persetujuan admin.',
     'auth.success.pendingTitle': 'Menunggu Persetujuan Admin',
-    'auth.success.pendingBody': 'Pendaftaran Member Anda berhasil dikirim! Mohon tunggu proses persetujuan Admin hingga 1x24 jam kerja. Setelah pendaftaran Anda disetujui, informasi login berupa email dan kata sandi akan dikirimkan ke alamat email yang Anda daftarkan. Harap periksa kotak masuk email Anda secara berkala, termasuk folder spam atau junk.',
+    'auth.success.pendingBody': 'Pendaftaran Member Anda berhasil dikirim! Mohon tunggu proses persetujuan Admin hingga 1x24 jam kerja.\n\nSetelah pendaftaran Anda disetujui, informasi login berupa email dan kata sandi akan dikirimkan ke alamat email yang Anda daftarkan.\n\nHarap periksa kotak masuk email Anda secara berkala, termasuk folder spam atau junk.',
     'auth.success.emailHeading': 'Informasi Login via Email',
     'auth.success.emailIntro': 'Password awal dan notifikasi persetujuan akan dikirim ke',
     'auth.success.emailMid': '. Gunakan ',
