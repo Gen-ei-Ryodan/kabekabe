@@ -278,7 +278,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         id="password"
                                         type="password"
                                         name="password"
-                                        autoComplete="new-password"
+                                        autoComplete="one-time-code"
                                         className="input"
                                         value={data.password}
                                         onChange={(e) => setData('password', e.target.value)}
@@ -297,7 +297,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                         id="password_confirmation"
                                         type="password"
                                         name="password_confirmation"
-                                        autoComplete="new-password"
+                                        autoComplete="one-time-code"
                                         className="input"
                                         value={data.password_confirmation}
                                         onChange={(e) => setData('password_confirmation', e.target.value)}
