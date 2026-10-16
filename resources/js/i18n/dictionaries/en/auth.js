@@ -22,7 +22,7 @@ export default {
     'auth.success.thanksIntro': 'Thank you for registering as a',
     'auth.success.thanksOutro': '. The registration for {name} has been received and is awaiting admin approval.',
     'auth.success.pendingTitle': 'Awaiting Admin Approval',
-    'auth.success.pendingBody': 'The KBKB admin team will review your registration. You will receive a confirmation email with the status of your submission along with the initial password to access your account.',
+    'auth.success.pendingBody': 'Your Member registration has been submitted! Please wait for Admin approval within 1x24 working hours. After your registration is approved, your login details (email and password) will be sent to the email address you registered. Please check your inbox regularly, including the spam or junk folder.',
     'auth.success.emailHeading': 'Login Information via Email',
     'auth.success.emailIntro': 'The initial password and approval notification will be sent to',
     'auth.success.emailMid': '. Use the ',

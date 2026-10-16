@@ -13,9 +13,9 @@ export default function ThankYou({ status }) {
                     </svg>
                 </div>
 
-                <h1 className="font-display text-2xl font-bold tracking-tight">Thank You!</h1>
+                <h1 className="font-display text-2xl font-bold tracking-tight">Terima kasih!</h1>
                 <p className="mt-2 text-sm text-slate">
-                    Your partner registration has been submitted successfully. Our team will review your application and get back to you soon.
+                    Pendaftaran Partner Anda berhasil dikirim! Mohon tunggu proses persetujuan Admin hingga 1x24 jam kerja. Setelah pendaftaran Anda disetujui, informasi login berupa email dan kata sandi akan dikirimkan ke alamat email yang Anda daftarkan. Harap periksa kotak masuk email Anda secara berkala, termasuk folder spam atau junk.
                 </p>
 
                 {status && (
