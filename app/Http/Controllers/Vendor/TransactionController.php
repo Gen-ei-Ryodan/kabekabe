@@ -8,6 +8,7 @@ use App\Models\MemberScan;
 use App\Models\Promo;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\ImageUploadService;
 use App\Services\TransactionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -182,7 +183,7 @@ class TransactionController extends Controller
         $proofPath = null;
 
         if ($request->hasFile('proof')) {
-            $proofPath = $request->file('proof')->store('transaction-proofs', 'public');
+            $proofPath = ImageUploadService::uploadAndResize($request->file('proof'), 'transaction-proofs', 1000, 1000);
         }
 
         $total = $request->integer('total');

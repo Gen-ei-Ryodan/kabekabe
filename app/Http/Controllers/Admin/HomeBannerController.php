@@ -7,6 +7,7 @@ use App\Models\HomeBanner;
 use App\Models\HomePopup;
 use App\Models\PartnerAd;
 use App\Models\Promo;
+use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -66,8 +67,8 @@ class HomeBannerController extends Controller
                     'start_date' => $startDate?->format('d M Y'),
                     'end_date' => $endDate?->format('d M Y'),
                     'date_range' => ($startDate && $endDate)
-                        ? ($startDate->format('d M Y') . ' — ' . $endDate->format('d M Y'))
-                        : ($endDate ? ('Hingga ' . $endDate->format('d M Y')) : '-'),
+                        ? ($startDate->format('d M Y').' — '.$endDate->format('d M Y'))
+                        : ($endDate ? ('Hingga '.$endDate->format('d M Y')) : '-'),
                     'status_badge' => $statusBadge,
                     'promo' => $banner->promo
                         ? ['id' => $banner->promo->id, 'title' => $banner->promo->title, 'partner' => ['name' => $banner->promo->partner?->name]]
@@ -276,7 +277,7 @@ class HomeBannerController extends Controller
             if ($popup?->image_path) {
                 Storage::disk('public')->delete($popup->image_path);
             }
-            $data['image_path'] = $request->file('image')->store('home-popups', 'public');
+            $data['image_path'] = ImageUploadService::uploadAndResize($request->file('image'), 'home-popups', 1200, 1200);
         } elseif ($request->boolean('remove_image') && $popup?->image_path) {
             Storage::disk('public')->delete($popup->image_path);
             $data['image_path'] = null;
@@ -292,7 +293,9 @@ class HomeBannerController extends Controller
     private function popupPayload(): ?array
     {
         $popup = HomePopup::query()->with('promo.partner')->first();
-        if (! $popup) return null;
+        if (! $popup) {
+            return null;
+        }
 
         $startDate = $popup->promo?->start_date;
         $endDate = $popup->promo?->end_date;
@@ -325,8 +328,8 @@ class HomeBannerController extends Controller
             'start_date' => $startDate?->format('d M Y'),
             'end_date' => $endDate?->format('d M Y'),
             'date_range' => ($startDate && $endDate)
-                ? ($startDate->format('d M Y') . ' — ' . $endDate->format('d M Y'))
-                : ($endDate ? ('Hingga ' . $endDate->format('d M Y')) : '-'),
+                ? ($startDate->format('d M Y').' — '.$endDate->format('d M Y'))
+                : ($endDate ? ('Hingga '.$endDate->format('d M Y')) : '-'),
             'status_badge' => $statusBadge,
             'promo' => $popup->promo ? [
                 'title' => $popup->promo->title,
@@ -356,7 +359,7 @@ class HomeBannerController extends Controller
                 Storage::disk('public')->delete($banner->image_path);
             }
 
-            $validated['image_path'] = $request->file('image')->store('banners', 'public');
+            $validated['image_path'] = ImageUploadService::uploadAndResize($request->file('image'), 'banners', 1200, 1200);
         } elseif ($request->boolean('remove_image') && $banner?->image_path) {
             Storage::disk('public')->delete($banner->image_path);
             $validated['image_path'] = null;

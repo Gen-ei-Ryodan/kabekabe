@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Models\PartnerAd;
 use App\Models\Payment;
+use App\Models\User;
+use App\Services\ImageUploadService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +16,7 @@ use Inertia\Response;
 
 class BillingController extends Controller
 {
-    private function vendorUser(): ?\App\Models\User
+    private function vendorUser(): ?User
     {
         return Auth::guard('partner')->user() ?? auth()->user();
     }
@@ -104,7 +106,7 @@ class BillingController extends Controller
         $durationDays = $validated['type'] === PartnerAd::TYPE_POPUP ? 3 : 5;
         $endDate = $startDate->copy()->addDays($durationDays);
 
-        $imagePath = $request->file('image')->store('partner-ads', 'public');
+        $imagePath = ImageUploadService::uploadAndResize($request->file('image'), 'partner-ads', 800, 800);
 
         PartnerAd::create([
             'partner_id' => $partner->id,

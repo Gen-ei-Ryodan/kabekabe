@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateAccountRequest;
+use App\Services\ImageUploadService;
 use App\Services\PasswordOtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,7 +89,7 @@ class AccountController extends Controller
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $avatarPath = ImageUploadService::uploadAndResize($request->file('avatar'), 'avatars', 400, 400);
             $changesCount++;
         }
 

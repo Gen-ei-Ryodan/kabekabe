@@ -9,6 +9,7 @@ use App\Models\MasterIdentity;
 use App\Models\Partner;
 use App\Models\User;
 use App\Services\ApprovalNotifier;
+use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -200,7 +201,7 @@ class PartnerController extends Controller
             'city' => $validated['city'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
-            'logo' => $request->hasFile('logo') ? $request->file('logo')->store('partner-logos', 'public') : null,
+            'logo' => $request->hasFile('logo') ? ImageUploadService::uploadAndResize($request->file('logo'), 'partner-logos', 600, 600) : null,
             'joined_at' => $validated['joined_at'] ?? now(),
             'expires_at' => $validated['expires_at'] ?? now()->addYear(),
             'is_active' => true,
@@ -296,7 +297,7 @@ class PartnerController extends Controller
                 Storage::disk('public')->delete($partner->logo);
             }
 
-            $validated['logo'] = $request->file('logo')->store('partner-logos', 'public');
+            $validated['logo'] = ImageUploadService::uploadAndResize($request->file('logo'), 'partner-logos', 600, 600);
         }
 
         $partnerFields = [

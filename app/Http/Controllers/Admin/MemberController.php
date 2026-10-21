@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateMemberRequest;
 use App\Models\MasterIdentity;
 use App\Models\User;
 use App\Services\ApprovalNotifier;
+use App\Services\ImageUploadService;
 use App\Services\Import\ImportTemplateDownloader;
 use App\Services\Import\MemberImporter;
 use App\Services\MembershipService;
@@ -497,7 +498,7 @@ class MemberController extends Controller
             if ($member->avatar) {
                 Storage::disk('public')->delete($member->avatar);
             }
-            $path = $request->file('avatar')->store('avatars', 'public');
+            $path = ImageUploadService::uploadAndResize($request->file('avatar'), 'avatars', 400, 400);
             $member->update(['avatar' => $path]);
         }
 

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePromoRequest;
 use App\Http\Requests\UpdatePromoRequest;
 use App\Models\Promo;
+use App\Models\User;
+use App\Services\ImageUploadService;
 use App\Services\PromoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +21,7 @@ class PromoController extends Controller
         private readonly PromoService $promos,
     ) {}
 
-    private function vendorUser(): ?\App\Models\User
+    private function vendorUser(): ?User
     {
         return Auth::guard('partner')->user() ?? auth()->user();
     }
@@ -73,10 +75,11 @@ class PromoController extends Controller
 
         $data = $request->validated();
 
-        // Handle file uploads
-        foreach (['logo', 'promo_image', 'product_image'] as $field) {
+        // Handle file uploads (resize + WebP, tanpa upscale)
+        $specs = ['logo' => 600, 'promo_image' => 1000, 'product_image' => 1000];
+        foreach ($specs as $field => $max) {
             if ($request->hasFile($field)) {
-                $data[$field] = $request->file($field)->store('promos', 'public');
+                $data[$field] = ImageUploadService::uploadAndResize($request->file($field), 'promos', $max, $max);
             } else {
                 unset($data[$field]);
             }
@@ -120,10 +123,11 @@ class PromoController extends Controller
     {
         $data = $request->validated();
 
-        // Handle file uploads
-        foreach (['logo', 'promo_image', 'product_image'] as $field) {
+        // Handle file uploads (resize + WebP, tanpa upscale)
+        $specs = ['logo' => 600, 'promo_image' => 1000, 'product_image' => 1000];
+        foreach ($specs as $field => $max) {
             if ($request->hasFile($field)) {
-                $data[$field] = $request->file($field)->store('promos', 'public');
+                $data[$field] = ImageUploadService::uploadAndResize($request->file($field), 'promos', $max, $max);
             } else {
                 unset($data[$field]);
             }

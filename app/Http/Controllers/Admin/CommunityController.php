@@ -10,6 +10,7 @@ use App\Models\EventAttendance;
 use App\Models\EventNonMember;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\ImageUploadService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -97,7 +98,7 @@ class CommunityController extends Controller
             'type' => $validated['type'],
             'title' => $validated['title'],
             'content' => $validated['content'],
-            'image' => $request->hasFile('image') ? $request->file('image')->store('community-images', 'public') : null,
+            'image' => $request->hasFile('image') ? ImageUploadService::uploadAndResize($request->file('image'), 'community-images', 1200, 1200) : null,
             'event_date' => $validated['event_date'] ?? null,
             'location' => $validated['location'] ?? null,
             'fee' => $validated['fee'] ?? null,
@@ -186,7 +187,7 @@ class CommunityController extends Controller
                 Storage::disk('public')->delete($info->image);
             }
 
-            $validated['image'] = $request->file('image')->store('community-images', 'public');
+            $validated['image'] = ImageUploadService::uploadAndResize($request->file('image'), 'community-images', 1200, 1200);
         }
 
         $info->update([
