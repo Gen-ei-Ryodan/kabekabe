@@ -7,7 +7,7 @@ export default {
     'account.profileTitle': 'Member Profile',
     'account.avatarChosen': 'Photo selected ✓',
     'account.avatarPick': 'Choose Profile Photo',
-    'account.avatarHint': 'The profile photo can only be changed once at the start. 1:1 aspect ratio, max 2MB.',
+    'account.avatarHint': 'The profile photo can only be changed once at the start. 1:1 aspect ratio, max 5MB.',
     'account.avatarLocked': '🔒 Profile photo locked',
     'account.avatarLockedHint': 'The profile photo can only be changed once at the start. For further changes, please request via the Admin.',
     'account.avatarRequestWa': 'Request a Photo Change from Admin via WhatsApp →',

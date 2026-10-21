@@ -6,6 +6,7 @@ import Avatar from '@/Components/Avatar';
 import TextInput from '@/Components/TextInput';
 import Modal from '@/Components/Modal';
 import { useTranslation } from '@/i18n';
+import { pickFile } from '@/Utils/fileValidation';
 
 export default function AccountEdit({ account, password_otp_sent }) {
     const { t } = useTranslation();
@@ -142,7 +143,7 @@ export default function AccountEdit({ account, password_otp_sent }) {
                                                     type="file"
                                                     accept="image/*"
                                                     className="hidden"
-                                                    onChange={(e) => setData('avatar', e.target.files[0])}
+                                                    onChange={(e) => pickFile(e, (file) => setData('avatar', file))}
                                                 />
                                             </label>
                                             {errors.avatar && <p className="mt-1 text-xs text-ember">{errors.avatar}</p>}

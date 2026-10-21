@@ -4,6 +4,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import StatusChip from '@/Components/StatusChip';
 import EmptyState from '@/Components/EmptyState';
 import HomeBannerDrawer from '@/Components/Admin/HomeBannerDrawer';
+import { pickFile } from '@/Utils/fileValidation';
 
 const MAX_BANNERS = 4;
 
@@ -83,8 +84,8 @@ function PopupSettings({ popup, promos = [] }) {
                 </div>
                 <div>
                     <label className="label" htmlFor="popup-image">Gambar Popup (opsional)</label>
-                    <input id="popup-image" type="file" accept=".jpg,.jpeg,.png,.webp" className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper" onChange={(e) => form.setData((data) => ({ ...data, image: e.target.files[0] || null, remove_image: false }))} />
-                    <p className="mt-1.5 text-xs text-slate">Format JPG/PNG/WebP, maksimal 2 MB.</p>
+                    <input id="popup-image" type="file" accept=".jpg,.jpeg,.png,.webp" className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper" onChange={(e) => pickFile(e, (file) => form.setData((data) => ({ ...data, image: file, remove_image: false })))} />
+                    <p className="mt-1.5 text-xs text-slate">Format JPG/PNG/WebP, maksimal 5 MB.</p>
                     {preview && <div className="mt-3 flex items-start gap-3"><img src={preview} alt="Pratinjau Popup" className="h-28 w-full max-w-sm rounded-xl border border-ink/10 object-cover" /><button type="button" onClick={() => form.setData((data) => ({ ...data, image: null, remove_image: true }))} className="btn-ghost text-xs">Hapus</button></div>}
                     {form.errors.image && <p className="mt-1 text-xs text-ember">{form.errors.image}</p>}
                 </div>

@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
+import { pickFile } from '@/Utils/fileValidation';
 
 function CreateCommunityDrawer({ onClose }) {
     const form = useForm({
@@ -44,7 +45,7 @@ function CreateCommunityDrawer({ onClose }) {
 
             <div>
                 <label className="label" htmlFor="image">Gambar / Banner</label>
-                <input id="image" type="file" accept="image/*" className="input" onChange={(e) => form.setData('image', e.target.files[0])} />
+                <input id="image" type="file" accept="image/*" className="input" onChange={(e) => pickFile(e, (file) => form.setData('image', file))} />
                 {form.errors.image && <p className="mt-1 text-xs text-ember">{form.errors.image}</p>}
             </div>
 
@@ -106,7 +107,7 @@ function EditCommunityDrawer({ info, onClose }) {
 
             <div>
                 <label className="label" htmlFor="image">Ganti Gambar</label>
-                <input id="image" type="file" accept="image/*" className="input" onChange={(e) => form.setData('image', e.target.files[0])} />
+                <input id="image" type="file" accept="image/*" className="input" onChange={(e) => pickFile(e, (file) => form.setData('image', file))} />
                 {form.errors.image && <p className="mt-1 text-xs text-ember">{form.errors.image}</p>}
             </div>
 

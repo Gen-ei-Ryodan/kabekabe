@@ -46,7 +46,7 @@ class UpdateMemberRequest extends FormRequest
             'membership_status' => ['nullable', 'string', Rule::in(['active', 'inactive'])],
             'membership_started_at' => ['nullable', 'date'],
             'membership_expires_at' => ['nullable', 'date', 'after_or_equal:membership_started_at'],
-            'avatar' => ['nullable', 'file', 'image', 'max:2048'],
+            'avatar' => ['nullable', 'file', 'image', 'max:5120'],
             'remove_avatar' => ['nullable', 'boolean'],
         ];
     }

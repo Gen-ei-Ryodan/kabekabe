@@ -19,7 +19,7 @@ class UpdateCommunityInfoRequest extends FormRequest
             'type' => ['required', 'in:event,agenda'],
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'event_date' => ['nullable', 'date'],
             'location' => ['nullable', 'string', 'max:255'],
             'fee' => ['nullable', 'integer', 'min:0'],

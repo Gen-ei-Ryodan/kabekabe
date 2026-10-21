@@ -29,7 +29,7 @@ class StorePartnerRequest extends FormRequest
             'district' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:5120'],
             'joined_at' => ['nullable', 'date'],
             'expires_at' => ['nullable', 'date'],
             'sort_number' => ['nullable', 'integer', 'min:1'],

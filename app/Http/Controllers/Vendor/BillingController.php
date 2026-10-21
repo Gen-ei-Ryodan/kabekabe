@@ -95,7 +95,7 @@ class BillingController extends Controller
             'promo_title' => ['required', 'string', 'max:255'],
             'promo_id' => ['required', 'integer', 'exists:promos,id'],
             'start_date' => ['required', 'date'],
-            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'notes' => ['nullable', 'string', 'max:500'],
         ], [
             'promo_id.required' => 'Silakan pilih promo yang akan dihubungkan dengan iklan ini.',

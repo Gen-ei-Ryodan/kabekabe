@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
+import { pickFile } from '@/Utils/fileValidation';
 
 function resolveTargetId(banner, promos) {
     if (!banner) return '';
@@ -93,9 +94,9 @@ function BannerForm({ banner, promos, nextSortOrder, onClose }) {
                     type="file"
                     accept=".jpg,.jpeg,.png,.webp"
                     className="input file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-paper"
-                    onChange={(e) => form.setData((data) => ({ ...data, image: e.target.files[0] || null, remove_image: false }))}
+                    onChange={(e) => pickFile(e, (file) => form.setData((data) => ({ ...data, image: file, remove_image: false })))}
                 />
-                <p className="mt-1.5 text-xs text-slate">Format JPG/PNG/WebP, maksimal 2 MB. Rasio ideal 4:5 (misal 1080×1350px). Tampil sebagai cover banner di beranda member.</p>
+                <p className="mt-1.5 text-xs text-slate">Format JPG/PNG/WebP, maksimal 5 MB. Rasio ideal 4:5 (misal 1080×1350px). Tampil sebagai cover banner di beranda member.</p>
 
                 {imagePreview && (
                     <div className="mt-3 flex items-start gap-3">

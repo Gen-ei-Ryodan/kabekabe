@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import { pickFile } from '@/Utils/fileValidation';
 
 export default function CommunityCreate() {
     const form = useForm({
@@ -60,7 +61,7 @@ export default function CommunityCreate() {
 
                     <div>
                         <label className="label" htmlFor="image">Gambar / Poster</label>
-                        <input id="image" type="file" accept="image/*" className="input" onChange={(e) => form.setData('image', e.target.files[0])} />
+                        <input id="image" type="file" accept="image/*" className="input" onChange={(e) => pickFile(e, (file) => form.setData('image', file))} />
                         {form.errors.image && <p className="mt-1 text-xs text-ember">{form.errors.image}</p>}
                     </div>
 

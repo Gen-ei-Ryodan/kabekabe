@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import { INDUSTRY_CATEGORIES, derivePartnerCategory } from '@/constants/membership';
+import { pickFile } from '@/Utils/fileValidation';
 import MasterIdentityBiodata from '@/Components/MasterIdentityBiodata';
 
 const toDateInput = (val) => {
@@ -283,7 +284,7 @@ export default function PartnerForm({
                             type="file"
                             accept="image/*"
                             className="input"
-                            onChange={(e) => setData('logo', e.target.files[0])}
+                            onChange={(e) => pickFile(e, (file) => setData('logo', file))}
                         />
                         {errors.logo && <p className="mt-1 text-xs text-ember">{errors.logo}</p>}
                     </div>

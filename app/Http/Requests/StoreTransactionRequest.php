@@ -47,7 +47,7 @@ class StoreTransactionRequest extends FormRequest
             'discounts.*.description' => ['nullable', 'string', 'max:255'],
             'discounts.*.amount' => ['nullable', 'integer', 'min:0'],
             'note' => ['nullable', 'string', 'max:1000'],
-            'proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

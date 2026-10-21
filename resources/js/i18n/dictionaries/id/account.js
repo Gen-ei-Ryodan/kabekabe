@@ -7,7 +7,7 @@ export default {
     'account.profileTitle': 'Profil Member',
     'account.avatarChosen': 'Foto dipilih ✓',
     'account.avatarPick': 'Pilih Foto Profil',
-    'account.avatarHint': 'Foto profil hanya boleh diganti 1 kali di awal. Format rasio 1:1, maks 2MB.',
+    'account.avatarHint': 'Foto profil hanya boleh diganti 1 kali di awal. Format rasio 1:1, maks 5MB.',
     'account.avatarLocked': '🔒 Foto profil terkunci',
     'account.avatarLockedHint': 'Foto profil hanya boleh diganti 1 kali di awal. Untuk penggantian foto selanjutnya, silakan ajukan ke Admin.',
     'account.avatarRequestWa': 'Ajukan Perubahan Foto ke Admin via WhatsApp →',

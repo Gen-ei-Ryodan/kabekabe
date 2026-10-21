@@ -25,9 +25,9 @@ class UpdatePromoRequest extends FormRequest
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'terms' => ['nullable', 'string', 'max:2000'],
             'sort_number' => ['nullable', 'integer', 'min:1'],
-            'logo' => ['nullable', 'file', 'image', 'max:2048'],
-            'promo_image' => ['nullable', 'file', 'image', 'max:2048'],
-            'product_image' => ['nullable', 'file', 'image', 'max:2048'],
+            'logo' => ['nullable', 'file', 'image', 'max:5120'],
+            'promo_image' => ['nullable', 'file', 'image', 'max:5120'],
+            'product_image' => ['nullable', 'file', 'image', 'max:5120'],
         ];
     }
 

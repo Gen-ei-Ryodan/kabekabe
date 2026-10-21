@@ -25,7 +25,7 @@ class UpdateAccountRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:500'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
             'company' => ['nullable', 'string', 'max:255'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'current_password' => [$changingPassword ? 'required' : 'nullable', 'current_password'],
             'password' => ['nullable', 'string', Password::defaults(), 'confirmed'],
             // Ganti password wajib dikonfirmasi dengan kode OTP yang dikirim ke email.

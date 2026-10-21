@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import SlideOver from '@/Components/SlideOver';
+import { pickFile } from '@/Utils/fileValidation';
 
 export default function ImportDrawer({ title, subtitle, columns, templateHref, uploadRoute, onClose }) {
     const form = useForm({ file: null });
@@ -43,7 +44,7 @@ export default function ImportDrawer({ title, subtitle, columns, templateHref, u
                             type="file"
                             accept=".xlsx,.csv"
                             className="hidden"
-                            onChange={(e) => form.setData('file', e.target.files[0])}
+                            onChange={(e) => pickFile(e, (file) => form.setData('file', file))}
                         />
                     </label>
                     {form.errors.file && <p className="mt-1.5 text-xs text-ember">{form.errors.file}</p>}

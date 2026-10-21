@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import VendorLayout from '@/Layouts/VendorLayout';
 import { toDateInputValue } from '@/Utils/format';
+import { pickFile } from '@/Utils/fileValidation';
 
 export default function PromoEdit({ promo }) {
     const form = useForm({
@@ -120,7 +121,7 @@ export default function PromoEdit({ promo }) {
                                     type="file"
                                     accept="image/*"
                                     className="input"
-                                    onChange={(e) => form.setData('logo', e.target.files[0])}
+                                    onChange={(e) => pickFile(e, (file) => form.setData('logo', file))}
                                 />
                                 {form.errors.logo && <p className="mt-1 text-xs text-ember">{form.errors.logo}</p>}
                                 {form.data.logo && (
@@ -142,7 +143,7 @@ export default function PromoEdit({ promo }) {
                                     type="file"
                                     accept="image/*"
                                     className="input"
-                                    onChange={(e) => form.setData('promo_image', e.target.files[0])}
+                                    onChange={(e) => pickFile(e, (file) => form.setData('promo_image', file))}
                                 />
                                 {form.errors.promo_image && <p className="mt-1 text-xs text-ember">{form.errors.promo_image}</p>}
                                 {form.data.promo_image && (
@@ -164,7 +165,7 @@ export default function PromoEdit({ promo }) {
                                     type="file"
                                     accept="image/*"
                                     className="input"
-                                    onChange={(e) => form.setData('product_image', e.target.files[0])}
+                                    onChange={(e) => pickFile(e, (file) => form.setData('product_image', file))}
                                 />
                                 {form.errors.product_image && <p className="mt-1 text-xs text-ember">{form.errors.product_image}</p>}
                                 {form.data.product_image && (
@@ -174,7 +175,7 @@ export default function PromoEdit({ promo }) {
                                 )}
                             </div>
                         </div>
-                        <p className="mt-2 text-xs text-slate-soft">Format: JPG, PNG, atau WebP. Maksimal 2MB per file.</p>
+                        <p className="mt-2 text-xs text-slate-soft">Format: JPG, PNG, atau WebP. Maksimal 5MB per file.</p>
                     </div>
 
                     <div className="flex justify-end gap-3">

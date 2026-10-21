@@ -262,7 +262,7 @@ class HomeBannerController extends Controller
             'promo_id' => ['required', 'integer', Rule::exists('promos', 'id')],
             'promo_title' => ['nullable', 'string', 'max:255'],
             'is_active' => ['required', 'boolean'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=2000,max_height=2000'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=2000,max_height=2000'],
             'remove_image' => ['nullable', 'boolean'],
         ]);
 
@@ -345,7 +345,7 @@ class HomeBannerController extends Controller
             'promo_title' => ['nullable', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'is_active' => ['required', 'boolean'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'remove_image' => ['nullable', 'boolean'],
         ]);
 

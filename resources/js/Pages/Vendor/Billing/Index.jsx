@@ -4,6 +4,7 @@ import VendorLayout from '@/Layouts/VendorLayout';
 import Reveal from '@/Components/Reveal';
 import StatusChip from '@/Components/StatusChip';
 import { formatRupiah } from '@/Utils/format';
+import { pickFile } from '@/Utils/fileValidation';
 
 export default function BillingIndex({ partner, ads = [], promos = [], history = [] }) {
     const [isApplyingAd, setIsApplyingAd] = useState(false);
@@ -287,10 +288,10 @@ export default function BillingIndex({ partner, ads = [], promos = [], history =
                                         type="file"
                                         accept="image/png,image/jpeg,image/webp"
                                         className="input file:mr-4 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-1 file:text-xs file:font-semibold file:text-ink hover:file:bg-gold-light"
-                                        onChange={(e) => form.setData('image', e.target.files[0])}
+                                        onChange={(e) => pickFile(e, (file) => form.setData('image', file))}
                                         required
                                     />
-                                    <p className="mt-1 text-xs text-slate">Format: JPG, PNG, atau WebP. Maksimal 2MB. Resolusi disarankan rasio 16:9 atau 4:3.</p>
+                                    <p className="mt-1 text-xs text-slate">Format: JPG, PNG, atau WebP. Maksimal 5MB. Resolusi disarankan rasio 16:9 atau 4:3.</p>
                                     {form.errors.image && <p className="mt-1 text-xs text-ember">{form.errors.image}</p>}
                                 </div>
 

@@ -4,6 +4,7 @@ import { Scanner } from '@yudiel/react-qr-scanner';
 import VendorLayout from '@/Layouts/VendorLayout';
 import StatusChip from '@/Components/StatusChip';
 import Avatar from '@/Components/Avatar';
+import { pickFile } from '@/Utils/fileValidation';
 
 export default function TransactionCreate({ member, is_completing = false }) {
     const { errors } = usePage().props;
@@ -465,7 +466,7 @@ export default function TransactionCreate({ member, is_completing = false }) {
 
                                 <div>
                                     <label className="label" htmlFor="proof">Foto struk (opsional)</label>
-                                    <input id="proof" type="file" accept="image/*" className="input" onChange={(e) => form.setData('proof', e.target.files[0])} />
+                                    <input id="proof" type="file" accept="image/*" className="input" onChange={(e) => pickFile(e, (file) => form.setData('proof', file))} />
                                     {errors.proof && <p className="mt-1 text-xs text-ember">{errors.proof}</p>}
                                 </div>
 

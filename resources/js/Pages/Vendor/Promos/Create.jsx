@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import VendorLayout from '@/Layouts/VendorLayout';
+import { pickFile } from '@/Utils/fileValidation';
 
 export default function PromoCreate() {
     const { data, setData, post, processing, errors } = useForm({
@@ -102,7 +103,7 @@ export default function PromoCreate() {
                                     type="file"
                                     accept="image/*"
                                     className="input"
-                                    onChange={(e) => setData('logo', e.target.files[0])}
+                                    onChange={(e) => pickFile(e, (file) => setData('logo', file))}
                                 />
                                 {errors.logo && <p className="mt-1 text-xs text-ember">{errors.logo}</p>}
                                 {data.logo && (
@@ -118,7 +119,7 @@ export default function PromoCreate() {
                                     type="file"
                                     accept="image/*"
                                     className="input"
-                                    onChange={(e) => setData('promo_image', e.target.files[0])}
+                                    onChange={(e) => pickFile(e, (file) => setData('promo_image', file))}
                                 />
                                 {errors.promo_image && <p className="mt-1 text-xs text-ember">{errors.promo_image}</p>}
                                 {data.promo_image && (
@@ -134,7 +135,7 @@ export default function PromoCreate() {
                                     type="file"
                                     accept="image/*"
                                     className="input"
-                                    onChange={(e) => setData('product_image', e.target.files[0])}
+                                    onChange={(e) => pickFile(e, (file) => setData('product_image', file))}
                                 />
                                 {errors.product_image && <p className="mt-1 text-xs text-ember">{errors.product_image}</p>}
                                 {data.product_image && (
@@ -144,7 +145,7 @@ export default function PromoCreate() {
                                 )}
                             </div>
                         </div>
-                        <p className="mt-2 text-xs text-slate-soft">Format: JPG, PNG, atau WebP. Maksimal 2MB per file.</p>
+                        <p className="mt-2 text-xs text-slate-soft">Format: JPG, PNG, atau WebP. Maksimal 5MB per file.</p>
                     </div>
 
                     <div className="flex justify-end gap-3">

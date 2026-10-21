@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import { formatDateLong } from '@/Utils/format';
+import { pickFile } from '@/Utils/fileValidation';
 import { INDUSTRY_CATEGORIES, HOBBY_LIST } from '@/constants/membership';
 import MasterIdentityBiodata from '@/Components/MasterIdentityBiodata';
 
@@ -23,11 +24,12 @@ export default function MemberForm({
     const [avatarPreview, setAvatarPreview] = useState(null);
 
     const handleAvatarChange = (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-        setAvatarPreview(URL.createObjectURL(file));
-        setData('avatar', file);
+        pickFile(e, (file) => {
+            if (!file) return;
+            if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+            setAvatarPreview(URL.createObjectURL(file));
+            setData('avatar', file);
+        });
     };
 
     const removeAvatar = () => {
@@ -122,7 +124,7 @@ export default function MemberForm({
                                     </button>
                                 )}
                             </div>
-                            <p className="text-[10px] text-slate">JPG/PNG, maks 2MB.</p>
+                            <p className="text-[10px] text-slate">JPG/PNG, maks 5MB.</p>
                             {errors.avatar && <p className="text-xs text-ember">{errors.avatar}</p>}
                         </div>
                     </div>
